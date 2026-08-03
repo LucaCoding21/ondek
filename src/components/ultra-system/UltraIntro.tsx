@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Reveal from "@/components/Reveal";
+import EdgeBlueprint from "@/components/ultra-system/EdgeBlueprint";
 
 export default function UltraIntro() {
   return (
@@ -25,15 +25,10 @@ export default function UltraIntro() {
             </div>
 
             {/* Edge-profile blueprint, oversized so the section edge crops it
-                like the technical-drawing reference */}
+                like the technical-drawing reference. Same viewBox as the PNG
+                it replaces, so the crop lands where it always did. */}
             <div className="relative">
-              <Image
-                src="/images/ultra-blueprint.png"
-                alt="Line drawing of the Ultra membrane wrapping a deck edge"
-                width={1448}
-                height={1086}
-                className="w-full h-auto scale-[1.3] lg:scale-[1.45] origin-top"
-              />
+              <EdgeBlueprint className="w-full h-auto scale-[1.3] lg:scale-[1.45] origin-top text-foreground/35" />
             </div>
           </div>
         </Reveal>

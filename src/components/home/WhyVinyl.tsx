@@ -41,7 +41,7 @@ export default function WhyVinyl() {
                   100% waterproof. Not water-resistant.
                 </h3>
                 <p className="mt-3 text-foreground/70 leading-relaxed">
-                  One sealed surface protects your deck structure for decades —
+                  One sealed surface protects your deck structure for decades:
                   no staining, sealing, or sanding, slip-resistant when wet,
                   and UV-stable through freeze-thaw winters. Soap and water is
                   all it takes.

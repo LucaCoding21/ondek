@@ -1,0 +1,113 @@
+import Image from "next/image";
+import Reveal from "@/components/Reveal";
+import SectionLabel from "@/components/SectionLabel";
+
+// Markers on the drawing, boxes in a row underneath in the same left-to-right
+// order — 01 left, 02 middle, 03 right. No leader lines and nothing laid over
+// the artwork: the badge is the link, so it is the same size and colour in
+// both places and big enough to read as a pair.
+const ANNOTATIONS = [
+  {
+    n: "01",
+    label: "Outdoor kitchen",
+    title: "Appliances that can live outside",
+    body: "Cabinetry, counters, and a grill stay out of the rain, so the cooking moves outdoors without moving anything back in at the end of the day.",
+    marker: { left: "30%", top: "58%" },
+    box: "lg:absolute lg:left-0 lg:top-[64%] lg:w-[21rem]",
+  },
+  {
+    n: "02",
+    label: "Patio",
+    title: "Seating that survives the forecast",
+    body: "Shade in July, shelter in November. A dry ceiling turns the space under the deck into the one outdoor room that's usable in any weather.",
+    marker: { left: "52%", top: "66%" },
+    box: "lg:absolute lg:left-1/2 lg:-translate-x-1/2 lg:top-[94%] lg:w-[21rem]",
+  },
+  {
+    n: "03",
+    label: "Covered storage",
+    title: "The garage gets its floor back",
+    body: "Bikes, tools, and off-season furniture go under the deck instead of inside. Dry, out of the way, and off the driveway.",
+    marker: { left: "84%", top: "55%" },
+    box: "lg:absolute lg:right-0 lg:top-[60%] lg:w-[21rem]",
+  },
+];
+
+export default function UnderDeckLiving() {
+  return (
+    <section id="under-deck" className="bg-background">
+      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-24 lg:pt-32 pb-24 lg:pb-32">
+        <SectionLabel>Under-deck living space</SectionLabel>
+
+        <Reveal className="mt-10 max-w-4xl">
+          <h2 className="mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
+            A waterproof deck doubles your outdoor space.
+          </h2>
+          <p className="mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
+            Because the membrane is fully waterproof, the area under your deck
+            stays dry. Turn it into a patio, outdoor kitchen, or covered storage
+            instead of wasted space.
+          </p>
+        </Reveal>
+
+        {/* Wrapper runs wider than the drawing so the cards spread past its
+            edges instead of crowding the line work */}
+        <Reveal
+          delay={0.1}
+          className="relative mx-auto mt-12 max-w-[96rem] lg:mt-16 lg:mb-40"
+        >
+          <div className="relative mx-auto max-w-6xl">
+            <Image
+              src="/images/under-deck-concept.webp"
+              alt="Line drawing of a deck with a furnished, dry living space underneath"
+              width={1536}
+              height={1024}
+              className="w-full h-auto"
+              sizes="(min-width: 1024px) 72rem, 100vw"
+            />
+
+            {ANNOTATIONS.map(({ n, label, marker }) => (
+              <span
+                key={n}
+                style={{ left: marker.left, top: marker.top }}
+                className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-cta text-xs font-bold text-foreground sm:size-12 sm:text-sm"
+              >
+                {n}
+                <span className="sr-only">{` ${label}`}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* Placed against the drawing from lg — 01 low left, 03 low right,
+              02 dropped below the middle. They sit over the drawing's empty
+              margins rather than its line work. Stacked below it until then. */}
+          <Reveal
+            delay={0.2}
+            stagger=".annotation"
+            className="mt-10 grid items-start gap-6 sm:grid-cols-3 lg:mt-0 lg:block"
+          >
+            {ANNOTATIONS.map(({ n, label, title, body, box }) => (
+              <div
+                key={n}
+                className={`annotation border border-foreground/20 bg-background p-6 lg:p-7 ${box}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold">{n}</span>
+                  <span className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foreground/60">
+                    {label}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-xl font-bold leading-snug text-balance">
+                  {title}
+                </h3>
+                <p className="mt-3 text-foreground/75 leading-relaxed">
+                  {body}
+                </p>
+              </div>
+            ))}
+          </Reveal>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

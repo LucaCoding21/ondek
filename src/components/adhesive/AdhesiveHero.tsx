@@ -6,9 +6,9 @@ import { CTA_LINKS } from "@/lib/nav";
 export default function AdhesiveHero() {
   return (
     <section className="bg-background">
-      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-28 lg:pt-40 text-center">
+      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-36 lg:pt-48 text-center">
         <Reveal>
-          <h1 className="mx-auto max-w-2xl text-4xl sm:text-5xl font-bold leading-[1.1] tracking-[-0.01em]">
+          <h1 className="mx-auto max-w-3xl text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-[-0.02em]">
             The bond that makes it a system.
           </h1>
           <p className="mx-auto mt-5 max-w-md text-foreground/60 leading-relaxed">
@@ -34,15 +34,18 @@ export default function AdhesiveHero() {
         </Reveal>
       </div>
 
-      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 mt-12 lg:mt-16 pb-16 lg:pb-24">
+      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 mt-6 lg:mt-9 pb-16 lg:pb-24">
         <Reveal delay={0.15}>
-          <div className="relative aspect-[4/3] sm:aspect-[16/7] overflow-hidden rounded-3xl">
+          {/* Frame kept close to the art's own 16:9 so little is cropped */}
+          <div className="relative aspect-[4/3] sm:aspect-[16/8.4] overflow-hidden rounded-3xl">
             <Image
-              src="/images/hero-deck-backyard.jpg"
-              alt="Vinyl deck membrane bonded with OnDek adhesive"
+              src="/images/adhesive-hero-pail-v3.webp"
+              alt="Pail of OD 1010 All Season Adhesive on a finished vinyl deck"
               fill
-              priority
-              className="object-cover"
+              preload
+              // 16:9 art in a 16:7 frame — bias the crop low so the deck and
+              // the base of the pail stay in and the sky goes
+              className="object-cover object-[50%_85%]"
               sizes="100vw"
             />
           </div>

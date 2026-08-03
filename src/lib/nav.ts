@@ -15,17 +15,10 @@ export const NAV_ITEMS: NavItem[] = [
       { label: "Warranty", href: "/vinyl-decking/warranty" },
     ],
   },
-  {
-    label: "Why vinyl",
-    href: "/why-vinyl",
-    children: [
-      { label: "Why vinyl", href: "/why-vinyl" },
-      {
-        label: "Under-deck living space",
-        href: "/why-vinyl/under-deck-living-space",
-      },
-    ],
-  },
+  // No children: under-deck living space is a section of this page rather
+  // than a page of its own — it's what the waterproofing argument buys you,
+  // not a parallel topic.
+  { label: "Why vinyl", href: "/why-vinyl" },
   { label: "Become a dealer", href: "/become-a-dealer" },
   {
     label: "Resources",

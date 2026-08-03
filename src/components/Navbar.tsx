@@ -55,18 +55,19 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 px-[calc(var(--gutter)*2)] pt-[calc(var(--gutter)*2)] transition-transform duration-300 will-change-transform ${
+      className={`fixed inset-x-0 top-0 z-50 px-[calc(var(--gutter)*5)] pt-[calc(var(--gutter)*2)] transition-transform duration-300 will-change-transform ${
         isHidden ? "-translate-y-full" : "translate-y-0"
       }`}
     >
+      {/* Sits inside the hero's gutter frame, clear of the notched corner.
+          No border — the blur and tint carry it, so it reads as a bar rather
+          than an outlined box. */}
       <div
-        className={`border transition-colors duration-300 ${
-          clear
-            ? "bg-transparent border-transparent"
-            : "bg-white/85 backdrop-blur-xl border-black/5"
+        className={`transition-colors duration-300 ${
+          clear ? "bg-transparent" : "bg-white/85 backdrop-blur-xl"
         }`}
       >
-        <div className="flex h-[var(--nav-bar-h)] items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] pl-5 pr-5 sm:pl-7 lg:pl-8">
+        <div className="flex h-[var(--nav-bar-h)] items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] px-5 sm:px-6 lg:px-8">
           {/* Logo — both marks stacked so the swap never waits on a fetch */}
           <Link href="/" className="relative shrink-0 xl:justify-self-start">
             <Image
@@ -75,7 +76,7 @@ export default function Navbar() {
               width={214}
               height={100}
               priority
-              className={`h-8 w-auto transition-opacity duration-300 ${clear ? "opacity-0" : "opacity-100"}`}
+              className={`h-9 w-auto transition-opacity duration-300 ${clear ? "opacity-0" : "opacity-100"}`}
             />
             <Image
               src="/images/ondek-logo-white.svg"
@@ -84,7 +85,7 @@ export default function Navbar() {
               width={214}
               height={100}
               priority
-              className={`absolute inset-0 h-8 w-auto transition-opacity duration-300 ${clear ? "opacity-100" : "opacity-0"}`}
+              className={`absolute inset-0 h-9 w-auto transition-opacity duration-300 ${clear ? "opacity-100" : "opacity-0"}`}
             />
           </Link>
 
@@ -97,7 +98,7 @@ export default function Navbar() {
                   className={`flex items-center gap-1.5 px-2.5 xl:px-3.5 py-2 text-[13px] font-bold uppercase tracking-[0.06em] transition-colors ${
                     clear
                       ? "text-white/85 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-                      : "text-foreground/70 hover:text-foreground hover:bg-foreground/[0.04]"
+                      : "text-foreground/70 hover:text-foreground hover:bg-cta/25"
                   }`}
                 >
                   {item.label}
@@ -141,10 +142,10 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-2">
               <Link
                 href={CTA_LINKS.designKit.href}
-                className={`flex h-10 items-center px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] transition-colors ${
+                className={`flex h-10 items-center border px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] transition-colors ${
                   clear
-                    ? "bg-white/10 backdrop-blur-md text-white hover:bg-white/20"
-                    : "text-foreground/80 hover:text-foreground hover:bg-foreground/[0.04]"
+                    ? "border-white/40 bg-white/10 backdrop-blur-md text-white hover:bg-white/20"
+                    : "border-foreground text-foreground/80 hover:text-foreground hover:bg-cta/25"
                 }`}
               >
                 {CTA_LINKS.designKit.label}
@@ -182,7 +183,7 @@ export default function Navbar() {
 
       {/* Mobile menu — a solid sheet below the bar */}
       {mobileOpen && (
-        <div className="lg:hidden mt-2 bg-white border border-black/5 max-h-[calc(100dvh-var(--nav-bar-h)-var(--gutter)*4)] overflow-y-auto">
+        <div className="lg:hidden mt-2 bg-white max-h-[calc(100dvh-var(--nav-bar-h)-var(--gutter)*4)] overflow-y-auto">
           <div className="px-5 py-5 space-y-1">
             {NAV_ITEMS.map((item) => (
               <div key={item.label}>

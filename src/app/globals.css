@@ -9,7 +9,7 @@
   /* Fold geometry — shared by the nav gutter and the hero frame.
      Offset = nav top gutter + nav bar + hero top gutter + hero bottom gutter. */
   --gutter: 0.75rem;
-  --nav-bar-h: 3.5rem;
+  --nav-bar-h: 4.75rem;
 }
 
 @media (min-width: 640px) {
@@ -79,6 +79,99 @@ body {
       calc(100% - 50px) 100%,
       0 100%
     );
+  }
+}
+
+/* Deeper cut — the sub-page heroes; the plain .notch-frame-br is still what
+   the quote section uses, and it keeps the shallower corner */
+.notch-frame-br-lg {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 104px),
+    calc(100% - 164px) 100%,
+    0 100%
+  );
+}
+
+@media (max-width: 640px) {
+  .notch-frame-br-lg {
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 52px),
+      calc(100% - 82px) 100%,
+      0 100%
+    );
+  }
+}
+
+/* The logo mark's ramp, traced off its own polygon:
+     108.82 0 → 73.04 22.71 → 73.04 42.63 → 0 42.63 → 0 22.71 → 35.78 0
+   Both ends slope down-left by the same delta — the run is 35.78 and the rise
+   22.71 on a 42.63-tall shape, so run = 0.839×height and rise = 0.533×height.
+   Only the flat middle changes length, which is why the run and rise are set
+   in px here and the width is left free. At 80px tall: 67px run, 43px rise. */
+.logo-ramp {
+  clip-path: polygon(
+    100% 0,
+    calc(100% - 67px) 43px,
+    calc(100% - 67px) 100%,
+    0 100%,
+    0 43px,
+    67px 0
+  );
+}
+
+@media (max-width: 640px) {
+  .logo-ramp {
+    clip-path: polygon(
+      100% 0,
+      calc(100% - 49px) 31px,
+      calc(100% - 49px) 100%,
+      0 100%,
+      0 31px,
+      49px 0
+    );
+  }
+}
+
+/* The same ramp at 1.5×, for the blog hero's larger tab. Run and rise are
+   fixed px in .logo-ramp, so a taller box needs its own pair to keep the
+   mark's angle: 120px tall → 101px run, 64px rise; 87px tall → 73 and 46. */
+.logo-ramp-lg {
+  clip-path: polygon(
+    100% 0,
+    calc(100% - 101px) 64px,
+    calc(100% - 101px) 100%,
+    0 100%,
+    0 64px,
+    101px 0
+  );
+}
+
+@media (max-width: 640px) {
+  .logo-ramp-lg {
+    clip-path: polygon(
+      100% 0,
+      calc(100% - 73px) 46px,
+      calc(100% - 73px) 100%,
+      0 100%,
+      0 46px,
+      73px 0
+    );
+  }
+}
+
+/* The mirror of .notch-tab — cuts the top-LEFT corner, so a second band can
+   butt against the first one and the two chamfers run parallel */
+.notch-tab-lead {
+  clip-path: polygon(101px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+@media (max-width: 640px) {
+  .notch-tab-lead {
+    clip-path: polygon(82px 0, 100% 0, 100% 100%, 0 100%);
   }
 }
 

@@ -56,7 +56,7 @@ export default function TrustBar() {
 
   return (
     <section
-      className="bg-surface overflow-hidden"
+      className="bg-background overflow-hidden"
       aria-label="Trusted by industry leaders"
     >
       <style>{`
@@ -73,7 +73,7 @@ export default function TrustBar() {
       `}</style>
 
       {/* Band A — trust bar */}
-      <div className="mx-auto max-w-[1440px] px-5 md:px-12 lg:px-20 py-14 md:py-20">
+      <div className="mx-auto max-w-[1440px] px-5 md:px-12 lg:px-20 pt-24 pb-14 md:pt-32 md:pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
           {/* Left: headline */}
           <div ref={headingRef}>
@@ -171,7 +171,7 @@ export default function TrustBar() {
 
       {/* Divider — the label straddles the rule like a fieldset legend */}
       <div className="relative border-t border-[#e8e3db]">
-        <span className="absolute left-6 md:left-10 lg:left-16 -translate-y-1/2 bg-surface px-3 text-[0.65rem] uppercase tracking-[0.2em] text-[#a89d8e]">
+        <span className="absolute left-6 md:left-10 lg:left-16 -translate-y-1/2 bg-background px-3 text-[0.65rem] uppercase tracking-[0.2em] text-[#a89d8e]">
           Trusted By
         </span>
       </div>

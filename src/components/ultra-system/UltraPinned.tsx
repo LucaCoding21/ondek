@@ -1,15 +1,13 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import Reveal from "@/components/Reveal";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
-
-const FRAME_COUNT = 96;
-const frameSrc = (i: number) =>
-  `/images/ultra-exploded/frame-${String(i + 1).padStart(3, "0")}.jpg`;
 
 const LEFT_LABELS = [
   {
@@ -33,6 +31,57 @@ const RIGHT_LABELS = [
   },
 ];
 
+/**
+ * The exploded parts. All three share one 1672×941 camera, so stacking them at
+ * a fixed vertical pitch is all the explosion takes — the pieces stay in
+ * register with each other exactly as they were modelled.
+ *
+ * Coordinates are percentages of the wrapper, which carries the combined
+ * 2142×1941 aspect: `width`/`left` against its width, `top` against its height.
+ *
+ * `z` is set rather than left to DOM order, which would paint the substrate
+ * last and so on top of everything above it — the exact inverse of the stack.
+ */
+const LEFT = "21.9%";
+
+const STACK = [
+  {
+    src: "/images/ultra-layers/membrane.webp",
+    part: "membrane",
+    top: "0%",
+    // Moved off the shared edge by the same amount as the underlayment, so
+    // the two upper layers stay in step with each other over the substrate
+    left: "11.4%",
+    z: 30,
+  },
+  {
+    // Versioned filename, not a same-path overwrite — these re-renders differ
+    // subtly enough that a stale cache is indistinguishable from a failed swap.
+    // Scaled to 72% about the part's own centre and baked back onto the shared
+    // 1672×941 frame, so it sits smaller than the layers around it without
+    // needing its own offsets here.
+    src: "/images/ultra-layers/underlayment-v6.webp",
+    part: "underlayment",
+    top: "25.8%",
+    // The one layer off the shared left edge — nudged out from under the
+    // membrane so the shrunk part does not read as centred beneath it
+    left: "11.4%",
+    z: 20,
+  },
+  {
+    // Scaled to 112% the same way — resized in the asset rather than here, so
+    // every layer keeps one shared width and only the artwork differs
+    src: "/images/ultra-layers/substrate-v2.webp",
+    part: "substrate",
+    top: "51.5%",
+    left: LEFT,
+    z: 10,
+  },
+];
+
+/** Order the parts arrive in on scroll — not the order they are painted in */
+const ARRIVAL = ["membrane", "underlayment", "rod", "substrate"];
+
 function LayerLabel({ title, text }: { title: string; text: string }) {
   return (
     <div className="ultra-fade">
@@ -46,131 +95,142 @@ function LayerLabel({ title, text }: { title: string; text: string }) {
 
 export default function UltraPinned() {
   const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
-      const canvas = canvasRef.current!;
-      const ctx = canvas.getContext("2d")!;
-      canvas.width = 960;
-      canvas.height = 540;
-
-      const images: HTMLImageElement[] = [];
-      const playhead = { frame: 0 };
-
-      const render = () => {
-        const img = images[Math.round(playhead.frame)];
-        if (img?.complete && img.naturalWidth) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        }
-      };
-
-      for (let i = 0; i < FRAME_COUNT; i++) {
-        const img = new Image();
-        img.src = frameSrc(i);
-        if (i === 0) img.onload = render;
-        images.push(img);
-      }
-
       const mm = gsap.matchMedia();
 
-      // Reduced motion: skip the scrub, show the assembled system
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        playhead.frame = FRAME_COUNT - 1;
-        const last = images[FRAME_COUNT - 1];
-        if (last.complete) render();
-        else last.onload = render;
-      });
+      // Only this branch hides anything. Reduced-motion users never enter it,
+      // so they get the whole assembly standing — same for anyone without JS,
+      // since nothing in the markup is hidden to begin with.
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            // The stack, not the section. The section starts with the title
+            // block, so triggering off it began the build while the artwork
+            // was still a screen below the fold — by the time it came into
+            // view the assembly had already finished.
+            trigger: stackRef.current,
+            // Holds off until the artwork is properly in frame — at "top 90%"
+            // the build ran while the stack was still a sliver above the fold
+            // and was over before it was worth looking at. The distance is a
+            // slice of the viewport rather than the stack's own height, so the
+            // build takes the same amount of scrolling whatever size the
+            // artwork renders at, finishing as the stack settles on screen.
+            start: "top 70%",
+            end: "+=60%",
+            scrub: 0.8,
+          },
+        });
 
-      mm.add(
-        {
-          desktop:
-            "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-          mobile:
-            "(max-width: 1023px) and (prefers-reduced-motion: no-preference)",
-        },
-        (context) => {
-          const { desktop } = context.conditions as { desktop: boolean };
-
-          // fromTo (not from): matchMedia tweens escape useGSAP's auto-revert,
-          // so a StrictMode remount must not capture mid-tween values as targets
-          gsap.fromTo(
-            ".ultra-fade",
-            { y: 40, opacity: 0 },
+        // fromTo, so the hidden start state is written at creation — before
+        // the first paint — rather than after the first scroll tick
+        ARRIVAL.forEach((part, i) => {
+          tl.fromTo(
+            `[data-part="${part}"]`,
+            { autoAlpha: 0, yPercent: -6 },
             {
-              y: 0,
-              opacity: 1,
-              duration: 0.9,
-              ease: "power3.out",
-              stagger: 0.1,
-              overwrite: "auto",
-              scrollTrigger: {
-                trigger: sectionRef.current,
-                start: "top 75%",
-                once: true,
-              },
-            }
+              autoAlpha: 1,
+              yPercent: 0,
+              duration: 1,
+              ease: "power2.out",
+            },
+            // Overlapping rather than strictly sequential: a part starts
+            // settling while the one before it is still arriving, so the
+            // assembly builds continuously instead of ticking part by part
+            i * 0.75,
           );
-
-          gsap.to(playhead, {
-            frame: FRAME_COUNT - 1,
-            ease: "none",
-            onUpdate: render,
-            scrollTrigger: desktop
-              ? {
-                  // Scroll-locked: pin the section and scrub through the frames
-                  trigger: sectionRef.current,
-                  start: "top top",
-                  end: "+=160%",
-                  pin: true,
-                  scrub: 0.5,
-                  anticipatePin: 1,
-                }
-              : {
-                  // Too tall to pin comfortably on small screens; scrub in place
-                  trigger: sectionRef.current,
-                  start: "top 65%",
-                  end: "bottom 85%",
-                  scrub: 0.5,
-                },
-          });
-        }
-      );
+        });
+      });
 
       return () => mm.revert();
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
     <section ref={sectionRef} className="bg-surface overflow-hidden">
-      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:py-0 lg:min-h-screen lg:flex lg:items-center">
-        <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,6fr)_minmax(0,3fr)] lg:gap-12">
-          {/* Left annotations */}
-          <div className="order-2 lg:order-1 grid grid-cols-2 gap-8 lg:grid-cols-1 lg:gap-16">
-            {LEFT_LABELS.map((label) => (
-              <LayerLabel key={label.title} {...label} />
-            ))}
-          </div>
+      <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:py-24">
+        <Reveal>
+          <p className="text-sm font-bold">The layers</p>
+          <div className="mt-5 border-b border-foreground/10" />
+          {/* TODO: replace with approved marketing copy */}
+          <h2 className="mt-10 text-3xl sm:text-4xl font-bold leading-tight max-w-2xl">
+            Pull an Ultra deck apart and every layer is doing one job.
+          </h2>
+        </Reveal>
 
-          {/* The exploded system, scrubbed frame by frame on scroll */}
-          <div className="ultra-fade order-1 lg:order-2">
-            <canvas
-              ref={canvasRef}
-              role="img"
-              aria-label="Exploded view of the Ultra waterproofing system assembling layer by layer"
-              className="w-full h-auto"
-            />
-          </div>
+        <Reveal stagger=".ultra-fade" className="mt-14 lg:mt-20">
+          <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,6fr)_minmax(0,3fr)] lg:gap-12">
+            {/* Left annotations */}
+            <div className="order-2 lg:order-1 grid grid-cols-2 gap-8 lg:grid-cols-1 lg:gap-16">
+              {LEFT_LABELS.map((label) => (
+                <LayerLabel key={label.title} {...label} />
+              ))}
+            </div>
 
-          {/* Right annotations */}
-          <div className="order-3 grid grid-cols-2 gap-8 lg:grid-cols-1 lg:gap-16">
-            {RIGHT_LABELS.map((label) => (
-              <LayerLabel key={label.title} {...label} />
-            ))}
+            {/* The exploded system. The pieces are laid out rather than baked
+                into one flat image so each can arrive on its own. */}
+            <div className="order-1 lg:order-2">
+              {/* One label for the whole illustration — the parts carry
+                  empty alts so a screen reader hears a single picture rather
+                  than four disconnected fragments of one */}
+              <div
+                ref={stackRef}
+                role="img"
+                aria-label="Exploded view of the Ultra system: vinyl membrane, underlayment, deck substrate, and the heat-weld rod that seals the seams"
+                className="relative w-full aspect-[2142/1941]"
+              >
+                {STACK.map((part) => (
+                  <Image
+                    key={part.src}
+                    src={part.src}
+                    alt=""
+                    data-part={part.part}
+                    width={1672}
+                    height={941}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="absolute h-auto"
+                    style={{
+                      width: "78.1%",
+                      left: part.left,
+                      top: part.top,
+                      zIndex: part.z,
+                    }}
+                  />
+                ))}
+
+                {/* Weld rod, off to the left of the stack and running to the
+                    deck edge it seals. Sits above the substrate so its tip
+                    reads as pointing out towards the viewer where the two
+                    just touch. */}
+                <Image
+                  src="/images/ultra-layers/weld-rod.webp"
+                  alt=""
+                  data-part="rod"
+                  width={1842}
+                  height={854}
+                  sizes="(min-width: 1024px) 28vw, 56vw"
+                  className="absolute h-auto"
+                  style={{
+                    width: "44.7%",
+                    left: "-1.4%",
+                    top: "51.5%",
+                    zIndex: 15,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Right annotations */}
+            <div className="order-3 grid grid-cols-2 gap-8 lg:grid-cols-1 lg:gap-16">
+              {RIGHT_LABELS.map((label) => (
+                <LayerLabel key={label.title} {...label} />
+              ))}
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

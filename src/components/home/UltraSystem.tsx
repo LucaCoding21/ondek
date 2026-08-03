@@ -1,53 +1,161 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { PART_ANCHORS } from "@/lib/deckAssemblyAnchors";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const FRAME_COUNT = 96;
+const FRAME_COUNT = 40;
 const frameSrc = (i: number) =>
-  `/images/ultra-exploded/frame-${String(i + 1).padStart(3, "0")}.jpg`;
+  `/images/deck-assembly/frame-${String(i + 1).padStart(3, "0")}.webp`;
+
+/** The three parts in the render, with the colour each is drawn in sampled
+ *  from the frames. `labelAt` is a fixed spot on the canvas — the words stay
+ *  put and only the leader tracks the part. Each was picked from a coverage
+ *  map of all 40 frames: these three regions are the ones never painted, so a
+ *  label there never sits on top of the render. */
+const PARTS = [
+  {
+    swatch: "#753b10",
+    title: "Deck substrate",
+    labelAt: [0.88, 0.9] as const,
+  },
+  {
+    swatch: "#1f1e1d",
+    title: "Edge trim",
+    labelAt: [0.1, 0.93] as const,
+  },
+  {
+    swatch: "#969696",
+    title: "Vinyl membrane",
+    labelAt: [0.72, 0.07] as const,
+  },
+];
 
 export default function UltraSystem() {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const leaderRefs = useRef<(SVGPolylineElement | null)[]>([]);
+  const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
 
   useGSAP(
     () => {
       const canvas = canvasRef.current!;
       const ctx = canvas.getContext("2d")!;
-      canvas.width = 960;
-      canvas.height = 540;
+      // Bitmap size comes from the width/height attributes in the markup —
+      // the layout derives the drawn width from them, so they can't wait for JS
 
-      const images: HTMLImageElement[] = [];
+      // ImageBitmaps, not <img>: drawing an <img> the browser has not decoded
+      // yet forces a synchronous decode on the main thread, and one of those
+      // mid-scrub is a dropped frame. createImageBitmap does that work off the
+      // main thread once, up front, so every draw is a straight blit.
+      const frames: (ImageBitmap | null)[] = new Array(FRAME_COUNT).fill(null);
       const playhead = { frame: 0 };
+      let cancelled = false;
+
+      // Skips redundant draws: the scrub fires far more often than the picture
+      // actually changes, and every skipped tick is a full-canvas blit saved
+      let lastDrawn = -1;
 
       const render = () => {
-        const img = images[Math.round(playhead.frame)];
-        if (img?.complete && img.naturalWidth) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const exact = playhead.frame;
+        const key = Math.round(exact * 20);
+        if (key === lastDrawn) return;
+
+        const index = Math.floor(exact);
+        const next = Math.min(index + 1, FRAME_COUNT - 1);
+        const blend = exact - index;
+        const current = frames[index];
+        // Marked drawn only once it actually is — otherwise the decode that
+        // lands later is skipped as a repeat and the canvas stays blank
+        if (!current) return;
+
+        lastDrawn = key;
+        // Required, not hygiene: these frames carry real transparency, so
+        // without a clear the previous frame shows through every gap
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(current, 0, 0, canvas.width, canvas.height);
+
+        // 40 frames is coarse enough to read as stepping, so the next frame is
+        // dissolved over the current one by the fractional part. Drawing it
+        // *over* an already-opaque frame (rather than blending both down) keeps
+        // the body solid and confines the blend to the moving edges.
+        const upcoming = frames[next];
+        if (blend > 0.01 && upcoming) {
+          ctx.globalAlpha = blend;
+          ctx.drawImage(upcoming, 0, 0, canvas.width, canvas.height);
+          ctx.globalAlpha = 1;
+        }
+
+        moveAnnotations(index, next, blend);
+      };
+
+      // Only the leader moves — the labels are static, so the words stay put
+      // and the elbow tracks the part on the same interpolated playhead as the
+      // frames, keeping line and part together mid-blend
+      const moveAnnotations = (index: number, next: number, blend: number) => {
+        PART_ANCHORS.forEach((track, part) => {
+          const from = track[index];
+          const to = track[next];
+          // Canvas units, so the stroke scales with the render
+          const x = (from[0] + (to[0] - from[0]) * blend) * canvas.width;
+          const y = (from[1] + (to[1] - from[1]) * blend) * canvas.height;
+          const [labelX, labelY] = PARTS[part].labelAt;
+          const originX = labelX * canvas.width;
+          const originY = labelY * canvas.height;
+
+          // Right-angle leader: out from the label along its own row, then a
+          // single turn down or up onto the part
+          leaderRefs.current[part]?.setAttribute(
+            "points",
+            `${originX},${originY} ${x},${originY} ${x},${y}`
+          );
+          dotRefs.current[part]?.setAttribute("cx", String(x));
+          dotRefs.current[part]?.setAttribute("cy", String(y));
+        });
+      };
+
+      const load = async (i: number) => {
+        try {
+          const response = await fetch(frameSrc(i));
+          const bitmap = await createImageBitmap(await response.blob());
+          if (cancelled) {
+            bitmap.close();
+            return;
+          }
+          frames[i] = bitmap;
+          render();
+        } catch {
+          // A dropped frame degrades to holding the previous one, which is far
+          // better than tearing down the whole sequence
         }
       };
 
-      for (let i = 0; i < FRAME_COUNT; i++) {
-        const img = new Image();
-        img.src = frameSrc(i);
-        if (i === 0) img.onload = render;
-        images.push(img);
-      }
+      // The first frame right away so the canvas is never empty, the rest once
+      // the section is within a screen of view. Nothing is requested during the
+      // scrub itself — each frame is fetched and decoded once, then blitted.
+      load(0);
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top bottom+=100%",
+        once: true,
+        onEnter: () => {
+          for (let i = 1; i < FRAME_COUNT; i++) load(i);
+        },
+      });
 
       const mm = gsap.matchMedia();
 
       // Reduced motion: skip the scrub, show the assembled system
       mm.add("(prefers-reduced-motion: reduce)", () => {
         playhead.frame = FRAME_COUNT - 1;
-        const last = images[FRAME_COUNT - 1];
-        if (last.complete) render();
-        else last.onload = render;
+        // The last frame may not be requested yet; every load calls render(),
+        // so this settles as soon as it arrives
+        render();
       });
 
       mm.add(
@@ -86,12 +194,16 @@ export default function UltraSystem() {
             onUpdate: render,
             scrollTrigger: desktop
               ? {
-                  // Scroll-locked: pin the section and scrub through the frames
+                  // Scroll-locked: pin the section and scrub through the frames.
+                  // Kept short deliberately: with only 40 frames, a longer pin
+                  // spends more scroll on each one, which reads as stepping.
                   trigger: sectionRef.current,
                   start: "top top",
-                  end: "+=160%",
+                  end: "+=100%",
                   pin: true,
-                  scrub: 0.5,
+                  // Higher than a typical scrub: with only 40 source frames
+                  // the playhead's own easing is doing real smoothing work
+                  scrub: 1,
                   anticipatePin: 1,
                 }
               : {
@@ -105,80 +217,148 @@ export default function UltraSystem() {
         }
       );
 
-      return () => mm.revert();
+      return () => {
+        mm.revert();
+        // Decoded bitmaps are not garbage collected on their own
+        cancelled = true;
+        for (const frame of frames) frame?.close();
+      };
     },
     { scope: sectionRef }
   );
 
   return (
     <section ref={sectionRef} className="bg-background overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-0 lg:min-h-screen lg:flex lg:items-center">
-        <div className="grid w-full items-start gap-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-16">
-          <div>
-            <h2 className="ultra-fade text-4xl sm:text-5xl font-bold leading-tight">
-              More than a membrane. A complete{" "}
-              <span className="bg-cta box-decoration-clone px-1.5">
-                waterproofing system.
-              </span>
+      {/* Pinned at "top top", and the content is centred in what the padding
+          leaves — so the lopsided pt/pb is what sits the block high on the
+          screen while still clearing the fixed navbar. Everything has to fit
+          one screen; nothing past 100vh survives the pin. */}
+      {/* Wider than the site's max-w-7xl sections, matching the padding scale
+          UltraPinned uses for this same subject; the cap keeps line lengths
+          sane on very large displays instead of running full-bleed. */}
+      <div className="mx-auto flex w-full max-w-[100rem] flex-col justify-center px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:min-h-screen lg:pt-12 lg:pb-28">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-stretch lg:gap-14">
+          {/* Headline pinned to the top, card pushed to the bottom — the gap
+              between them is what gives the column its shape, so it is the
+              justify-between doing the work rather than a fixed margin. */}
+          <div className="flex flex-col justify-between gap-10 lg:gap-14">
+            <h2 className="ultra-fade text-4xl sm:text-5xl font-bold leading-[1.08]">
+              More than a membrane. A complete waterproofing system.
             </h2>
 
+            <div className="ultra-fade bg-surface p-6 sm:p-7">
+              {/* A key to the render, so it leads the card — each swatch is
+                  sampled from the part it names */}
+              <ul className="flex flex-wrap gap-x-6 gap-y-2 border-b border-foreground/10 pb-4">
+                {PARTS.map((part) => (
+                  <li
+                    key={part.title}
+                    className="flex items-center gap-2 text-xs text-foreground/60"
+                  >
+                    <span
+                      aria-hidden
+                      style={{ backgroundColor: part.swatch }}
+                      className="block h-2.5 w-2.5 shrink-0"
+                    />
+                    {part.title}
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className="mt-5 text-lg font-bold">One system, one warranty</h3>
+              <p className="mt-2.5 text-foreground/70 leading-relaxed">
+                Multi-layer vinyl membrane, heat-welded seams, and
+                system-matched adhesive, specified and installed as a single
+                waterproof surface.
+              </p>
+              <Link
+                href="/vinyl-decking/the-ultra-system"
+                className="mt-5 inline-block font-bold border-b-2 border-cta pb-0.5 hover:border-foreground transition-colors"
+              >
+                See how the Ultra system works
+              </Link>
+            </div>
           </div>
 
-          <div className="ultra-fade relative lg:ml-16 lg:-mr-16 lg:mt-40">
-            <span
-              aria-hidden
-              className="absolute -top-2.5 -left-2.5 h-5 w-5 border-t-2 border-l-2 border-foreground/30"
-            />
-            <span
-              aria-hidden
-              className="absolute -top-2.5 -right-2.5 h-5 w-5 border-t-2 border-r-2 border-foreground/30"
-            />
-            <span
-              aria-hidden
-              className="absolute -bottom-2.5 -left-2.5 h-5 w-5 border-b-2 border-l-2 border-foreground/30"
-            />
-            <span
-              aria-hidden
-              className="absolute -bottom-2.5 -right-2.5 h-5 w-5 border-b-2 border-r-2 border-foreground/30"
-            />
-            <canvas
-              ref={canvasRef}
-              role="img"
-              aria-label="Exploded view of the Ultra waterproofing system assembling layer by layer"
-              className="w-full h-auto"
-            />
-          </div>
-        </div>
-      </div>
+          {/* Capped by height as well as width so the render gives way first on
+              a short screen — nothing past 100vh survives the pin */}
+          <div className="ultra-fade flex items-center justify-center lg:justify-end">
+            {/* Shrink-wraps the canvas so the annotations, positioned as
+                percentages of this box, land on the render itself */}
+            <div className="relative w-full lg:w-auto">
+              <canvas
+                ref={canvasRef}
+                width={1047}
+                height={654}
+                role="img"
+                aria-label="The Ultra system assembling onto a deck edge: substrate, edge trim, and vinyl membrane coming together"
+                className="block w-full h-auto lg:w-auto lg:max-w-full lg:max-h-[56svh]"
+              />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24 lg:pb-36 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
-        <div className="relative mt-4 lg:mt-8">
-          {/* registration corners, echoing a technical drawing */}
-          <span
-            aria-hidden
-            className="absolute -top-2.5 -left-2.5 h-5 w-5 border-t-2 border-l-2 border-foreground/30"
-          />
-          <span
-            aria-hidden
-            className="absolute -top-2.5 -right-2.5 h-5 w-5 border-t-2 border-r-2 border-foreground/30"
-          />
-          <span
-            aria-hidden
-            className="absolute -bottom-2.5 -left-2.5 h-5 w-5 border-b-2 border-l-2 border-foreground/30"
-          />
-          <span
-            aria-hidden
-            className="absolute -bottom-2.5 -right-2.5 h-5 w-5 border-b-2 border-r-2 border-foreground/30"
-          />
+              {/* The card already lists these parts, so the overlay is
+                  decorative to a screen reader. Hidden below lg, where the
+                  render is too small for labels to sit clear of the parts. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 hidden lg:block"
+              >
+                <svg
+                  viewBox="0 0 1047 654"
+                  className="absolute inset-0 h-full w-full text-foreground/40"
+                >
+                  {PARTS.map((part, i) => {
+                    // Frame 0 placement, so the overlay is right on the very
+                    // first paint rather than snapping into position
+                    const [ax, ay] = PART_ANCHORS[i][0];
+                    const x = ax * 1047;
+                    const y = ay * 654;
+                    const originX = part.labelAt[0] * 1047;
+                    const originY = part.labelAt[1] * 654;
+                    return (
+                      <g key={part.title}>
+                        <polyline
+                          ref={(node) => {
+                            leaderRefs.current[i] = node;
+                          }}
+                          points={`${originX},${originY} ${x},${originY} ${x},${y}`}
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                        <circle
+                          ref={(node) => {
+                            dotRefs.current[i] = node;
+                          }}
+                          cx={x}
+                          cy={y}
+                          r="4"
+                          fill="currentColor"
+                        />
+                      </g>
+                    );
+                  })}
+                </svg>
 
-          <div className="ultra-fade bg-surface p-6 sm:p-8">
-            <h3 className="text-xl font-bold">Engineered and warrantied as one</h3>
-            <p className="mt-3 text-foreground/70 leading-relaxed">
-              Multi-layer vinyl membrane, heat-welded seams, and
-              system-matched adhesive — designed together to form one
-              continuous waterproof surface that stands up to sun, rain,
-              and heavy foot traffic year-round.
-            </p>
+                {PARTS.map((part) => (
+                  <div
+                    key={part.title}
+                    style={{
+                      left: `${part.labelAt[0] * 100}%`,
+                      top: `${part.labelAt[1] * 100}%`,
+                    }}
+                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <span className="flex items-center gap-2 whitespace-nowrap bg-background px-2 py-1 text-xs font-bold">
+                      <span
+                        style={{ backgroundColor: part.swatch }}
+                        className="block h-2.5 w-2.5 shrink-0"
+                      />
+                      {part.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

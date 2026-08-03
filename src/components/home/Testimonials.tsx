@@ -24,7 +24,9 @@ const TESTIMONIALS = [
 export default function Testimonials() {
   return (
     <section className="bg-surface">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+      {/* Same wider container as UnderDeck above it, so the two line up rather
+          than stepping in and out at the same breakpoints */}
+      <div className="mx-auto w-full max-w-[100rem] px-5 md:px-8 lg:px-12 xl:px-16 py-28 lg:py-40">
         <Reveal className="max-w-2xl">
           <h2 className="text-3xl sm:text-4xl font-bold">
             Trusted by dealers and homeowners.
