@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -617,7 +617,7 @@ export default function KitExperience() {
                   src="/images/design-kit-box.jpg"
                   alt="The OnDek design kit unboxed: shipping box, brochures, vinyl membrane samples, and trim pieces on a counter"
                   fill
-                  priority
+                  preload
                   sizes="(min-width: 1024px) 40vw, 100vw"
                   className="object-cover"
                 />

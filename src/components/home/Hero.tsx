@@ -1,7 +1,7 @@
 "use client";
 
 // TEMP: restore with the hero photo below
-// import Image from "next/image";
+// import Image from "@/components/SiteImage";
 import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
@@ -76,7 +76,7 @@ export default function Hero() {
                 src="/images/hero-deck-backyard.jpg"
                 alt="Waterproof vinyl deck surface on a raised backyard deck"
                 fill
-                priority
+                preload
                 className="hero-img object-cover"
                 sizes="(max-width: 1400px) 100vw, 1400px"
               /> */}

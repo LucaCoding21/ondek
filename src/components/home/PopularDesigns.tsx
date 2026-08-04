@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";

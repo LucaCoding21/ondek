@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import { useCallback, useEffect, useRef } from "react";
 import { DESIGN_TAG_LABELS, type Design } from "@/lib/designs";
 

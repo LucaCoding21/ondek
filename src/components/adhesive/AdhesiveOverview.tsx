@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -151,7 +151,7 @@ export default function AdhesiveOverview() {
               stacked layout has nothing below it to spill over. */}
           <div className="ao-img relative aspect-[4/3] lg:mt-20 lg:mr-32 lg:justify-self-end lg:w-full lg:max-w-[34rem]">
             <Image
-              src="/images/od1010-pail-sketch.png"
+              src="/images/od1010-pail-sketch.webp"
               alt="Line drawing of a five gallon OD 1010 adhesive pail"
               width={1122}
               height={1402}

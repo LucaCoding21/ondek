@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -44,7 +44,7 @@ export default function DesignsHero() {
               src="/images/hero-deck-backyard.jpg"
               alt="Waterproof vinyl deck surface in Speckled Stone Tan"
               fill
-              priority
+              preload
               className="object-cover"
               sizes="(max-width: 1400px) 100vw, 1400px"
             />

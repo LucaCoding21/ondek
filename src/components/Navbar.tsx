@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -221,7 +221,7 @@ export default function Navbar() {
               alt="OnDek"
               width={214}
               height={100}
-              priority
+              preload
               className={`h-9 w-auto transition-opacity duration-300 ${clear ? "opacity-0" : "opacity-100"}`}
             />
             <Image
@@ -230,7 +230,7 @@ export default function Navbar() {
               aria-hidden
               width={214}
               height={100}
-              priority
+              preload
               className={`absolute inset-0 h-9 w-auto transition-opacity duration-300 ${clear ? "opacity-100" : "opacity-0"}`}
             />
           </Link>

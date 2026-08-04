@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import Link from "next/link";
 import { NAV_ITEMS, CTA_LINKS } from "@/lib/nav";
 import { GENERAL_EMAIL, TOLL_FREE } from "@/lib/contact";

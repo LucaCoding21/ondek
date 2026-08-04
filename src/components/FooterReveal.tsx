@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import { useRef } from "react";
 import { usePathname } from "next/navigation";
 import gsap from "gsap";

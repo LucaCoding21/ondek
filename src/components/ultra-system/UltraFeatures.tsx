@@ -4,7 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import Link from "next/link";
 import SectionLabel from "@/components/SectionLabel";
 import { CTA_LINKS } from "@/lib/nav";

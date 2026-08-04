@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import { useState } from "react";
 
 const YOUTUBE_ID = "j2EynZy1Vws";

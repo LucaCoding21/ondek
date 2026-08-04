@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/SiteImage";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { DOCUMENT_COUNT } from "@/lib/documents";
