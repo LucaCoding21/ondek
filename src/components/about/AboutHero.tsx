@@ -46,6 +46,7 @@ export default function AboutHero() {
       <div className="ah-frame relative h-dvh min-h-[520px] overflow-hidden">
         <video
           src="/videos/about-hero.mp4"
+          poster="/videos/about-hero-poster.jpg"
           autoPlay
           muted
           loop

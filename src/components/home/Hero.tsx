@@ -65,6 +65,7 @@ export default function Hero() {
                   Restore the Image below when done evaluating. */}
               <video
                 src="/videos/hero-temp-2.mp4"
+                poster="/videos/hero-temp-2-poster.jpg"
                 autoPlay
                 muted
                 loop
