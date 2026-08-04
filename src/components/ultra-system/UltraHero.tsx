@@ -47,10 +47,11 @@ export default function UltraHero() {
               className="object-cover"
               sizes="(max-width: 1400px) 100vw, 1400px"
             />
-            <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
-            {/* Heavier than the other heroes on purpose — this photo is a
-                pale beige deck surface right where the copy sits */}
-            <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-black/40 via-black/15 to-transparent" />
+            {/* Still heavier than the other heroes — this photo is a pale
+                beige deck surface right where the copy sits — but eased off
+                so more of the deck reads through behind the text */}
+            <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/65 via-black/35 to-transparent" />
 
             <div className="relative z-10 flex h-full items-end">
               <div className="w-full px-14 sm:px-28 lg:px-44 pb-24 lg:pb-32">
