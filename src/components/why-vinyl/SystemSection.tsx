@@ -1,8 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { CTA_LINKS } from "@/lib/nav";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // The steps run as a ruled table — number, what it is, what it does — with the
 // actions sitting under the last rule. Same language as the comparison table
@@ -35,25 +42,97 @@ const ROW =
   "grid grid-cols-[3rem_minmax(0,1fr)] gap-x-6 lg:grid-cols-[4rem_minmax(0,1fr)_minmax(0,1.5fr)] lg:gap-x-10";
 
 export default function SystemSection() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the same signature move
+        // as the rest of the site.
+        gsap.from(".sys-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".sys-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".sys-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".sys-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The photograph is the big arrival — a longer travel than the copy
+        gsap.from(".sys-photo", {
+          y: 60,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".sys-photo",
+            start: "top 85%",
+            once: true,
+          },
+        });
+
+        // Header rule first, the four steps in order, actions last
+        gsap.from([".sys-table-head", ".dry-step", ".sys-actions"], {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".sys-table",
+            start: "top 82%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section className="bg-surface">
+    <section ref={ref} className="bg-surface">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-24 lg:py-32">
         <SectionLabel>The system</SectionLabel>
 
-        <Reveal className="mt-10 max-w-4xl">
-          <h2 className="mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
-            How the system keeps it dry
+        <div className="mt-10 max-w-4xl">
+          {/* Split where the thought breaks, each line in its own mask. The
+              pb/-mb pair leaves descenders room inside the mask. */}
+          <h2 className="sys-heading mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="sys-heading-line block">How the system</span>
+            </span>
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="sys-heading-line block">keeps it dry</span>
+            </span>
           </h2>
-          <p className="mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
+          <p className="sys-sub mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
             Four things have to be true for a deck to stay dry. The membrane
             does all four at once.
           </p>
-        </Reveal>
+        </div>
 
-        <Reveal
-          delay={0.1}
-          className="relative mx-auto mt-14 h-64 max-w-[96rem] sm:h-80 lg:mt-16 lg:h-[32rem]"
-        >
+        <div className="sys-photo relative mx-auto mt-14 h-64 max-w-[96rem] sm:h-80 lg:mt-16 lg:h-[32rem]">
           <Image
             src="/images/ultra-hero-deck.webp"
             alt="Vinyl membrane wrapping a finished deck edge over cedar framing"
@@ -61,15 +140,12 @@ export default function SystemSection() {
             className="object-cover"
             sizes="(min-width: 1024px) 96rem, 100vw"
           />
-        </Reveal>
+        </div>
 
         {/* Capped and pushed right, against the left-set heading above it */}
-        <Reveal
-          stagger=".dry-step"
-          className="mt-24 max-w-4xl lg:ml-auto lg:mt-32"
-        >
+        <div className="sys-table mt-24 max-w-4xl lg:ml-auto lg:mt-32">
           <div
-            className={`${ROW} pb-4 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foreground/40`}
+            className={`sys-table-head ${ROW} pb-4 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foreground/40`}
           >
             <span>Step</span>
             <span>What it is</span>
@@ -94,7 +170,7 @@ export default function SystemSection() {
           ))}
 
           {/* Actions sit under the closing rule, aligned right */}
-          <div className="flex flex-wrap items-center justify-end gap-x-8 gap-y-4 border-t border-foreground/20 pt-8">
+          <div className="sys-actions flex flex-wrap items-center justify-end gap-x-8 gap-y-4 border-t border-foreground/20 pt-8">
             <Link
               href="/vinyl-decking/the-ultra-system"
               className="text-xs font-bold uppercase tracking-[0.12em] underline underline-offset-4 decoration-1 hover:decoration-cta hover:decoration-2 transition-all"
@@ -122,7 +198,7 @@ export default function SystemSection() {
               </svg>
             </Link>
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

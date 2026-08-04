@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Reveal from "@/components/Reveal";
+import { useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { GENERAL_EMAIL, HOURS, OFFICES, TEAM_GROUPS } from "@/lib/contact";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * Everything under the contact screen is reference: two addresses, a handful of
@@ -91,19 +95,76 @@ function PersonCard({
 
 export default function ContactDirectory() {
   const [open, setOpen] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // The heading rises out of its mask, the two facts follow through.
+        gsap.from(".cd-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: ".cd-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".cd-meta > *", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          delay: 0.2,
+          scrollTrigger: {
+            trigger: ".cd-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // Row wrappers only — the accordion animates its own grid-rows
+        // inside them and stays untouched.
+        gsap.from(".cd-row", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: { trigger: ".cd-rows", start: "top 85%", once: true },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef },
+  );
 
   return (
-    <section className="bg-background">
+    <section ref={sectionRef} className="bg-background">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-24 lg:py-32">
         <SectionLabel>Where to find us</SectionLabel>
 
-        <Reveal className="mt-10 max-w-3xl">
-
-          <h2 className="mt-7 font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(1.875rem,3.5vw,2.75rem)]">
-            Offices and people.
+        <div className="mt-10 max-w-3xl">
+          {/* One thought, one mask. The pb/-mb pair leaves the descender in
+              "people." room inside the mask. */}
+          <h2 className="cd-heading mt-7 font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(1.875rem,3.5vw,2.75rem)]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="cd-heading-line block">
+                Offices and people.
+              </span>
+            </span>
           </h2>
 
           {/* The two things that are true regardless of which row you open */}
+          <div className="cd-meta">
           <p className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-foreground/60">
             <span className="font-bold text-foreground">
               {HOURS.days}, {HOURS.time}
@@ -120,16 +181,17 @@ export default function ContactDirectory() {
           </p>
 
           <p className="mt-2 text-sm text-foreground/45">{HOURS.note}</p>
-        </Reveal>
+          </div>
+        </div>
 
-        <Reveal stagger=".row" className="mt-12 lg:mt-16">
+        <div className="cd-rows mt-12 lg:mt-16">
           {PANELS.map((panel) => {
             const isOpen = open === panel.id;
 
             return (
               <div
                 key={panel.id}
-                className="row border-t border-foreground/20 last:border-b"
+                className="cd-row border-t border-foreground/20 last:border-b"
               >
                 <h3>
                   <button
@@ -248,7 +310,7 @@ export default function ContactDirectory() {
               </div>
             );
           })}
-        </Reveal>
+        </div>
       </div>
     </section>
   );

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import {
   DOCUMENTS,
   DOC_CATEGORIES,
@@ -11,6 +13,8 @@ import {
   type DocCategory,
   type OndekDocument,
 } from "@/lib/documents";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /** Groups keep source order — the drawings are numbered and read best that
  *  way, and a stray Map lookup is cheaper than sorting them back */
@@ -33,6 +37,35 @@ function groupByCategory(docs: OndekDocument[]) {
 export default function DocsLibrary() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<DocCategory | "all">("all");
+  const ref = useRef<HTMLElement>(null);
+
+  // Entrance for the toolbar only: the document lists re-render under search
+  // and filters, so they stay static rather than risking stranded tweens.
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the toolbar static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from([".dl-search", ".dl-filterbar"], {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".dl-toolbar",
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
 
   const searching = query.trim().length > 0;
 
@@ -67,9 +100,9 @@ export default function DocsLibrary() {
   );
 
   return (
-    <section className="bg-surface">
+    <section ref={ref} className="bg-surface">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-6 lg:pt-8 pb-24 lg:pb-32">
-        <Reveal>
+        <div className="dl-toolbar">
           {/* Search and filters ride together at the top of the grey band —
               35 documents is more than anyone scrolls for */}
           <label htmlFor="doc-search" className="sr-only">
@@ -77,7 +110,7 @@ export default function DocsLibrary() {
           </label>
           {/* Same field as the FAQs: a boxed control with the icon on the
               CTA, rather than an underline that reads as page furniture */}
-          <div className="flex items-stretch border border-foreground/20 bg-background transition-colors focus-within:border-foreground">
+          <div className="dl-search flex items-stretch border border-foreground/20 bg-background transition-colors focus-within:border-foreground">
             <span
               aria-hidden
               className="grid w-12 shrink-0 place-items-center bg-cta text-foreground sm:w-14"
@@ -119,7 +152,7 @@ export default function DocsLibrary() {
             )}
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+          <div className="dl-filterbar mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
             <div
               role="group"
               aria-label="Filter documents by type"
@@ -153,7 +186,7 @@ export default function DocsLibrary() {
               {matchCount} {matchCount === 1 ? "document" : "documents"}
             </p>
           </div>
-        </Reveal>
+        </div>
 
         {matchCount === 0 ? (
           <div className="mx-auto mt-24 max-w-md text-center">

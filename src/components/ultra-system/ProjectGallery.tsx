@@ -93,6 +93,19 @@ export default function ProjectGallery() {
 
       // Parallax and the slow scale are the motion worth opting out of
       gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        // Heading rises out of its mask — the site's signature entrance,
+        // gated here so reduced-motion users get it static and visible
+        gsap.from(".pg-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: ".pg-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
         gsap.utils.toArray<HTMLElement>("[data-rate]").forEach((el) => {
           gsap.to(el, {
             yPercent: Number(el.dataset.rate),
@@ -132,8 +145,12 @@ export default function ProjectGallery() {
   return (
     <section ref={ref} className="bg-background overflow-hidden">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-24 lg:py-32">
-        <h2 className="max-w-2xl text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
-          Projects preview
+        {/* One thought, one line, one mask. The pb/-mb pair leaves
+            descenders ("Projects" has a j) room inside the mask. */}
+        <h2 className="pg-heading max-w-2xl text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
+          <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+            <span className="pg-heading-line block">Projects preview</span>
+          </span>
         </h2>
 
         <div className="mt-16 space-y-16 lg:mt-20 lg:space-y-[9vh]">

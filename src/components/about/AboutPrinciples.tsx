@@ -1,5 +1,12 @@
+"use client";
+
 import Image from "next/image";
-import Reveal from "@/components/Reveal";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // The top rule, spread across the band like the reference's meta row
 const MARKS = [
@@ -34,8 +41,71 @@ const ENTRIES = [
 ];
 
 export default function AboutPrinciples() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // The band is nearly two screens tall, so each block arrives on its
+        // own trigger rather than all hanging off the section's top edge.
+        gsap.from(".ap-mark", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: { trigger: ".ap-marks", start: "top 85%", once: true },
+        });
+
+        // The signature move: the title rises out of its mask.
+        gsap.from(".ap-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: ".ap-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".ap-quote", {
+          y: 28,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: { trigger: ".ap-quote", start: "top 85%", once: true },
+        });
+
+        gsap.from(".ap-principle", {
+          y: 28,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: { trigger: ".ap-grid", start: "top 85%", once: true },
+        });
+
+        gsap.from(".ap-sign", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: { trigger: ".ap-sign", start: "top 88%", once: true },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section className="relative overflow-hidden bg-surface">
+    <section ref={ref} className="relative overflow-hidden bg-surface">
       {/* Anchored to the bottom left corner and allowed to run off both edges,
           filling the gap the right-hand grid leaves. lg and up only: below
           that, the columns stack over this space. */}
@@ -56,44 +126,39 @@ export default function AboutPrinciples() {
             grid both want the room, and the measures below cap the text */}
         <div className="w-full">
           {/* Meta row: the three dates, spread and ruled off */}
-          <Reveal>
-            {/* Grouped at the left on an even gap rather than spread edge to
-                edge, which stretched the three apart at full width */}
-            <ul className="flex flex-wrap items-baseline gap-x-12 gap-y-3 border-b border-foreground/15 pb-6 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foreground/50">
-              {MARKS.map((mark) => (
-                <li key={mark.value} className="flex items-baseline gap-3">
-                  <span className="text-foreground tabular-nums">
-                    {mark.value}
-                  </span>
-                  {mark.label}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
+          {/* Grouped at the left on an even gap rather than spread edge to
+              edge, which stretched the three apart at full width */}
+          <ul className="ap-marks flex flex-wrap items-baseline gap-x-12 gap-y-3 border-b border-foreground/15 pb-6 text-[0.7rem] font-bold uppercase tracking-[0.16em] text-foreground/50">
+            {MARKS.map((mark) => (
+              <li key={mark.value} className="ap-mark flex items-baseline gap-3">
+                <span className="text-foreground tabular-nums">
+                  {mark.value}
+                </span>
+                {mark.label}
+              </li>
+            ))}
+          </ul>
 
-          <Reveal className="mt-12 lg:mt-16">
-            <h2 className="font-bold uppercase leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,7vw,6rem)]">
-              Our mission
-            </h2>
-          </Reveal>
+          {/* Single thought, single mask. The pb/-mb pair leaves descenders
+              room inside the mask at this tight leading. */}
+          <h2 className="ap-heading mt-12 lg:mt-16 font-bold uppercase leading-[0.95] tracking-[-0.03em] text-[clamp(2.75rem,7vw,6rem)]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="ap-heading-line block">Our mission</span>
+            </span>
+          </h2>
 
-          <Reveal delay={0.1}>
-            <p className="mt-8 max-w-3xl text-foreground/70 leading-relaxed">
-              &ldquo;Our mission is to provide the highest possible level of
-              professional construction products and service for our clients,
-              in an atmosphere of mutual support, teamwork and uncompromising
-              standards.&rdquo;
-            </p>
-          </Reveal>
+          <p className="ap-quote mt-8 max-w-3xl text-foreground/70 leading-relaxed">
+            &ldquo;Our mission is to provide the highest possible level of
+            professional construction products and service for our clients,
+            in an atmosphere of mutual support, teamwork and uncompromising
+            standards.&rdquo;
+          </p>
 
           {/* The 2 x 2 grid, parked in the bottom right the way the reference
               sets it against the title and intro up on the left */}
-          <Reveal
-            stagger=".principle"
-            className="mt-24 grid gap-x-16 gap-y-12 lg:mt-40 lg:ml-auto lg:w-[68%] lg:grid-cols-2 xl:gap-x-24"
-          >
+          <div className="ap-grid mt-24 grid gap-x-16 gap-y-12 lg:mt-40 lg:ml-auto lg:w-[68%] lg:grid-cols-2 xl:gap-x-24">
             {ENTRIES.map((entry) => (
-              <div key={entry.n} className="principle flex gap-5">
+              <div key={entry.n} className="ap-principle flex gap-5">
                 {/* Yellow type on the grey band was almost invisible, so the
                     accent carries the number. self-start keeps it a square
                     box: as a flex child it otherwise stretches the column */}
@@ -110,11 +175,11 @@ export default function AboutPrinciples() {
                 </div>
               </div>
             ))}
-          </Reveal>
+          </div>
 
           {/* Signed, because the closing line is written in the first person.
               Parked in the bottom right, under the right edge of the grid */}
-          <Reveal className="mt-24 lg:mt-40">
+          <div className="ap-sign mt-24 lg:mt-40">
             <div className="lg:ml-auto lg:max-w-2xl lg:text-right">
               <p className="text-lg font-bold leading-snug">
                 We look forward to delivering one of the most dependable vinyl
@@ -125,7 +190,7 @@ export default function AboutPrinciples() {
                 President, OnDek Vinyl Worx
               </p>
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

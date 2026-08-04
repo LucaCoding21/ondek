@@ -4,8 +4,12 @@ import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { DESIGN_TAG_LABELS, FEATURED_DESIGNS } from "@/lib/designs";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const COUNT = FEATURED_DESIGNS.length;
 
@@ -66,6 +70,59 @@ export default function PopularDesigns() {
   const [hovered, setHovered] = useState<number | null>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Entrance: the heading rises out of its mask, then the cards fan open
+  // from the centre outward, then the details bar and controls settle in.
+  // One sequence, once, on first scroll into view. The tweens touch the
+  // card BUTTONS, never the inner spans — those carry the carousel's own
+  // per-frame transforms and must stay untouched.
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const tl = gsap.timeline({
+          defaults: { ease: "power3.out" },
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 72%",
+            once: true,
+          },
+        });
+
+        tl.from(
+          ".pd-heading-line",
+          { yPercent: 115, duration: 1, ease: "power4.out" },
+          0,
+        )
+          .from(".pd-sub", { y: 24, opacity: 0, duration: 0.8 }, 0.2)
+          .from(
+            ".design-card",
+            {
+              y: 70,
+              opacity: 0,
+              duration: 0.9,
+              // Fans open from the centred slot outward
+              stagger: { each: 0.07, from: HOME },
+            },
+            0.25,
+          )
+          .from(".pd-bar", { y: 24, opacity: 0, duration: 0.7 }, 0.8)
+          .from(
+            ".pd-controls > *",
+            { y: 12, opacity: 0, duration: 0.5, stagger: 0.06 },
+            0.95,
+          )
+          .from(".pd-more", { opacity: 0, duration: 0.5 }, 1.1);
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef },
+  );
 
   const active = mod(pos, COUNT);
   const activeDesign = FEATURED_DESIGNS[active];
@@ -110,9 +167,16 @@ export default function PopularDesigns() {
     // flushSync, not requestAnimationFrame. React is free to defer a normal
     // update, and if the new transform landed after the transition had been
     // handed back, the snap animated — the row visibly slid a whole copy
-    // backwards. This pins the order: kill the transition, apply the jump
+    // backwards. This pins the order: kill the transitions, apply the jump
     // synchronously, force the style recalc, then restore.
-    el.style.transitionDuration = "0s";
+    //
+    // The data attribute silences EVERY transition inside the row, not just
+    // the track's own slide. Zeroing only the track was the seam glitch:
+    // the row jumped a copy instantly while each card's inner span still
+    // animated to the scale/opacity its new distance demands — so landing
+    // across the seam made the centre card visibly grow out of a flank
+    // card's size instead of arriving there.
+    el.setAttribute("data-snapping", "");
     flushSync(() => {
       setPos(next);
       // The row jumps a whole copy under a stationary pointer, so the slot
@@ -120,7 +184,7 @@ export default function PopularDesigns() {
       setHovered((h) => (h === null ? null : h + shift));
     });
     void el.offsetWidth;
-    el.style.transitionDuration = "";
+    el.removeAttribute("data-snapping");
   };
 
   // Written straight to the node, never through state — the circle has to be
@@ -139,7 +203,7 @@ export default function PopularDesigns() {
   };
 
   return (
-    <section className="bg-background overflow-clip">
+    <section ref={sectionRef} className="bg-background overflow-clip">
       <style>{`
         @keyframes design-caption-in {
           from { opacity: 0; transform: translateY(10px); }
@@ -158,6 +222,10 @@ export default function PopularDesigns() {
         @media (prefers-reduced-motion: reduce) {
           .design-caption { animation: none; }
         }
+
+        /* One-frame kill switch for the seam snap — set on the track while
+           the copy-jump is applied so nothing inside animates the jump. */
+        [data-snapping], [data-snapping] * { transition-duration: 0s !important; }
       `}</style>
 
       {/* Follows the pointer across the carousel and names the click */}
@@ -174,23 +242,20 @@ export default function PopularDesigns() {
       </div>
 
       <div className="pt-24 pb-20 lg:pt-32 lg:pb-28">
-        <Reveal>
-          <h2 className="px-5 text-center font-bold leading-[1.1] tracking-[-0.02em] text-balance text-[clamp(2.25rem,3.4vw,3rem)]">
-            Popular designs
-          </h2>
-          {/* TODO: replace with approved marketing copy */}
-          <p className="mx-auto mt-5 max-w-3xl px-5 text-center text-base md:text-lg leading-relaxed text-foreground/60 text-balance">
-            Four waterproof vinyl membranes our dealers come back to, in the
-            colours that suit the most decks. Click the centre deck to see its
-            pattern up close.
-          </p>
-        </Reveal>
+        <h2 className="px-5 text-center font-bold leading-[1.1] tracking-[-0.02em] text-balance text-[clamp(2.25rem,3.4vw,3rem)]">
+          <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+            <span className="pd-heading-line block">Our best-sellers</span>
+          </span>
+        </h2>
+        <p className="pd-sub mx-auto mt-5 max-w-3xl px-5 text-center text-base md:text-lg leading-relaxed text-foreground/60 text-balance">
+          Our most popular vinyl membrane styles, chosen for durability, colour
+          consistency, and proven performance in real-world installs.
+        </p>
 
-        <Reveal>
-          {/* Arrow keys work anywhere inside, so the cards and the dots below
-              share one keyboard model. */}
-          <div
-            onKeyDown={(e) => {
+        {/* Arrow keys work anywhere inside, so the cards and the dots below
+            share one keyboard model. */}
+        <div
+          onKeyDown={(e) => {
               if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
               e.preventDefault();
               step(e.key === "ArrowRight" ? 1 : -1);
@@ -268,7 +333,7 @@ export default function PopularDesigns() {
                             ? "Previous design"
                             : "Next design"
                       }
-                      className="design-card relative flex h-[var(--h)] w-[var(--card)] shrink-0 cursor-pointer items-center justify-center"
+                      className="design-card relative flex h-[var(--h)] w-[var(--card)] shrink-0 cursor-pointer items-center justify-center outline-none"
                     >
                       {/* Fixed portrait shape at every size; distance only
                           scales it down. Translate before scale, so the pull
@@ -350,7 +415,7 @@ export default function PopularDesigns() {
                   a link nested in a button is invalid and unreachable by
                   keyboard. */}
               <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-2 pb-2.5"
+                className="pd-bar pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-2 pb-2.5"
                 aria-live="polite"
               >
                 <div
@@ -428,12 +493,12 @@ export default function PopularDesigns() {
             </div>
 
             {/* Prev / dots / next — the track loops, so neither end runs out */}
-            <div className="mt-10 flex items-center justify-center gap-6">
+            <div className="pd-controls mt-10 flex items-center justify-center gap-6">
               <button
                 type="button"
                 onClick={() => step(-1)}
                 aria-label="Previous design"
-                className="p-2 text-foreground/50 transition-colors hover:text-foreground"
+                className="p-2 text-foreground/50 transition-colors hover:text-foreground outline-none"
               >
                 <svg
                   className="size-6 rotate-180"
@@ -459,7 +524,7 @@ export default function PopularDesigns() {
                     onClick={() => select(i)}
                     aria-label={`Show ${design.name}`}
                     aria-current={i === active}
-                    className={`h-1.5 transition-all duration-500 ${
+                    className={`h-1.5 transition-all duration-500 outline-none ${
                       i === active
                         ? "w-8 bg-cta"
                         : "w-1.5 bg-foreground/20 hover:bg-foreground/40"
@@ -472,7 +537,7 @@ export default function PopularDesigns() {
                 type="button"
                 onClick={() => step(1)}
                 aria-label="Next design"
-                className="p-2 text-foreground/50 transition-colors hover:text-foreground"
+                className="p-2 text-foreground/50 transition-colors hover:text-foreground outline-none"
               >
                 <svg
                   className="size-6"
@@ -491,7 +556,7 @@ export default function PopularDesigns() {
               </button>
             </div>
 
-            <div className="mt-10 text-center">
+            <div className="pd-more mt-10 text-center">
               <Link
                 href="/vinyl-decking/designs-colours"
                 className="inline-block font-bold border-b-2 border-cta pb-0.5 hover:border-foreground transition-colors"
@@ -499,8 +564,7 @@ export default function PopularDesigns() {
                 View all designs & colours
               </Link>
             </div>
-          </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import {
   BLOG_CATEGORIES,
   BLOG_CATEGORY_LABELS,
@@ -12,8 +14,66 @@ import {
   type BlogCategory,
 } from "@/lib/blog";
 
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
 export default function BlogIndex() {
   const [active, setActive] = useState<BlogCategory | "all">("all");
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Heading rises out of its mask — the site's signature move
+        gsap.from(".bi-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".bi-head",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The filter row arrives as one piece just behind the heading
+        gsap.from(".bi-chips", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".bi-head",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // Cards follow with a small `each` so a long index never feels slow.
+        // Once only, on the initial set — cards that mount later from a
+        // filter change appear static rather than stranded at opacity 0.
+        gsap.from(".bi-card", {
+          y: 28,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: { each: 0.06 },
+          scrollTrigger: {
+            trigger: ".bi-grid",
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
 
   const posts =
     active === "all"
@@ -21,11 +81,13 @@ export default function BlogIndex() {
       : GRID_POSTS.filter((post) => post.category === active);
 
   return (
-    <section id="posts" className="scroll-mt-24 bg-surface">
+    <section ref={ref} id="posts" className="scroll-mt-24 bg-surface">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-24 lg:py-32">
-        <Reveal className="flex flex-wrap items-end justify-between gap-8">
+        <div className="bi-head flex flex-wrap items-end justify-between gap-8">
           <h2 className="font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2rem,3.5vw,3rem)]">
-            All posts
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="bi-heading-line block">All posts</span>
+            </span>
           </h2>
 
           {/* Chips rather than a select: five categories fit on one row and a
@@ -34,7 +96,7 @@ export default function BlogIndex() {
           <div
             role="group"
             aria-label="Filter posts by category"
-            className="flex flex-wrap gap-2"
+            className="bi-chips flex flex-wrap gap-2"
           >
             {(["all", ...BLOG_CATEGORIES] as const).map((category) => {
               const isActive = active === category;
@@ -57,18 +119,15 @@ export default function BlogIndex() {
               );
             })}
           </div>
-        </Reveal>
+        </div>
 
-        {/* One Reveal on the container, not per card: the card set changes as
-            you filter, and animating items that mount mid-scroll leaves them
-            stranded at opacity 0 */}
-        <Reveal className="mt-14 lg:mt-20">
+        <div className="bi-grid mt-14 lg:mt-20">
           {/* Cards on their own white plate so each post has an edge, with
               the title and excerpt clamped so a row lines up whatever the
               headline length, and the read cue pinned to the bottom */}
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-              <li key={post.slug}>
+              <li key={post.slug} className="bi-card">
                 <Link
                   href={postPath(post)}
                   className="group flex h-full flex-col overflow-hidden rounded-xl bg-background ring-1 ring-foreground/10 transition-shadow hover:shadow-xl"
@@ -133,7 +192,7 @@ export default function BlogIndex() {
               Nothing filed under that category yet.
             </p>
           )}
-        </Reveal>
+        </div>
       </div>
     </section>
   );

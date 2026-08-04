@@ -2,16 +2,77 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { DESIGNS, DESIGN_TAG_LABELS } from "@/lib/designs";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /** Treated as "at the end" a few pixels early — sub-pixel widths mean
  *  scrollLeft rarely lands exactly on the maximum */
 const EDGE = 8;
 
 export default function ColourGallery() {
+  const sectionRef = useRef<HTMLElement>(null);
   const scroller = useRef<HTMLUListElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Heading lines rise out of their masks, the sub-copy just behind.
+        // The scroll controls are left alone — they mount late, once the
+        // strip has been measured as overflowing.
+        gsap.from(".cg-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".cg-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".cg-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          delay: 0.2,
+          scrollTrigger: {
+            trigger: ".cg-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The strip settles in card by card, left to right — the tweens ride
+        // on the list items, never on the images that carry the hover scale
+        gsap.from(".cg-card", {
+          y: 28,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.08,
+          scrollTrigger: {
+            trigger: ".cg-strip",
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef },
+  );
 
   /** 1-based position of the leftmost card in view */
   const [index, setIndex] = useState(1);
@@ -59,26 +120,31 @@ export default function ColourGallery() {
   return (
     // The one dark stop on an otherwise white page, so the colours are read
     // against a neutral rather than against each other
-    <section id="gallery" className="bg-foreground text-white">
+    <section ref={sectionRef} id="gallery" className="bg-foreground text-white">
       <div className="pt-24 lg:pt-32 pb-24 lg:pb-32">
         <SectionLabel onDark className="w-full px-5 md:px-8 lg:px-12 xl:px-16">
           All designs
         </SectionLabel>
 
-        <Reveal className="w-full px-5 md:px-8 lg:px-12 xl:px-16">
+        <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16">
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:gap-16 lg:items-end">
             <div>
-              <h2 className="font-bold leading-[1.05] tracking-[-0.01em] text-[clamp(2.25rem,4vw,3.75rem)]">
-                Every colour we print,{" "}
-                <span className="lg:block">in one place.</span>
+              {/* Split where the thought breaks, each line in its own mask.
+                  The pb/-mb pair leaves descenders room inside the mask. */}
+              <h2 className="cg-heading font-bold leading-[1.05] tracking-[-0.01em] text-[clamp(2.25rem,4vw,3.75rem)]">
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="cg-heading-line block">
+                    The full range
+                  </span>
+                </span>
               </h2>
 
-              {/* Deliberately short: DesignsIntro sits directly above this and
-                  already covers how the colour is printed, and FreeKitCta below
-                  already carries the samples ask */}
-              <p className="mt-6 max-w-md text-white/60 leading-relaxed">
-                {DESIGNS.length} designs, set against a dark neutral so each
-                colour reads on its own.
+              {/* Deliberately short: DesignsIntro above carries the browse
+                  ask, and FreeKitCta below carries the samples ask */}
+              <p className="cg-sub mt-6 max-w-md text-white/60 leading-relaxed">
+                Whichever look you choose, the membrane underneath is the
+                same, exceeding CAN/CGSB 37.54 standards for PVC roofing and
+                waterproofing membranes.
               </p>
             </div>
 
@@ -144,14 +210,14 @@ export default function ColourGallery() {
               </div>
             )}
           </div>
-        </Reveal>
+        </div>
 
         {/* A strip rather than a grid: the cards keep the section's gutter on
             the left and run past the right edge, so the cut-off card is what
             says there is more to scroll. Card widths are in vw so the row
             stays wider than the screen — it only stops overflowing past
             ~2300px, where the max-w cap takes over and five cards fit. */}
-        <Reveal stagger=".design-card" className="mt-14 lg:mt-20">
+        <div className="cg-strip mt-14 lg:mt-20">
           {/* Focusable because the scrollbar is hidden — without it the strip
               is unreachable by keyboard. Measured through the ref callback
               rather than an effect, so the controls are correct on first
@@ -172,7 +238,7 @@ export default function ColourGallery() {
                 id={design.slug}
                 // Anchor target for the spec table in DesignsIntro — jumping
                 // here scrolls the strip to the card as well as the page
-                className={`design-card group scroll-mt-32 w-[72vw] max-w-[26rem] shrink-0 snap-start sm:w-[46vw] lg:w-[30vw] xl:w-[26vw] ${
+                className={`cg-card design-card group scroll-mt-32 w-[72vw] max-w-[26rem] shrink-0 snap-start sm:w-[46vw] lg:w-[30vw] xl:w-[26vw] ${
                   // Stepped down on every other card so the row reads as a
                   // staggered strip rather than a grid row
                   i % 2 === 1 ? "lg:mt-20" : ""
@@ -220,7 +286,7 @@ export default function ColourGallery() {
               </li>
             ))}
           </ul>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
-import Reveal from "@/components/Reveal";
+import { useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { FAQ_CATEGORIES, FAQ_COUNT } from "@/lib/faqs";
+
+gsap.registerPlugin(useGSAP);
 
 // The words people actually arrive with, as one-tap searches
 const SHORTCUTS = ["Seams", "Warranty", "Cleaning", "Adhesive", "Winter"];
@@ -18,6 +21,35 @@ export default function FaqBrowser() {
   const [collapsed, setCollapsed] = useState<string[]>([]);
 
   const searching = query.trim().length > 0;
+
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Entrance for the hero only — the accordion and its filtering below keep
+  // their own mechanics and re-render under search, so they stay static.
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the hero fully visible and still.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Load: the photo fades in while the headline rises out of its mask,
+        // then the standfirst and the search block follow through.
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+        tl.from(".fq-frame", { opacity: 0, duration: 0.9, ease: "power2.out" }, 0)
+          .from(
+            ".fq-heading-line",
+            { yPercent: 118, duration: 1.1, ease: "power4.out", stagger: 0.14 },
+            0.3,
+          )
+          .from(".fq-sub", { y: 28, opacity: 0, duration: 0.9 }, 0.7)
+          .from(".fq-search", { y: 24, opacity: 0, duration: 0.7 }, 0.85);
+      });
+
+      return () => mm.revert();
+    },
+    { scope: heroRef },
+  );
 
   function handleQuery(value: string) {
     setQuery(value);
@@ -59,37 +91,43 @@ export default function FaqBrowser() {
           with the standfirst rather than waiting in the band below. Lives in
           this client component because the query state is here. */}
       <section
+        ref={heroRef}
         data-hero
         className="relative min-h-dvh overflow-hidden bg-foreground"
       >
-        <Image
-          src="/images/projects/cedar-post-forest-deck.webp"
-          alt="Vinyl deck with black railing looking out into forest"
-          fill
-          preload
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-black/65 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/15 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
+        {/* Photo and scrims share one frame so they fade in as one layer */}
+        <div className="fq-frame absolute inset-0">
+          <Image
+            src="/images/projects/cedar-post-forest-deck.webp"
+            alt="Vinyl deck with black railing looking out into forest"
+            fill
+            preload
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-black/65 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/15 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
+        </div>
 
-        <Reveal
-          stagger=".hero-line"
-          className="relative z-10 flex min-h-dvh flex-col px-5 md:px-8 lg:px-12 xl:px-16 pt-32 lg:pt-40 pb-14 lg:pb-20 text-white"
-        >
+        <div className="relative z-10 flex min-h-dvh flex-col px-5 md:px-8 lg:px-12 xl:px-16 pt-32 lg:pt-40 pb-14 lg:pb-20 text-white">
           <div className="mt-auto">
-            <h1 className="hero-line font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.5rem,6vw,6.5rem)] lg:whitespace-nowrap">
-              Common questions
+            {/* The line lives inside an overflow-hidden mask and rises out
+                of it on load. The pb/-mb pair gives the descender in "q"
+                room inside the mask at this tight leading. */}
+            <h1 className="font-bold leading-[0.98] tracking-[-0.035em] text-[clamp(2.5rem,6vw,6.5rem)] lg:whitespace-nowrap">
+              <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
+                <span className="fq-heading-line block">Common questions</span>
+              </span>
             </h1>
 
-            <p className="hero-line mt-7 max-w-2xl text-lg text-white/75 leading-relaxed text-balance">
+            <p className="fq-sub mt-7 max-w-2xl text-lg text-white/75 leading-relaxed text-balance">
               {FAQ_COUNT} answers across {FAQ_CATEGORIES.length} areas: what the
               membrane is, how it goes down, what it stands up to, and what the
               warranty covers.
             </p>
 
-            <div className="hero-line mt-10 max-w-3xl">
+            <div className="fq-search mt-10 max-w-3xl">
               <label htmlFor="faq-search" className="sr-only">
                 Search the FAQs
               </label>
@@ -163,7 +201,7 @@ export default function FaqBrowser() {
               </p>
             </div>
           </div>
-        </Reveal>
+        </div>
       </section>
 
       <section className="bg-surface text-foreground">

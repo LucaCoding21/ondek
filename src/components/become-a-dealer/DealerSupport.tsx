@@ -1,6 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * PLACEHOLDER PROGRAM — confirm with OnDek before this page goes live.
@@ -18,8 +25,63 @@ import Reveal from "@/components/Reveal";
  * them the top block sits on blue and disappears.
  */
 export default function DealerSupport() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline line rises out of its mask — the same signature move as
+        // the rest of the site.
+        gsap.from(".dsu-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: ".dsu-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".dsu-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".dsu-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The closing statement and its link sit a screen further down, so
+        // they arrive on their own trigger — copy first, link just behind.
+        gsap.from(".dsu-close > *", {
+          y: 28,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: ".dsu-close",
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section className="bg-background">
+    <section ref={ref} className="bg-background">
       <div className="relative overflow-hidden">
         <Image
           src="/images/hero-deck.jpg"
@@ -38,21 +100,26 @@ export default function DealerSupport() {
         <div className="relative z-10 flex min-h-[85svh] lg:min-h-[92svh] flex-col justify-between gap-24 px-6 sm:px-10 lg:px-16 xl:px-24 py-16 lg:py-24 text-white">
           {/* Everything introductory in the top-left corner, the statement and
               the way out of the section in the bottom-right */}
-          <Reveal className="max-w-2xl">
-            <h2 className="font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2rem,4.5vw,3.5rem)] sm:whitespace-nowrap">
-              Training and support
+          <div className="max-w-2xl">
+            {/* One thought, one mask — the line rises out of it on scroll */}
+            <h2 className="dsu-heading font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2rem,4.5vw,3.5rem)] sm:whitespace-nowrap">
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="dsu-heading-line block">
+                  Training and support
+                </span>
+              </span>
             </h2>
 
-            <p className="mt-6 max-w-md text-base leading-relaxed text-white">
+            <p className="dsu-sub mt-6 max-w-md text-base leading-relaxed text-white">
               The membrane is manufactured under our own roof, so a question
               about a detail on site goes to the people who made the material
               rather than down a distribution chain. Design kits, colour
               samples, spec sheets, and the warranty document come with the
               account.
             </p>
-          </Reveal>
+          </div>
 
-          <Reveal className="max-w-2xl sm:self-end">
+          <div className="dsu-close max-w-2xl sm:self-end">
             <p className="text-xl sm:text-2xl lg:text-[1.75rem] leading-[1.4] tracking-[-0.01em] text-balance">
               A waterproof deck is a detail job. New dealers are taken through
               the whole system before the first one goes down, and the line
@@ -74,7 +141,7 @@ export default function DealerSupport() {
                 />
               </svg>
             </Link>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

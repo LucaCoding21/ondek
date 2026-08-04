@@ -1,7 +1,14 @@
+"use client";
+
+import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import StatCounter from "@/components/animations/StatCounter";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Placed as a staircase on lg — 01/02 across the top, 03/04 stepped one column
 // right and one row down — so the four read in order rather than as a block.
@@ -26,10 +33,10 @@ const STATS = [
     artClass: null,
   },
   {
-    title: "Dry days",
-    label: "Days a year the space below stays dry",
-    value: "365",
-    target: 365,
+    title: "Year warranty",
+    label: "15 year waterproofing, 5 year appearance",
+    value: "15/5",
+    target: null,
     place: "lg:col-start-2 lg:row-start-2",
     art: null,
     artClass: null,
@@ -46,35 +53,104 @@ const STATS = [
 ];
 
 export default function UnderDeck() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the same signature move
+        // as the hero and Design kit, kept consistent on purpose.
+        gsap.from(".ud-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".ud-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // Copy then link, following the heading through.
+        gsap.from(".ud-copy > *", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".ud-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The tweens sit on the cards, never the art inside — the drawings
+        // carry their own class transforms (-translate-y-1/2, -scale-x-100).
+        // Each StatCounter self-observes, so the count-ups stay untouched.
+        gsap.from(".underdeck-stat", {
+          y: 40,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".ud-stats",
+            start: "top 82%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section className="bg-foreground text-white">
+    <section ref={ref} className="bg-foreground text-white">
       {/* Runs wider than UltraSystem above it (100rem) by request — the cap is
           still here so the headline and copy keep sane line lengths on very
           large displays rather than running full-bleed. */}
       <div className="mx-auto w-full max-w-[110rem] px-5 md:px-8 lg:px-12 xl:px-16 py-28 lg:py-40">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
-          <Reveal className="lg:pt-2">
-            <h2 className="max-w-xl text-4xl sm:text-5xl font-bold leading-[1.05]">
-              A waterproof deck doubles your outdoor space.
+          <div className="lg:pt-2">
+            {/* Split where the thought breaks, each line in its own mask. The
+                pb/-mb pair leaves descenders room inside the mask. */}
+            <h2 className="ud-heading max-w-xl text-4xl sm:text-5xl font-bold leading-[1.05]">
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="ud-heading-line block">Extend your outdoor</span>
+              </span>
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="ud-heading-line block">
+                  living space
+                </span>
+              </span>
             </h2>
-            <p className="mt-6 max-w-sm text-sm text-white/60 leading-relaxed">
-              Because the membrane is fully waterproof, the area under your deck
-              stays dry. Turn it into a patio, outdoor kitchen, or covered
-              storage instead of wasted space.
-            </p>
-            <Link
-              href="/why-vinyl/under-deck-living-space"
-              className="mt-6 inline-block text-sm font-bold border-b-2 border-cta pb-0.5 hover:border-white transition-colors"
-            >
-              See under-deck living ideas
-            </Link>
-          </Reveal>
+            <div className="ud-copy">
+              <p className="mt-6 max-w-sm text-sm text-white/60 leading-relaxed">
+                The membrane keeps the space beneath a second-story deck dry
+                all year, turning underused space into a protected outdoor
+                living area.
+              </p>
+              <Link
+                href="/why-vinyl/under-deck-living-space"
+                className="mt-6 inline-block text-sm font-bold border-b-2 border-cta pb-0.5 hover:border-white transition-colors"
+              >
+                See under-deck living ideas
+              </Link>
+            </div>
+          </div>
 
-          <Reveal
-            stagger=".underdeck-stat"
+          <div
             // Dropped below the headline's line rather than aligned to it —
             // the offset is on the stats alone so the copy column stays put
-            className="grid gap-4 sm:grid-cols-2 lg:mt-28 lg:grid-cols-3 lg:grid-rows-2"
+            className="ud-stats grid gap-4 sm:grid-cols-2 lg:mt-28 lg:grid-cols-3 lg:grid-rows-2"
           >
             {STATS.map((stat, i) => (
               <div
@@ -117,7 +193,7 @@ export default function UnderDeck() {
                 </span>
               </div>
             ))}
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

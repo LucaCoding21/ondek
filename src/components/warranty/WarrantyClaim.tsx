@@ -1,5 +1,12 @@
-import Reveal from "@/components/Reveal";
+"use client";
+
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * PLACEHOLDER PROCESS — confirm with OnDek before this page goes live.
@@ -48,27 +55,83 @@ const STEPS = [
 ];
 
 export default function WarrantyClaim() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the site's signature move
+        gsap.from(".claim-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".claim-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".claim-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".claim-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The three step cards rise in order, 01 through 03
+        gsap.from(".claim-card", {
+          y: 40,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".claim-grid",
+            start: "top 80%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section className="bg-background">
+    <section ref={ref} className="bg-background">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-12 lg:pt-16 pb-28 lg:pb-40">
         <SectionLabel>Making a claim</SectionLabel>
 
-        <Reveal>
-          <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20 lg:items-end">
-            <h2 className="max-w-2xl font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.75rem)]">
-              How to register a claim.
-            </h2>
-            <p className="max-w-md text-foreground/60 leading-relaxed lg:pb-2">
-              Three steps, and none of them involve paperwork you don&apos;t
-              already have. The warranty document holds the complete terms.
-            </p>
-          </div>
-        </Reveal>
+        <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20 lg:items-end">
+          {/* Split where the thought breaks, each line in its own mask. The
+              pb/-mb pair leaves the descender of the g room inside the mask. */}
+          <h2 className="claim-heading max-w-2xl font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.75rem)]">
+            <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
+              <span className="claim-heading-line block">How to register</span>
+            </span>
+            <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
+              <span className="claim-heading-line block">a claim</span>
+            </span>
+          </h2>
+          <p className="claim-sub max-w-md text-foreground/60 leading-relaxed lg:pb-2">
+            Three steps, and none of them involve paperwork you don&apos;t
+            already have. The warranty document holds the complete terms.
+          </p>
+        </div>
 
-        <Reveal
-          stagger=".claim-card"
-          className="mt-14 lg:mt-20 grid gap-4 lg:gap-5 sm:grid-cols-3"
-        >
+        <div className="claim-grid mt-14 lg:mt-20 grid gap-4 lg:gap-5 sm:grid-cols-3">
           {STEPS.map((step, i) => (
             <div
               key={step.title}
@@ -99,7 +162,7 @@ export default function WarrantyClaim() {
               </p>
             </div>
           ))}
-        </Reveal>
+        </div>
       </div>
     </section>
   );

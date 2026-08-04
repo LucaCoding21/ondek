@@ -168,8 +168,27 @@ export default function UltraSystem() {
         (context) => {
           const { desktop } = context.conditions as { desktop: boolean };
 
-          // fromTo (not from): matchMedia tweens escape useGSAP's auto-revert,
-          // so a StrictMode remount must not capture mid-tween values as targets
+          // Headline lines rise out of their masks — the same signature move
+          // as the hero and Design kit. fromTo (not from) here and below:
+          // matchMedia tweens escape useGSAP's auto-revert, so a StrictMode
+          // remount must not capture mid-tween values as targets.
+          gsap.fromTo(
+            ".ultra-heading-line",
+            { yPercent: 115 },
+            {
+              yPercent: 0,
+              duration: 1,
+              ease: "power4.out",
+              stagger: 0.14,
+              overwrite: "auto",
+              scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 75%",
+                once: true,
+              },
+            }
+          );
+
           gsap.fromTo(
             ".ultra-fade",
             { y: 40, opacity: 0 },
@@ -242,8 +261,19 @@ export default function UltraSystem() {
               between them is what gives the column its shape, so it is the
               justify-between doing the work rather than a fixed margin. */}
           <div className="flex flex-col justify-between gap-10 lg:gap-14">
-            <h2 className="ultra-fade text-4xl sm:text-5xl font-bold leading-[1.08]">
-              More than a membrane. A complete waterproofing system.
+            {/* Split where the thought breaks, each line in its own mask. The
+                pb/-mb pair leaves descenders room inside the mask. */}
+            <h2 className="text-4xl sm:text-5xl font-bold leading-[1.08]">
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="ultra-heading-line block">
+                  Waterproof from
+                </span>
+              </span>
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="ultra-heading-line block">
+                  seam to edge
+                </span>
+              </span>
             </h2>
 
             <div className="ultra-fade bg-surface p-6 sm:p-7">
@@ -265,11 +295,14 @@ export default function UltraSystem() {
                 ))}
               </ul>
 
-              <h3 className="mt-5 text-lg font-bold">One system, one warranty</h3>
+              <h3 className="mt-5 text-lg font-bold">
+                Ultra Seam and Ultra Edge
+              </h3>
               <p className="mt-2.5 text-foreground/70 leading-relaxed">
-                Multi-layer vinyl membrane, heat-welded seams, and
-                system-matched adhesive, specified and installed as a single
-                waterproof surface.
+                Ultra Seam welds the vinyl directly to itself, a weld that
+                proved stronger than the membrane in independent testing.
+                Ultra Edge finishes the perimeter with a screw-free snap fit
+                built to hold through hot and cold seasons.
               </p>
               <Link
                 href="/vinyl-decking/the-ultra-system"

@@ -35,7 +35,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: "Why is OnDek Vinyl Worx better than a standard wood deck?",
-        a: "It asks very little in the way of maintenance, waterproofs in a single step, meets ADA standards for slip resistance, comes in patterns worth looking at, and is manufactured without harvesting trees.",
+        a: "One step waterproofs the deck, protecting the substructure lumber and any living space underneath, and it can be installed and used the same day. It needs only occasional cleaning with soapy water, is slip resistant wet or dry to ADA requirements, and no trees are cut down to manufacture it.",
       },
     ],
   },

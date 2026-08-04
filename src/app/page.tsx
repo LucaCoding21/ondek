@@ -4,7 +4,7 @@ import PopularDesigns from "@/components/home/PopularDesigns";
 import DesignKit from "@/components/home/DesignKit";
 import UltraSystem from "@/components/home/UltraSystem";
 import UnderDeck from "@/components/home/UnderDeck";
-import Testimonials from "@/components/home/Testimonials";
+import VideoTestimonialReel from "@/components/VideoTestimonialReel";
 import QuoteSection from "@/components/home/QuoteSection";
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
       <DesignKit />
       <UltraSystem />
       <UnderDeck />
-      <Testimonials />
+      <VideoTestimonialReel />
       <QuoteSection />
     </>
   );

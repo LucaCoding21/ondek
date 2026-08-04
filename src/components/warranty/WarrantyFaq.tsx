@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Reveal from "@/components/Reveal";
+import { useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /** Every answer is carried by the warranty or care & maintenance page — no
  *  terms are stated here that aren't in one of those two documents */
@@ -35,30 +39,99 @@ const FAQS = [
 
 export default function WarrantyFaq() {
   const [open, setOpen] = useState<number | null>(0);
+  const ref = useRef<HTMLElement>(null);
+
+  // Entrance only — the accordion's own open/close mechanics live entirely
+  // in the state-driven classes below and are not touched here.
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the site's signature move
+        gsap.from(".faq-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".faq-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".faq-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".faq-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The questions settle in down the list. The tween rides each item's
+        // outer shell — the answer's grid-rows transition lives on a child
+        // and stays untouched.
+        gsap.from(".faq-item", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".faq-list",
+            start: "top 80%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
 
   return (
-    <section className="bg-surface text-foreground">
+    <section ref={ref} className="bg-surface text-foreground">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-28 lg:pt-40 pb-28 lg:pb-40">
         <SectionLabel>Questions &amp; answers</SectionLabel>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20 xl:gap-24 lg:items-start">
-          <Reveal>
-            <h2 className="max-w-md font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.5rem)]">
-              Straight answers on coverage and care.
+          <div>
+            {/* Split where the thought breaks, each line in its own mask. The
+                pb/-mb pair leaves the descender of the g room inside the
+                mask. */}
+            <h2 className="faq-heading max-w-md font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.5rem)]">
+              <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
+                <span className="faq-heading-line block">
+                  Straight answers on
+                </span>
+              </span>
+              <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
+                <span className="faq-heading-line block">
+                  coverage and care.
+                </span>
+              </span>
             </h2>
 
-            <p className="mt-8 max-w-md text-foreground/60 leading-relaxed">
+            <p className="faq-sub mt-8 max-w-md text-foreground/60 leading-relaxed">
               What the two warranties cover, what they don&apos;t, and the
               quarterly routine that keeps a deck looking the way it did on day
               one.
             </p>
-          </Reveal>
+          </div>
 
           {/* Buttons rather than <details>: the answer has to animate open,
               and a grid row that grows from 0fr to 1fr is the one height
               transition that works without measuring anything. One open at a
               time — clicking the open question closes it. */}
-          <Reveal stagger=".faq-item" className="flex flex-col gap-3">
+          <div className="faq-list flex flex-col gap-3">
             {FAQS.map((faq, i) => {
               const isOpen = open === i;
               return (
@@ -119,7 +192,7 @@ export default function WarrantyFaq() {
                 </div>
               );
             })}
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

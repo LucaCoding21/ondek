@@ -1,17 +1,52 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import Reveal from "@/components/Reveal";
+import { useRef } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { CTA_LINKS } from "@/lib/nav";
 
+gsap.registerPlugin(useGSAP);
+
 export default function WhyVinylHero() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the hero static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Page-top hero, so this runs on load rather than on scroll: the
+        // photo fades in while the headline lines rise out of their masks,
+        // then the copy and the CTA pair follow through.
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+        tl.from(".wv-frame", { opacity: 0, duration: 0.9, ease: "power2.out" }, 0)
+          .from(
+            ".wv-heading-line",
+            { yPercent: 118, duration: 1.1, ease: "power4.out", stagger: 0.14 },
+            0.3,
+          )
+          .from(".wv-sub", { y: 28, opacity: 0, duration: 0.9 }, 0.7)
+          // The pair rises together — no stagger between the two
+          .from(".wv-cta", { y: 24, opacity: 0, duration: 0.7 }, 0.85);
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section data-hero className="bg-background">
+    <section ref={ref} data-hero className="bg-background">
       {/* Full-bleed photo — no gutter frame here, unlike the other sub-page
           heroes. The headline sits in the band below rather than over the
           photo, so the image only has to carry the nav. */}
       {/* overflow-hidden so the tab's lower edge is cut off by the photo
           rather than floating on the band below it */}
-      <div className="relative h-[54vh] min-h-[400px] overflow-hidden lg:h-[64vh]">
+      <div className="wv-frame relative h-[54vh] min-h-[400px] overflow-hidden lg:h-[64vh]">
         <Image
           src="/images/projects/lake-view-glass-railing.webp"
           alt="Vinyl deck with glass railing looking out over a lake"
@@ -43,14 +78,23 @@ export default function WhyVinylHero() {
 
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-20 lg:py-28">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-20">
-          <Reveal>
-            <h1 className="max-w-3xl text-5xl sm:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
-              The last deck surface you&apos;ll ever install.
-            </h1>
-          </Reveal>
+          {/* Split where the thought breaks, each line in its own mask. The
+              pb/-mb pair leaves descenders room inside the mask. */}
+          <h1 className="max-w-3xl text-5xl sm:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-[-0.02em]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="wv-heading-line block">
+                The last deck surface
+              </span>
+            </span>
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="wv-heading-line block">
+                you&apos;ll ever install.
+              </span>
+            </span>
+          </h1>
 
-          <Reveal delay={0.15} className="lg:pt-3">
-            <p className="max-w-xl text-lg text-foreground/70 leading-relaxed">
+          <div className="lg:pt-3">
+            <p className="wv-sub max-w-xl text-lg text-foreground/70 leading-relaxed">
               A wood deck sheds water between its boards. An OnDek deck
               doesn&apos;t. The membrane is one sealed surface with
               fusion-welded seams, approved by the CGSB and tested to ICC-ES
@@ -59,7 +103,7 @@ export default function WhyVinylHero() {
             <div className="mt-8 flex flex-wrap items-center gap-6">
               <Link
                 href={CTA_LINKS.quote.href}
-                className="group inline-flex items-center gap-2.5 bg-cta px-7 py-3.5 font-bold text-foreground hover:brightness-95 transition-[filter]"
+                className="wv-cta group inline-flex items-center gap-2.5 bg-cta px-7 py-3.5 font-bold text-foreground hover:brightness-95 transition-[filter]"
               >
                 {CTA_LINKS.quote.label}
                 <svg
@@ -79,12 +123,12 @@ export default function WhyVinylHero() {
               </Link>
               <Link
                 href={CTA_LINKS.designKit.href}
-                className="text-xs font-bold uppercase tracking-[0.12em] underline underline-offset-4 decoration-1 hover:decoration-cta hover:decoration-2 transition-all"
+                className="wv-cta text-xs font-bold uppercase tracking-[0.12em] underline underline-offset-4 decoration-1 hover:decoration-cta hover:decoration-2 transition-all"
               >
                 {CTA_LINKS.designKit.label}
               </Link>
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

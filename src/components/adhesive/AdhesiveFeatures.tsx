@@ -5,7 +5,6 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Reveal from "@/components/Reveal";
 import SectionLabel from "@/components/SectionLabel";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -66,10 +65,13 @@ export default function AdhesiveFeatures() {
 
   useGSAP(
     () => {
-      // The drift is the motion worth opting out of, so it lives inside
-      // matchMedia. Skipped, the frame just sits at its start position, which
-      // is already a valid crop.
-      gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — everything lives behind this media gate. Skipped, the
+      // frame sits at its start position (already a valid crop) and the
+      // panel content is static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.fromTo(
           ".parallax-frame",
           { yPercent: -8 },
@@ -84,7 +86,48 @@ export default function AdhesiveFeatures() {
             },
           },
         );
+
+        // Headline lines rise out of their masks — the site's signature move
+        gsap.from(".af-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".af-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".af-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".af-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The four cells settle in reading order across the quartered panel
+        gsap.from(".feature-cell", {
+          y: 28,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".af-grid",
+            start: "top 80%",
+            once: true,
+          },
+        });
       });
+
+      return () => mm.revert();
     },
     { scope: ref },
   );
@@ -120,26 +163,32 @@ export default function AdhesiveFeatures() {
           {/* Heading rail on the left, the four features quartered by
               hairlines on the right */}
           <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-16 xl:gap-20 lg:items-start">
-            <Reveal>
+            <div>
               {/* Short and hyphen-free on purpose: "fabric-back" broke across
                   the line at its own hyphen. The fleece and fabric-back detail
                   is carried by the first feature cell instead. */}
-              <h2 className="font-bold leading-[1.05] tracking-[-0.01em] text-balance text-[clamp(2.25rem,3.4vw,3.25rem)]">
-                Formulated for backed membranes.
+              {/* Split where the thought breaks, each line in its own mask.
+                  The pb/-mb pair leaves descenders room inside the mask. */}
+              <h2 className="af-heading font-bold leading-[1.05] tracking-[-0.01em] text-[clamp(2.25rem,3.4vw,3.25rem)]">
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="af-heading-line block">Formulated for</span>
+                </span>
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="af-heading-line block">
+                    backed membranes.
+                  </span>
+                </span>
               </h2>
 
-              <p className="mt-6 max-w-md text-foreground/60 leading-relaxed">
+              <p className="af-sub mt-6 max-w-md text-foreground/60 leading-relaxed">
                 An aggressive, solvent-based contact adhesive suitable for
                 horizontal and vertical surfaces.
               </p>
-            </Reveal>
+            </div>
 
             {/* Two by two, divided by rules rather than boxed — the cells share
                 edges so the four read as one panel */}
-            <Reveal
-              stagger=".feature-cell"
-              className="grid border-t border-foreground/15 sm:grid-cols-2"
-            >
+            <div className="af-grid grid border-t border-foreground/15 sm:grid-cols-2">
               {FEATURES.map((feature, i) => (
                 <div
                   key={feature.title}
@@ -172,7 +221,7 @@ export default function AdhesiveFeatures() {
                   </p>
                 </div>
               ))}
-            </Reveal>
+            </div>
           </div>
         </div>
       </div>

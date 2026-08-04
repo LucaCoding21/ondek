@@ -5,29 +5,28 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Reveal from "@/components/Reveal";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const LEFT_LABELS = [
   {
-    title: "Textured wear layer",
-    text: "Slip-resistant surface that stands up to sun, rain, and heavy foot traffic.",
+    title: "Acrylic top coat",
+    text: "Added wear resistance, and slip resistance whether wet or dry.",
   },
   {
-    title: "Printed colour layer",
-    text: "UV-stable inks sealed deep in the vinyl, not painted on top.",
+    title: "100% virgin PVC",
+    text: "UV stabilizers and antifungal agents are built into the membrane itself.",
   },
 ];
 
 const RIGHT_LABELS = [
   {
-    title: "Waterproof core",
-    text: "Multi-layer membrane with heat-welded seams forming one continuous surface.",
+    title: "Non-woven polyester backing",
+    text: "The back layer that promotes glue adhesion to the substrate below.",
   },
   {
-    title: "System-matched adhesive",
-    text: "Bonds the membrane to the deck so everything performs as a single system.",
+    title: "Specially formulated adhesive",
+    text: "A contact adhesive formulated to OnDek's specifications bonds the membrane to the deck.",
   },
 ];
 
@@ -105,6 +104,34 @@ export default function UltraPinned() {
       // so they get the whole assembly standing — same for anyone without JS,
       // since nothing in the markup is hidden to begin with.
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Entrance: the heading rises out of its mask, and the annotation
+        // labels settle in around the artwork. The stack images are never
+        // touched here — the build timeline below owns their transforms.
+        gsap.from(".up-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".up-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".ultra-fade", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".up-body",
+            start: "top 82%",
+            once: true,
+          },
+        });
+
         const tl = gsap.timeline({
           scrollTrigger: {
             // The stack, not the section. The section starts with the title
@@ -152,16 +179,24 @@ export default function UltraPinned() {
   return (
     <section ref={sectionRef} className="bg-surface overflow-hidden">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:py-24">
-        <Reveal>
-          <p className="text-sm font-bold">The layers</p>
-          <div className="mt-5 border-b border-foreground/10" />
-          {/* TODO: replace with approved marketing copy */}
-          <h2 className="mt-10 text-3xl sm:text-4xl font-bold leading-tight max-w-2xl">
-            Pull an Ultra deck apart and every layer is doing one job.
-          </h2>
-        </Reveal>
+        <p className="text-sm font-bold">The layers</p>
+        <div className="mt-5 border-b border-foreground/10" />
+        {/* Split where the thought breaks, each line in its own mask. The
+            pb/-mb pair leaves descenders room inside the mask. */}
+        <h2 className="up-heading mt-10 text-3xl sm:text-4xl font-bold leading-tight max-w-2xl">
+          <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+            <span className="up-heading-line block">
+              Pull an Ultra deck apart
+            </span>
+          </span>
+          <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+            <span className="up-heading-line block">
+              and every layer is doing one job.
+            </span>
+          </span>
+        </h2>
 
-        <Reveal stagger=".ultra-fade" className="mt-14 lg:mt-20">
+        <div className="up-body mt-14 lg:mt-20">
           <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,6fr)_minmax(0,3fr)] lg:gap-12">
             {/* Left annotations */}
             <div className="order-2 lg:order-1 grid grid-cols-2 gap-8 lg:grid-cols-1 lg:gap-16">
@@ -230,7 +265,7 @@ export default function UltraPinned() {
               ))}
             </div>
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

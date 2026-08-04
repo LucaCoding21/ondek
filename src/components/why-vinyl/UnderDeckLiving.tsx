@@ -1,6 +1,13 @@
+"use client";
+
 import Image from "next/image";
-import Reveal from "@/components/Reveal";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 // Markers on the drawing, boxes in a row underneath in the same left-to-right
 // order — 01 left, 02 middle, 03 right. No leader lines and nothing laid over
@@ -34,29 +41,117 @@ const ANNOTATIONS = [
 ];
 
 export default function UnderDeckLiving() {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the same signature move
+        // as the rest of the site.
+        gsap.from(".ud-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".ud-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".ud-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".ud-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        // The drawing arrives whole (markers ride along inside it), then the
+        // badges pop their opacity in reading order once it has settled.
+        // The markers and the cards carry their own translate classes, so the
+        // tweens on them touch opacity only — never transform.
+        gsap.from(".ud-art", {
+          y: 40,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".ud-art",
+            start: "top 85%",
+            once: true,
+          },
+        });
+
+        gsap.from(".ud-marker", {
+          opacity: 0,
+          duration: 0.5,
+          ease: "power3.out",
+          stagger: 0.1,
+          delay: 0.5,
+          scrollTrigger: {
+            trigger: ".ud-art",
+            start: "top 85%",
+            once: true,
+          },
+        });
+
+        gsap.from(".annotation", {
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".ud-art",
+            start: "top 70%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: ref },
+  );
+
   return (
-    <section id="under-deck" className="bg-background">
+    <section ref={ref} id="under-deck" className="bg-background">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-24 lg:pt-32 pb-24 lg:pb-32">
         <SectionLabel>Under-deck living space</SectionLabel>
 
-        <Reveal className="mt-10 max-w-4xl">
-          <h2 className="mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
-            A waterproof deck doubles your outdoor space.
+        <div className="mt-10 max-w-4xl">
+          {/* Split where the thought breaks, each line in its own mask. The
+              pb/-mb pair leaves descenders room inside the mask. */}
+          <h2 className="ud-heading mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="ud-heading-line block">A waterproof deck</span>
+            </span>
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="ud-heading-line block">
+                doubles your outdoor space.
+              </span>
+            </span>
           </h2>
-          <p className="mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
+          <p className="ud-sub mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
             Because the membrane is fully waterproof, the area under your deck
             stays dry. Turn it into a patio, outdoor kitchen, or covered storage
             instead of wasted space.
           </p>
-        </Reveal>
+        </div>
 
         {/* Wrapper runs wider than the drawing so the cards spread past its
             edges instead of crowding the line work */}
-        <Reveal
-          delay={0.1}
-          className="relative mx-auto mt-12 max-w-[96rem] lg:mt-16 lg:mb-40"
-        >
-          <div className="relative mx-auto max-w-6xl">
+        <div className="relative mx-auto mt-12 max-w-[96rem] lg:mt-16 lg:mb-40">
+          <div className="ud-art relative mx-auto max-w-6xl">
             <Image
               src="/images/under-deck-concept.webp"
               alt="Line drawing of a deck with a furnished, dry living space underneath"
@@ -70,7 +165,7 @@ export default function UnderDeckLiving() {
               <span
                 key={n}
                 style={{ left: marker.left, top: marker.top }}
-                className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-cta text-xs font-bold text-foreground sm:size-12 sm:text-sm"
+                className="ud-marker absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-cta text-xs font-bold text-foreground sm:size-12 sm:text-sm"
               >
                 {n}
                 <span className="sr-only">{` ${label}`}</span>
@@ -81,11 +176,7 @@ export default function UnderDeckLiving() {
           {/* Placed against the drawing from lg — 01 low left, 03 low right,
               02 dropped below the middle. They sit over the drawing's empty
               margins rather than its line work. Stacked below it until then. */}
-          <Reveal
-            delay={0.2}
-            stagger=".annotation"
-            className="mt-10 grid items-start gap-6 sm:grid-cols-3 lg:mt-0 lg:block"
-          >
+          <div className="mt-10 grid items-start gap-6 sm:grid-cols-3 lg:mt-0 lg:block">
             {ANNOTATIONS.map(({ n, label, title, body, box }) => (
               <div
                 key={n}
@@ -105,8 +196,8 @@ export default function UnderDeckLiving() {
                 </p>
               </div>
             ))}
-          </Reveal>
-        </Reveal>
+          </div>
+        </div>
       </div>
     </section>
   );

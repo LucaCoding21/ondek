@@ -1,4 +1,3 @@
-import Reveal from "@/components/Reveal";
 import type { PostBlock } from "@/lib/blogBodies";
 
 /** Anchors are derived from the heading text, so the rail and the article
@@ -50,7 +49,9 @@ export default function PostBody({
             </nav>
           )}
 
-          <Reveal
+          {/* No entrance animation on the article itself — long-form copy
+              reads best arriving static, so only the PostHero above moves */}
+          <div
             className={
               contents.length > 2 ? "max-w-3xl" : "mx-auto max-w-3xl lg:col-span-2"
             }
@@ -118,7 +119,7 @@ export default function PostBody({
               </a>
               <span className="sr-only">, opens in a new tab</span>.
             </p>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>

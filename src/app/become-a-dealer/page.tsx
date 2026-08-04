@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import DealerHero from "@/components/become-a-dealer/DealerHero";
 import DealerWhy from "@/components/become-a-dealer/DealerWhy";
 import DealerSupport from "@/components/become-a-dealer/DealerSupport";
-import DealerTestimonials from "@/components/become-a-dealer/DealerTestimonials";
+import VideoTestimonialReel from "@/components/VideoTestimonialReel";
 import DealerApplication from "@/components/become-a-dealer/DealerApplication";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function BecomeADealerPage() {
       <DealerHero />
       <DealerWhy />
       <DealerSupport />
-      <DealerTestimonials />
+      <VideoTestimonialReel />
       <DealerApplication />
     </>
   );

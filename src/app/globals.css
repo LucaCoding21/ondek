@@ -24,12 +24,35 @@
   --color-foreground: var(--foreground);
   --color-cta: var(--cta);
   --font-sans: var(--font-ubuntu);
+
+  /* Video testimonial reel palette — warm-toned, overrides default Tailwind
+     stone for the 100/200/400 steps. */
+  --color-ink: #0a0908;
+  --color-stone-100: #f5f2ee;
+  --color-stone-200: #e8e3db;
+  --color-stone-400: #a89d8e;
+
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1025px;
+
+  --font-heading: var(--font-ubuntu);
+  --font-body: var(--font-titillium);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-ubuntu), sans-serif;
+}
+
+/* Horizontal scrollers that hide their scrollbar (video testimonial reel) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Notched frame: corners cut top-left and bottom-right, like the hero reference.
@@ -172,6 +195,15 @@ body {
 @media (max-width: 640px) {
   .notch-tab-lead {
     clip-path: polygon(82px 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+/* The quote wizard pins its Continue button to the bottom edge on mobile;
+   the footer would sit behind that bar and fight it, so it steps out on
+   this one page */
+@media (max-width: 1024px) {
+  body:has([data-quote-page]) footer {
+    display: none;
   }
 }
 

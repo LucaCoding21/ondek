@@ -26,18 +26,30 @@ export default function DealerHero() {
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.from(".hero-frame", { opacity: 0, scale: 0.98, duration: 1 }).from(
-        ".hero-line",
-        { y: 40, opacity: 0, duration: 0.8, stagger: 0.12 },
-        "-=0.5",
-      );
-
-      // The drawing sketches itself in behind the copy. Dashing is applied
-      // here rather than in the markup so reduced-motion — which never enters
-      // this branch — gets the finished drawing instead of an empty box.
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — everything lives behind this media gate. Reduced-motion
+      // users get the hero fully visible and still, with the drawing
+      // finished rather than an empty box (the dashing is applied here, not
+      // in the markup, and this branch never runs for them).
       const mm = gsap.matchMedia();
+
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Load: the frame settles in while the headline lines rise out of
+        // their masks; eyebrow, copy, and CTAs follow through.
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+        tl.from(".hero-frame", { opacity: 0, scale: 0.98, duration: 1 })
+          .from(
+            ".dh-headline-line",
+            { yPercent: 118, duration: 1.1, ease: "power4.out", stagger: 0.14 },
+            "-=0.6",
+          )
+          .from(
+            ".hero-line",
+            { y: 40, opacity: 0, duration: 0.8, stagger: 0.12 },
+            "-=0.8",
+          );
+
+        // The drawing sketches itself in behind the copy
         const lines = gsap.utils.toArray<SVGPathElement>(
           ".blueprint-line",
           ref.current,
@@ -72,9 +84,16 @@ export default function DealerHero() {
               Dealer program · Ultra system
             </p>
 
-            <h1 className="hero-line mt-8 lg:mt-10 font-bold leading-[0.86] tracking-[-0.04em] text-[clamp(3.75rem,10vw,9.5rem)]">
-              Become
-              <br />a dealer
+            {/* Each line in its own overflow mask, rising out on load. The
+                pb/-mb pair leaves room inside the mask at this tight leading
+                without adding visual space between the lines. */}
+            <h1 className="mt-8 lg:mt-10 font-bold leading-[0.86] tracking-[-0.04em] text-[clamp(3.75rem,10vw,9.5rem)]">
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="dh-headline-line block">Become</span>
+              </span>
+              <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                <span className="dh-headline-line block">a dealer</span>
+              </span>
             </h1>
 
             <p className="hero-line mt-9 max-w-xl text-lg text-white/60 leading-relaxed">

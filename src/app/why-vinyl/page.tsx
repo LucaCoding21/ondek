@@ -4,7 +4,7 @@ import MaterialComparison from "@/components/why-vinyl/MaterialComparison";
 import ProjectShowcase from "@/components/why-vinyl/ProjectShowcase";
 import SystemSection from "@/components/why-vinyl/SystemSection";
 import UnderDeckLiving from "@/components/why-vinyl/UnderDeckLiving";
-import Testimonials from "@/components/home/Testimonials";
+import VideoTestimonialReel from "@/components/VideoTestimonialReel";
 import FreeKitCta from "@/components/designs-colours/FreeKitCta";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function WhyVinylPage() {
       <SystemSection />
       <UnderDeckLiving />
       <ProjectShowcase />
-      <Testimonials />
+      <VideoTestimonialReel />
       <FreeKitCta />
     </>
   );

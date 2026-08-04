@@ -109,8 +109,39 @@ export default function ProjectShowcase() {
         });
       });
 
+      const mm = gsap.matchMedia();
+
+      // Heading lines rise out of their masks — the same signature move as
+      // the rest of the site. Gated: GSAP writes inline styles, so the global
+      // reduced-motion CSS can't stop it.
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from(".ps-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".ps-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".ps-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".ps-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+      });
+
       // Parallax and the slow scale are the motion worth opting out of
-      gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.utils.toArray<HTMLElement>("[data-rate]").forEach((el) => {
           gsap.to(el, {
             yPercent: Number(el.dataset.rate),
@@ -141,6 +172,8 @@ export default function ProjectShowcase() {
           );
         });
       });
+
+      return () => mm.revert();
     },
     { scope: ref },
   );
@@ -149,10 +182,15 @@ export default function ProjectShowcase() {
     <section ref={ref} className="bg-foreground text-white overflow-hidden">
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 py-24 lg:py-32">
         <div className="max-w-2xl">
-          <h2 className="text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em] text-balance">
-            Decks we&apos;ve covered
+          {/* One thought, one mask — the line rises out of it on scroll */}
+          <h2 className="ps-heading text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em]">
+            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+              <span className="ps-heading-line block">
+                Decks we&apos;ve covered
+              </span>
+            </span>
           </h2>
-          <p className="mt-6 max-w-md text-lg text-white/60 leading-relaxed">
+          <p className="ps-sub mt-6 max-w-md text-lg text-white/60 leading-relaxed">
             Every one of these is a single sheet of membrane, edge to edge. The
             space underneath stays dry enough to live in.
           </p>

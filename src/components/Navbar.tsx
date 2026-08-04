@@ -67,7 +67,7 @@ export default function Navbar() {
           clear ? "bg-transparent" : "bg-white/85 backdrop-blur-xl"
         }`}
       >
-        <div className="flex h-[var(--nav-bar-h)] items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] px-5 sm:px-6 lg:px-8">
+        <div className="flex h-[var(--nav-bar-h)] items-center justify-between gap-x-4 xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-x-8 px-5 sm:px-6 lg:px-8">
           {/* Logo — both marks stacked so the swap never waits on a fetch */}
           <Link href="/" className="relative shrink-0 xl:justify-self-start">
             <Image
@@ -142,7 +142,7 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-2">
               <Link
                 href={CTA_LINKS.designKit.href}
-                className={`flex h-10 items-center border px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] transition-colors ${
+                className={`flex h-10 items-center whitespace-nowrap border px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] transition-colors ${
                   clear
                     ? "border-white/40 bg-white/10 backdrop-blur-md text-white hover:bg-white/20"
                     : "border-foreground text-foreground/80 hover:text-foreground hover:bg-cta/25"
@@ -152,7 +152,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href={CTA_LINKS.quote.href}
-                className="flex h-10 items-center px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] bg-cta text-foreground hover:brightness-95 transition-[filter]"
+                className="flex h-10 items-center whitespace-nowrap px-3.5 xl:px-4 text-[13px] font-bold uppercase tracking-[0.06em] bg-cta text-foreground hover:brightness-95 transition-[filter]"
               >
                 {CTA_LINKS.quote.label}
               </Link>

@@ -1,12 +1,16 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import Reveal from "@/components/Reveal";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import {
   submitDealerApplication,
   type DealerFormState,
 } from "@/app/become-a-dealer/actions";
 import SectionLabel from "@/components/SectionLabel";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const INITIAL_STATE: DealerFormState = { ok: false, errors: {}, message: "" };
 
@@ -42,7 +46,7 @@ const TRADES = [
 const VOLUMES = ["1 – 5", "6 – 20", "21 – 50", "More than 50", "Not sure yet"];
 
 const inputBase =
-  "w-full border bg-background px-4 py-3.5 text-base leading-normal outline-none transition-colors placeholder:text-foreground/35 focus:border-foreground";
+  "w-full border bg-background px-4 py-3 text-base leading-normal outline-none transition-colors placeholder:text-foreground/35 focus:border-foreground";
 
 function borderFor(error?: string) {
   return error ? "border-red-700" : "border-foreground/20";
@@ -72,7 +76,7 @@ function Field({ id, label, error, optional, className, children }: FieldProps) 
         )}
       </label>
 
-      <div className="relative mt-3">{children}</div>
+      <div className="relative mt-2">{children}</div>
 
       {error && (
         <p
@@ -129,31 +133,97 @@ export default function DealerApplication() {
     if (state.ok) successRef.current?.focus();
   }, [state.ok]);
 
+  // Entrance only — the tweens touch the heading's mask spans, the intro
+  // copy, and the card's outer shell, never the form or its fields. The
+  // sticky column is left untransformed so position: sticky stays intact.
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      // GSAP writes inline styles, so the global reduced-motion CSS can't
+      // stop it — reduced-motion users get the section static and visible.
+      const mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Headline lines rise out of their masks — the same signature move
+        // as the rest of the site.
+        gsap.from(".da-heading-line", {
+          yPercent: 115,
+          duration: 1,
+          ease: "power4.out",
+          stagger: 0.14,
+          scrollTrigger: {
+            trigger: ".da-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".da-sub", {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".da-heading",
+            start: "top 78%",
+            once: true,
+          },
+        });
+
+        gsap.from(".da-card", {
+          y: 40,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".da-card",
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef },
+  );
+
   return (
     // scroll-mt clears the fixed nav when the hero's Apply button jumps here
-    <section id="apply" className="bg-surface scroll-mt-28 lg:scroll-mt-32">
+    <section
+      ref={sectionRef}
+      id="apply"
+      className="bg-surface scroll-mt-28 lg:scroll-mt-32"
+    >
       <div className="w-full px-5 md:px-8 lg:px-12 xl:px-16 pt-28 lg:pt-40 pb-28 lg:pb-40">
         <SectionLabel>Application</SectionLabel>
 
         <div className="mt-10 grid gap-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] lg:gap-16 xl:gap-24">
-          <Reveal>
+          <div>
             {/* Sticks alongside the form on tall screens so the heading stays
                 in view while the fields scroll past it */}
             <div className="lg:sticky lg:top-32">
-              <h2 className="max-w-md font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.5rem)]">
-                Apply to become a dealer.
+              {/* Each line in its own overflow mask, rising out on scroll */}
+              <h2 className="da-heading max-w-md font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(2.25rem,4.5vw,3.5rem)]">
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="da-heading-line block">Apply to become</span>
+                </span>
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="da-heading-line block">a dealer.</span>
+                </span>
               </h2>
 
-              <p className="mt-8 max-w-md text-foreground/60 leading-relaxed">
+              <p className="da-sub mt-8 max-w-md text-foreground/60 leading-relaxed">
                 Nine fields, two of them optional. Tell us who you are, where
                 you work, and the kind of jobs you take on, and we will pick it
                 up from there.
               </p>
             </div>
-          </Reveal>
+          </div>
 
-          <Reveal>
-            <div className="border border-foreground bg-background p-6 sm:p-10 lg:p-12">
+          <div>
+            <div className="da-card border border-foreground bg-background p-6 sm:p-8 lg:p-10">
               {state.ok ? (
                 // The form is gone once it succeeds — nothing left to resubmit
                 <div className="py-8 text-center sm:py-16">
@@ -188,7 +258,7 @@ export default function DealerApplication() {
                 </div>
               ) : (
                 <form action={formAction} noValidate>
-                  <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2">
+                  <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2">
                     <Field id="name" label="Your name" error={errors.name}>
                       <input
                         id="name"
@@ -391,7 +461,7 @@ export default function DealerApplication() {
                 </form>
               )}
             </div>
-          </Reveal>
+          </div>
         </div>
       </div>
     </section>
