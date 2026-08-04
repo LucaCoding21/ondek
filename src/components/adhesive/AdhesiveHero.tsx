@@ -63,12 +63,12 @@ export default function AdhesiveHero() {
         <div className="ah-cta mt-8 flex flex-wrap items-center justify-center gap-6">
           <Link
             href={CTA_LINKS.quote.href}
-            className="inline-block px-7 py-3.5 font-bold bg-cta hover:brightness-95 transition-[filter]"
+            className="inline-block px-7 py-3.5 font-bold btn-wipe "
           >
             {CTA_LINKS.quote.label}
           </Link>
           <a
-            href="https://ondekvinylworx.com/wp-content/uploads/2026/01/PDS-OD1010.pdf"
+            href="/documents/PDS-OD1010.pdf"
             target="_blank"
             rel="noopener"
             className="text-xs font-bold uppercase tracking-[0.12em] underline underline-offset-4 decoration-1 hover:decoration-cta hover:decoration-2 transition-all"

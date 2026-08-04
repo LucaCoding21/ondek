@@ -96,13 +96,13 @@ export default function CompanyStory() {
             </span>
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
               <span className="cs-heading-line block">
-                vinyl decking membrane company.
+                vinyl decking membrane company
               </span>
             </span>
           </h2>
           <p className="cs-sub mt-7 max-w-xl text-foreground/60 leading-relaxed">
-            A short film on where the membrane came from, who makes it, and
-            what we will not compromise on to keep the price down.
+            A short film on where OnDek came from and the standards we will
+            not compromise on.
           </p>
         </div>
       </div>

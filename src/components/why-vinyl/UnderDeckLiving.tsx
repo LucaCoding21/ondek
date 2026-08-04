@@ -133,17 +133,17 @@ export default function UnderDeckLiving() {
               pb/-mb pair leaves descenders room inside the mask. */}
           <h2 className="ud-heading mt-6 text-4xl sm:text-5xl xl:text-6xl font-bold leading-[1.05] tracking-[-0.02em]">
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
-              <span className="ud-heading-line block">A waterproof deck</span>
+              <span className="ud-heading-line block">Extend your outdoor</span>
             </span>
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
               <span className="ud-heading-line block">
-                doubles your outdoor space.
+                living space
               </span>
             </span>
           </h2>
           <p className="ud-sub mt-6 max-w-xl text-lg text-foreground/60 leading-relaxed">
-            Because the membrane is fully waterproof, the area under your deck
-            stays dry. Turn it into a patio, outdoor kitchen, or covered storage
+            The membrane keeps the space beneath a second-story deck dry all
+            year. Turn it into a patio, outdoor kitchen, or covered storage
             instead of wasted space.
           </p>
         </div>

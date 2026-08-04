@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import MilestoneCounter from "@/components/animations/MilestoneCounter";
+import CommunityProof from "@/components/CommunityProof";
 import { CTA_LINKS } from "@/lib/nav";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const EXPO_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
@@ -30,13 +25,6 @@ const PARTNERS = [
 // The -33.333% translate is a function of copy count, not logo count.
 const TRACK = [...PARTNERS, ...PARTNERS, ...PARTNERS];
 
-// Inline circles for the "Trusted in 200+ homes" line.
-const COMMUNITY_PHOTOS = [
-  "/images/community/homeowner-1.jpg",
-  "/images/community/homeowner-2.jpg",
-  "/images/community/homeowner-3.jpg",
-];
-
 const BLURB =
   "We supply waterproof vinyl membranes that protect decks, balconies, and roof decks across North America. Every membrane meets and exceeds national building codes, independently tested and certified.";
 
@@ -44,57 +32,6 @@ export default function TrustBar() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-
-  useGSAP(
-    () => {
-      // Same reduced-motion gate as the hero: GSAP writes inline styles, so
-      // the gate is the only thing keeping the row still for those users.
-      const mm = gsap.matchMedia();
-
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: ".tb-community",
-            start: "top 85%",
-            once: true,
-          },
-        });
-
-        // Text is present from the start (quiet fade) so the photo pops
-        // have something to knock into.
-        tl.from(".tb-community-text", {
-          opacity: 0,
-          y: 8,
-          duration: 0.6,
-          ease: "power2.out",
-        });
-
-        // Photos pop 1 → 2 → 3 with an overshoot, and each landing kicks
-        // the text sideways; the elastic return is the recoil.
-        COMMUNITY_PHOTOS.forEach((_, i) => {
-          const popAt = 0.2 + i * 0.35;
-          tl.from(
-            `.tb-avatar-${i}`,
-            { scale: 0, duration: 0.8, ease: "back.out(2.2)" },
-            popAt,
-          )
-            .to(
-              ".tb-community-text",
-              { x: 5, duration: 0.12, ease: "power2.out" },
-              popAt + 0.2,
-            )
-            .to(
-              ".tb-community-text",
-              { x: 0, duration: 0.7, ease: "elastic.out(1.1, 0.4)" },
-              ">",
-            );
-        });
-      });
-
-      return () => mm.revert();
-    },
-    { scope: sectionRef },
-  );
 
   useEffect(() => {
     const el = headingRef.current;
@@ -166,21 +103,7 @@ export default function TrustBar() {
                 Square Feet Installed.
               </div>
             </div>
-            <div className="tb-community mt-4 flex items-center gap-3 text-lg font-medium text-foreground/60">
-              <span className="flex -space-x-2.5" aria-hidden>
-                {COMMUNITY_PHOTOS.map((src, i) => (
-                  <Image
-                    key={src}
-                    src={src}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className={`tb-avatar-${i} size-8 rounded-full object-cover ring-2 ring-background`}
-                  />
-                ))}
-              </span>
-              <span className="tb-community-text">Trusted in 200+ homes</span>
-            </div>
+            <CommunityProof className="mt-4" />
           </div>
 
           {/* Right: description + CTAs */}
@@ -220,8 +143,8 @@ export default function TrustBar() {
 
             <div className="flex flex-wrap items-center gap-6">
               <Link
-                href="/vinyl-decking"
-                className="inline-flex min-h-11 items-center justify-center px-10 py-3.5 text-sm font-bold uppercase tracking-[0.06em] bg-cta hover:brightness-95 transition-[filter]"
+                href="/vinyl-decking/designs-colours"
+                className="inline-flex min-h-11 items-center justify-center px-10 py-3.5 text-sm font-bold uppercase tracking-[0.06em] btn-wipe "
               >
                 Explore Products
               </Link>

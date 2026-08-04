@@ -48,8 +48,8 @@ export default function WhyVinylHero() {
           rather than floating on the band below it */}
       <div className="wv-frame relative h-[54vh] min-h-[400px] overflow-hidden lg:h-[64vh]">
         <Image
-          src="/images/projects/lake-view-glass-railing.webp"
-          alt="Vinyl deck with glass railing looking out over a lake"
+          src="/images/grey-deck-farmhouse-wide.jpg"
+          alt="Grey waterproof vinyl decking membrane on a modern farmhouse deck with black posts"
           fill
           preload
           className="object-cover"
@@ -83,27 +83,26 @@ export default function WhyVinylHero() {
           <h1 className="max-w-3xl text-5xl sm:text-6xl xl:text-7xl font-bold leading-[1.05] tracking-[-0.02em]">
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
               <span className="wv-heading-line block">
-                The last deck surface
+                Decking that&apos;s
               </span>
             </span>
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
               <span className="wv-heading-line block">
-                you&apos;ll ever install.
+                actually waterproof
               </span>
             </span>
           </h1>
 
           <div className="lg:pt-3">
             <p className="wv-sub max-w-xl text-lg text-foreground/70 leading-relaxed">
-              A wood deck sheds water between its boards. An OnDek deck
-              doesn&apos;t. The membrane is one sealed surface with
-              fusion-welded seams, approved by the CGSB and tested to ICC-ES
-              AC75.
+              Vinyl decking is a waterproof PVC membrane that goes down over
+              your deck as one sealed surface instead of boards with gaps.
+              Slip resistant, splinter free, and low maintenance.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-6">
               <Link
                 href={CTA_LINKS.quote.href}
-                className="wv-cta group inline-flex items-center gap-2.5 bg-cta px-7 py-3.5 font-bold text-foreground hover:brightness-95 transition-[filter]"
+                className="wv-cta group inline-flex items-center gap-2.5 btn-wipe px-7 py-3.5 font-bold text-foreground "
               >
                 {CTA_LINKS.quote.label}
                 <svg

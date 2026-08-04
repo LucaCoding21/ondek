@@ -34,12 +34,15 @@ function FeatureBlock({
   headingLines,
   standfirst,
   points,
+  badge,
   surface = false,
 }: {
   label: string;
   headingLines: string[];
   standfirst: string;
   points: Point[];
+  /** Circular product mark stamped in the picture's bottom-right corner */
+  badge?: { src: string; alt: string };
   /** Alternates the section background against its neighbours */
   surface?: boolean;
 }) {
@@ -108,6 +111,30 @@ function FeatureBlock({
           },
         });
 
+        // The badge stamps into the picture's corner once the shot has
+        // settled: pressed straight down from above, the back.out overshoot
+        // rebounding like a stamp hitting paper.
+        const stamp = gsap.timeline({
+          scrollTrigger: {
+            trigger: ".uf-points",
+            start: "top 85%",
+            once: true,
+          },
+          delay: 0.55,
+        });
+        stamp
+          .from(".uf-badge", { opacity: 0, duration: 0.2, ease: "power1.out" }, 0)
+          .from(
+            ".uf-badge",
+            {
+              scale: 1.8,
+              duration: 0.7,
+              ease: "back.out(2.4)",
+              transformOrigin: "50% 50%",
+            },
+            0,
+          );
+
         gsap.from(".uf-cta", {
           y: 24,
           opacity: 0,
@@ -146,6 +173,16 @@ function FeatureBlock({
               sizes="(min-width: 1024px) 40vw, 100vw"
               className="object-cover"
             />
+            {/* The product mark stamped into the picture's corner like a seal */}
+            {badge && (
+              <Image
+                src={badge.src}
+                alt={badge.alt}
+                width={96}
+                height={96}
+                className="uf-badge absolute bottom-4 right-4 w-16 sm:bottom-5 sm:right-5 sm:w-20 lg:w-24"
+              />
+            )}
           </div>
 
           <div>
@@ -226,6 +263,7 @@ export default function UltraFeatures() {
         headingLines={["A screw-free snap fit"]}
         standfirst="Precision edge detailing that improves durability, appearance, and long-term membrane performance."
         points={EDGE_POINTS}
+        badge={{ src: "/images/ultra-edge-badge.svg", alt: "Ultra Edge" }}
         surface
       />
     </>

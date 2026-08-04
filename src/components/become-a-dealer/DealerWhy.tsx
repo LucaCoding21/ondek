@@ -45,13 +45,12 @@ export default function DealerWhy() {
           });
         });
 
-        // The photo pair — large cards, longer travel, narrow then wide
+        // The photo — a large card with longer travel
         gsap.from(".why-shot", {
           y: 70,
           opacity: 0,
           duration: 0.9,
           ease: "power3.out",
-          stagger: 0.1,
           scrollTrigger: {
             trigger: ".dw-shots",
             start: "top 85%",
@@ -84,40 +83,29 @@ export default function DealerWhy() {
             </h2>
 
             <p className="dw-copy mt-16 lg:mt-auto lg:pt-24 max-w-xl text-lg text-foreground/80 leading-relaxed">
-              We manufacture the membrane ourselves, under one roof. What that
-              buys a dealer is a short list of people to call and a warranty
-              that doesn&apos;t depend on which brand of adhesive went down that
-              morning.
+              Fresh, exciting patterns that generate profits for our dealers:
+              an attractive, long lasting, low maintenance waterproofing
+              solution designed for today&apos;s educated consumer.
             </p>
 
             {/* Sat at the reference's caption size and was unreadable — kept
                 subordinate to the paragraph above it, but on a rule and at a
                 size that can actually be read */}
             <p className="dw-copy mt-10 lg:mt-14 max-w-lg border-t border-foreground/20 pt-6 text-sm text-foreground/60 leading-relaxed">
-              More than 2 million square feet of membrane has gone down to date,
+              More than 3 million square feet of membrane has gone down to date,
               every foot of it under a 15 Year Waterproofing / 5 Year Appearance
               warranty.
             </p>
           </div>
 
-          {/* Bottom-aligned pair, narrow then wide, sharing one height */}
-          <div className="dw-shots grid grid-cols-[minmax(0,4fr)_minmax(0,7fr)] gap-3 sm:gap-4 lg:mt-auto">
+          {/* Single bottom-aligned shot filling the right column */}
+          <div className="dw-shots lg:mt-auto">
             <div className="why-shot relative h-72 sm:h-96 lg:h-[30rem] overflow-hidden">
               <Image
-                src="/images/projects/deck-edge-over-lawn.webp"
-                alt="Vinyl deck surface finishing into a black aluminium railing above a lawn"
+                src="/images/grey-deck-lake-view.jpg"
+                alt="Grey vinyl deck with glass railing overlooking a lake"
                 fill
-                sizes="(min-width: 1024px) 16rem, 35vw"
-                className="object-cover"
-              />
-            </div>
-
-            <div className="why-shot relative h-72 sm:h-96 lg:h-[30rem] overflow-hidden">
-              <Image
-                src="/images/hero-deck-backyard.jpg"
-                alt="Finished OnDek vinyl deck spanning the back of a house"
-                fill
-                sizes="(min-width: 1024px) 30rem, 60vw"
+                sizes="(min-width: 1024px) 46rem, 95vw"
                 className="object-cover"
               />
             </div>

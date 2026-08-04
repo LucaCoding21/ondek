@@ -210,7 +210,7 @@ export default function DealerApplication() {
                   <span className="da-heading-line block">Apply to become</span>
                 </span>
                 <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
-                  <span className="da-heading-line block">a dealer.</span>
+                  <span className="da-heading-line block">a dealer</span>
                 </span>
               </h2>
 
@@ -434,7 +434,7 @@ export default function DealerApplication() {
                     <button
                       type="submit"
                       disabled={pending}
-                      className="group inline-flex cursor-pointer items-center gap-3 bg-cta px-7 py-3.5 font-bold transition-[filter] hover:brightness-95 disabled:cursor-wait disabled:opacity-60"
+                      className="group inline-flex cursor-pointer items-center gap-3 btn-wipe px-7 py-3.5 font-bold  disabled:cursor-wait disabled:opacity-60"
                     >
                       {pending ? "Sending…" : "Send application"}
                       <svg

@@ -56,8 +56,8 @@ export default function AboutKitCta() {
       <div className="px-3 sm:px-4 py-16 lg:py-24">
         <div className="akc-card relative overflow-hidden rounded-3xl min-h-[560px] lg:min-h-[620px]">
             <Image
-              src="/images/projects/hillside-deck-autumn.webp"
-              alt="OnDek vinyl deck on a hillside home surrounded by autumn trees"
+              src="/images/grey-deck-white-modern-home.jpg"
+              alt="Two-tone grey waterproof vinyl decking on a covered patio of a modern white home"
               fill
               className="object-cover object-[50%_45%]"
               sizes="100vw"
@@ -73,19 +73,18 @@ export default function AboutKitCta() {
               <h2 className="mt-4 text-3xl sm:text-4xl font-bold leading-tight">
                 <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
                   <span className="akc-heading-line block">
-                    Judge it the way we do.
+                    See and feel the quality
                   </span>
                 </span>
               </h2>
               <p className="akc-item mt-4 text-foreground/70 leading-relaxed">
-                Everything on this page comes down to how the membrane feels in
-                your hand. Order a free kit and we&apos;ll send real samples of
-                the designs you&apos;re considering, no charge and no visit
-                required.
+                Send us a request and we&apos;ll get your free design kit
+                shipped out to you immediately, with real samples of every
+                style and colour we offer.
               </p>
               <Link
                 href={CTA_LINKS.designKit.href}
-                className="akc-item mt-7 inline-block px-7 py-3.5 font-bold bg-cta hover:brightness-95 transition-[filter]"
+                className="akc-item mt-7 inline-block px-7 py-3.5 font-bold btn-wipe "
               >
                 Order your free kit
               </Link>

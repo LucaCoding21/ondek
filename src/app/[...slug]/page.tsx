@@ -26,7 +26,7 @@ export default async function WorkInProgressPage({
         </p>
         <Link
           href="/"
-          className="mt-9 inline-block px-7 py-3.5 font-bold bg-cta hover:brightness-95 transition-[filter]"
+          className="mt-9 inline-block px-7 py-3.5 font-bold btn-wipe "
         >
           Back to the homepage
         </Link>

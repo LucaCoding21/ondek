@@ -53,10 +53,13 @@ export default function FreeKitCta() {
   return (
     <section ref={ref} className="bg-background">
       <div className="px-3 sm:px-4 py-16 lg:py-24">
-        <div className="fk-frame relative overflow-hidden rounded-3xl min-h-[560px] lg:min-h-[620px]">
+        {/* Same corner language as the quote section: square corners with the
+            bottom-right snipped. The offer card lives bottom-left, clear of
+            the cut. */}
+        <div className="fk-frame notch-frame-br relative overflow-hidden min-h-[560px] lg:min-h-[620px]">
           <Image
-            src="/images/hero-deck-backyard.jpg"
-            alt="Waterproof vinyl deck overlooking a backyard"
+            src="/images/design-kit-spread.jpg"
+            alt="OnDek design kit box with vinyl samples, brochures and sell sheets spread on a deck"
             fill
             className="object-cover"
             sizes="100vw"
@@ -88,7 +91,7 @@ export default function FreeKitCta() {
             <div className="fk-follow">
               <Link
                 href={CTA_LINKS.designKit.href}
-                className="mt-7 inline-block px-7 py-3.5 font-bold bg-cta hover:brightness-95 transition-[filter]"
+                className="mt-7 inline-block px-7 py-3.5 font-bold btn-wipe "
               >
                 Order your free kit
               </Link>

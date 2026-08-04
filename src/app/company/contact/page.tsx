@@ -6,7 +6,7 @@ import { buildContactJsonLd } from "@/lib/contactJsonLd";
 export const metadata: Metadata = {
   title: "Contact | OnDek Vinyl Decking",
   description:
-    "Reach OnDek Vinyl Worx — offices in Aldergrove, British Columbia and Wellsville, Ohio, direct lines for sales and customer service, and a message form for everything else.",
+    "Reach OnDek Vinyl Worx: offices in Aldergrove, British Columbia and Wellsville, Ohio, direct lines for sales and customer service, and a message form for everything else.",
 };
 
 /** The screen carries the action; the directory below it collapses the

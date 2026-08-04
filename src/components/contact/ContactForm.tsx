@@ -225,7 +225,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-8 inline-flex cursor-pointer items-center gap-3 bg-cta px-7 py-3 text-sm font-bold uppercase tracking-[0.12em] text-foreground transition-[filter] hover:brightness-95 disabled:cursor-wait disabled:opacity-60"
+        className="mt-8 inline-flex cursor-pointer items-center gap-3 btn-wipe-light px-7 py-3 text-sm font-bold uppercase tracking-[0.12em] text-foreground  disabled:cursor-wait disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send"}
       </button>

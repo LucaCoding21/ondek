@@ -3,6 +3,8 @@ import { Titillium_Web, Ubuntu } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FooterReveal from "@/components/FooterReveal";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const ubuntu = Ubuntu({
   variable: "--font-ubuntu",
@@ -33,9 +35,11 @@ export default function RootLayout({
       className={`${ubuntu.variable} ${titillium.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <SmoothScroll />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <FooterReveal />
       </body>
     </html>
   );

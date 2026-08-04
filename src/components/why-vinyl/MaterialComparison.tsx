@@ -181,8 +181,9 @@ export default function MaterialComparison() {
             </span>
           </h2>
           <p className="mc-sub mt-6 max-w-xl lg:ml-auto text-lg text-foreground/60 leading-relaxed">
-            Every decking material handles water somewhere. Only one of them
-            handles it at the surface.
+            Wood and composite decks drain between the boards. A vinyl
+            membrane stops water at the surface, before it reaches the
+            structure below.
           </p>
         </div>
 

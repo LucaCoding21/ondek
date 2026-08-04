@@ -37,11 +37,11 @@ export default function DealerHero() {
         // Load: the frame settles in while the headline lines rise out of
         // their masks; eyebrow, copy, and CTAs follow through.
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-        tl.from(".hero-frame", { opacity: 0, scale: 0.98, duration: 1 })
+        tl.from(".hero-frame", { opacity: 0, scale: 0.98, duration: 0.6 })
           .from(
             ".dh-headline-line",
             { yPercent: 118, duration: 1.1, ease: "power4.out", stagger: 0.14 },
-            "-=0.6",
+            "-=0.5",
           )
           .from(
             ".hero-line",
@@ -49,7 +49,8 @@ export default function DealerHero() {
             "-=0.8",
           );
 
-        // The drawing sketches itself in behind the copy
+        // The drawing sketches itself in behind the copy, starting as soon
+        // as the frame has begun to settle rather than waiting out the text
         const lines = gsap.utils.toArray<SVGPathElement>(
           ".blueprint-line",
           ref.current,
@@ -58,7 +59,7 @@ export default function DealerHero() {
         tl.to(
           lines,
           { strokeDashoffset: 0, duration: 1.6, stagger: 0.14, ease: "none" },
-          "-=0.6",
+          0.2,
         );
       });
 
@@ -73,21 +74,22 @@ export default function DealerHero() {
         {/* One viewport tall, inside the gutter frame. min-h rather than a
             fixed h so a short screen grows it instead of clipping. pt-28 is
             the minimum that clears the fixed navbar; pb has to clear the
-            corner cut, which is 52px under 640px and 104px above. */}
-        <div className="hero-frame notch-frame-br-lg relative flex min-h-[calc(100dvh-var(--gutter)*2)] flex-col overflow-hidden bg-foreground text-white px-8 sm:px-14 lg:px-24 pt-36 sm:pt-44 lg:pt-56 pb-16 sm:pb-28">
+            corner cut, which is 52px under 640px and 104px above. At lg the
+            top padding tracks viewport height rather than sitting fixed, so
+            the CTA row stays above the fold on short laptop screens. */}
+        <div className="hero-frame notch-frame-br-lg relative flex min-h-[calc(100dvh-var(--gutter)*2)] flex-col overflow-hidden bg-foreground text-white px-8 sm:px-14 lg:px-24 pt-36 sm:pt-44 lg:pt-[clamp(7.5rem,18vh,14rem)] pb-16 sm:pb-28">
           {/* Lifted above the drawing: it is absolutely positioned, so without
               a stacking context of its own the copy would paint underneath it.
               At this size the drawing reaches up behind the title, which is
               where it should read as an underlay rather than a collision. */}
           <div className="relative z-10">
-            <p className="hero-line text-[0.7rem] font-bold uppercase tracking-[0.2em] text-white/45">
-              Dealer program · Ultra system
-            </p>
-
             {/* Each line in its own overflow mask, rising out on load. The
                 pb/-mb pair leaves room inside the mask at this tight leading
                 without adding visual space between the lines. */}
-            <h1 className="mt-8 lg:mt-10 font-bold leading-[0.86] tracking-[-0.04em] text-[clamp(3.75rem,10vw,9.5rem)]">
+            {/* min() caps the width-driven size by viewport height too, so a
+                wide-but-short laptop doesn't get a headline tall enough to
+                push the CTAs below the fold */}
+            <h1 className="font-bold leading-[0.86] tracking-[-0.04em] text-[clamp(3.75rem,min(10vw,14vh),9.5rem)]">
               <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
                 <span className="dh-headline-line block">Become</span>
               </span>
@@ -97,12 +99,12 @@ export default function DealerHero() {
             </h1>
 
             <p className="hero-line mt-9 max-w-xl text-lg text-white/60 leading-relaxed">
-              Every OnDek deck goes down through a dealer. If you build decks,
-              roofs, or renovations, the Ultra system gives you a waterproof
-              surface you can warranty for fifteen years.
+              Our success is built on the strength of our dealers. Joining the
+              OnDek network means joining a select team of deck professionals
+              in strategic locations throughout North America.
             </p>
 
-            <div className="hero-line mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div className="hero-line mt-16 flex flex-wrap items-center gap-x-8 gap-y-4">
               <Link
                 href="#apply"
                 className="group inline-flex items-center gap-3 bg-white px-7 py-3.5 font-bold text-foreground transition-colors hover:bg-white/85"

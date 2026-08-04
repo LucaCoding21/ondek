@@ -74,26 +74,24 @@ export default function DocsCta() {
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold leading-tight max-w-md">
                 <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
-                  <span className="dc-heading-line block">Need a drawing</span>
+                  <span className="dc-heading-line block">Can&apos;t find what</span>
                 </span>
                 <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
                   <span className="dc-heading-line block">
-                    we haven&apos;t published?
+                    you&apos;re looking for?
                   </span>
                 </span>
               </h2>
               <p className="dc-copy mt-5 text-sm text-white/70 leading-relaxed max-w-md">
-                Send us the condition (an unusual termination, a penetration,
-                a substrate you haven&apos;t detailed before) and we will get
-                you a drawing for it. Specifiers and installers both reach the
-                same technical team.
+                Tell us about your project and our team will point you to the
+                right drawings and documents for it.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-6 lg:justify-end">
               <Link
                 href={CTA_LINKS.quote.href}
-                className="dc-cta inline-block px-7 py-3.5 font-bold bg-cta text-foreground hover:brightness-95 transition-[filter]"
+                className="dc-cta inline-block px-7 py-3.5 font-bold btn-wipe-light text-foreground "
               >
                 Contact us
               </Link>

@@ -3,17 +3,16 @@
 import Image from "next/image";
 import { useState } from "react";
 
-// PLACEHOLDER: this is the same Vimeo clip the homepage design-kit section
-// uses. Swap the id for the company-story film when it exists; nothing else
-// in this file needs to change.
-const VIMEO_ID = "521215844";
+const YOUTUBE_ID = "j2EynZy1Vws";
 
-const EMBED = `https://player.vimeo.com/video/${VIMEO_ID}?title=0&byline=0&portrait=0&dnt=1&autoplay=1&playsinline=1`;
+// nocookie host for the same reason the old Vimeo embed carried dnt=1 —
+// nothing is tracked until the visitor chooses to play.
+const EMBED = `https://www.youtube-nocookie.com/embed/${YOUTUBE_ID}?autoplay=1&playsinline=1&rel=0`;
 
 /**
  * Click-to-play facade rather than an autoplaying loop: this clip is narrated,
  * so it should start on purpose and with sound. The poster is a plain image
- * until then, which also keeps Vimeo's player off the page for anyone who
+ * until then, which also keeps YouTube's player off the page for anyone who
  * never presses play.
  */
 export default function StoryVideo() {
@@ -25,7 +24,7 @@ export default function StoryVideo() {
         <iframe
           src={EMBED}
           title="The OnDek Vinyl Worx story"
-          allow="autoplay; fullscreen; picture-in-picture"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 size-full border-0"
         />

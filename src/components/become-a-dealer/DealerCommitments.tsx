@@ -21,26 +21,26 @@ const COMMITMENTS = [
   {
     title: "Experience true customer service",
     text: "At OnDek Vinyl Worx Inc., we believe it’s a privilege to participate in your business. We are committed to building a lasting partnership with our customers by providing competitive pricing for the best quality products, customer service and training in the industry.",
-    image: "/images/projects/glass-railing-lakeside.webp",
-    alt: "OnDek deck with glass railing looking out over a lake",
+    image: "/images/certified-installers-training.jpg",
+    alt: "Two newly certified OnDek installers holding their certificates of completion in the training shop",
   },
   {
     title: "Valuing a dealer’s investment",
     text: "We value a company’s investment in our business, and in return, we are committed to supporting our dealer network with the best decking products, marketing tools and customer service available.",
-    image: "/images/projects/cedar-post-forest-deck.webp",
-    alt: "Vinyl deck on cedar posts among standing timber",
+    image: "/images/certified-installers-training.jpg",
+    alt: "Two newly certified OnDek installers holding their certificates of completion in the training shop",
   },
   {
     title: "Sales support",
     text: "We provide pre and post sales support to our dealers with industry leading product expertise, responsiveness, comprehensive product sales training and market support.",
-    image: "/images/projects/hillside-deck-autumn.webp",
-    alt: "Deck stepping down a hillside in autumn",
+    image: "/images/certified-installers-training.jpg",
+    alt: "Two newly certified OnDek installers holding their certificates of completion in the training shop",
   },
   {
     title: "Promotional materials",
     text: "We offer creative marketing and promotional support, and we work closely with our dealers to help them identify opportunities in their local markets to build their business and achieve their performance targets.",
-    image: "/images/projects/grey-deck-black-railing.webp",
-    alt: "Grey vinyl deck surface behind a black aluminium railing",
+    image: "/images/certified-installers-training.jpg",
+    alt: "Two newly certified OnDek installers holding their certificates of completion in the training shop",
   },
 ];
 
@@ -141,7 +141,7 @@ export default function DealerCommitments() {
           <div className="dc-photo relative aspect-[4/5] w-full overflow-hidden lg:max-h-[34rem]">
             {COMMITMENTS.map((item, i) => (
               <Image
-                key={item.image}
+                key={item.title}
                 src={item.image}
                 alt={item.alt}
                 aria-hidden={shown !== i}

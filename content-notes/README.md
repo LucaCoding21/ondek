@@ -22,6 +22,11 @@ Word-for-word copy scraped from the live old site on 2026-08-03, one file per pa
 - [17-gallery.md](17-gallery.md) — gallery photo list
 - [18-blog-index.md](18-blog-index.md) — all 23 blog posts (titles/dates/slugs; bodies not yet scraped)
 
+## Launch checklist
+- ✅ RESOLVED 2026-08-03: all 37 PDFs (24 drawings, SDS set, QAI approval, OD 1010 sheets, warranty, care guide) are now mirrored in /public/documents and every src reference points at the local copies. No dependency on the old WordPress remains for documents.
+- ✅ RESOLVED 2026-08-03: /resources/videos rebuilt — all 23 videos (2 featured UltraFlash + 21 grid) embedded 1:1 from the old videos page (IDs in src/lib/videos.ts).
+- The old PVC/green-alternative page (12-green-alternative.md) still has no equivalent on the rebuild — decide whether to rebuild or drop with the owners.
+
 ## Owner-confirmed facts
 - "3 Million + Square Feet Installed" is correct (old-site banner's "More Than 2 Million" is stale) — confirmed 2026-08-03
 

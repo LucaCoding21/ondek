@@ -18,7 +18,45 @@
   }
 }
 
+/* ── Colour-wipe CTA ────────────────────────────────────────────────────
+   The fill sweeps in from the left on hover and keeps travelling out
+   through the right on leave — momentum, not a rubber band. Only
+   background-size animates; the background-position swap is instant,
+   which is what anchors the wipe to the leading edge in both directions.
+   Same expo-out curve as the site's masked headline rises. */
+.btn-wipe,
+.btn-wipe-light {
+  background-color: var(--cta);
+  background-repeat: no-repeat;
+  background-position: 100% 0%;
+  background-size: 0% 100%;
+  transition:
+    background-size 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.25s ease-out;
+}
+/* On light surfaces: wipes to the dark neutral, type flips to gold —
+   the logo's own pairing */
+.btn-wipe {
+  background-image: linear-gradient(var(--foreground), var(--foreground));
+}
+.btn-wipe:hover:not(:disabled) {
+  color: var(--cta);
+}
+/* On dark panels, where a dark fill would melt into the panel: wipes to
+   white, type stays dark */
+.btn-wipe-light {
+  background-image: linear-gradient(var(--background), var(--background));
+}
+.btn-wipe:hover:not(:disabled),
+.btn-wipe-light:hover:not(:disabled) {
+  background-position: 0% 0%;
+  background-size: 100% 100%;
+}
+
 @theme inline {
+  /* The mega menu's easing — fast start, long soft settle */
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-foreground: var(--foreground);
@@ -37,6 +75,24 @@
 
   --font-heading: var(--font-ubuntu);
   --font-body: var(--font-titillium);
+}
+
+/* Split canvas for the rubber-band overscroll: the bounce past the top shows
+   the site background, the bounce past the bottom shows dark — matching the
+   footer-reveal panel that sits at the end of every page, so the overscroll
+   reads as more of the panel instead of a white flash. The gradient is fixed
+   to the viewport, so whatever strip a bounce exposes is the matching end of
+   it; the body paints its own background over all actual content, so only
+   overscroll ever shows this. On iOS, where fixed attachment isn't honoured,
+   no-repeat keeps the fallback the plain background colour. */
+html {
+  background-color: var(--background);
+  background-image: linear-gradient(var(--background) 50%, #1a1a1a 50%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* And stop the rubber-band at the ends entirely where the browser lets us;
+     the gradient above stays as the fallback for the ones that still bounce */
+  overscroll-behavior-y: none;
 }
 
 body {

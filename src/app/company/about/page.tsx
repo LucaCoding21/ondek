@@ -7,7 +7,7 @@ import AboutKitCta from "@/components/about/AboutKitCta";
 export const metadata: Metadata = {
   title: "About | OnDek Vinyl Decking",
   description:
-    "OnDek Vinyl Worx manufactures waterproof vinyl deck membranes in Aldergrove, British Columbia, an extension of Innovative Aluminum Systems, supplying the construction trade since 2004.",
+    "OnDek Vinyl Worx is a full service waterproof vinyl decking membrane company in Aldergrove, British Columbia, built on the success of Innovative Aluminum Systems, in business since 2004.",
 };
 
 export default function AboutPage() {

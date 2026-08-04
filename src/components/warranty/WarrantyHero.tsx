@@ -9,7 +9,7 @@ import { CTA_LINKS } from "@/lib/nav";
 gsap.registerPlugin(useGSAP);
 
 const WARRANTY_PDF =
-  "https://ondekvinylworx.com/wp-content/uploads/2020/02/ONDEK-VINYL-WORX-WARRANTY-20feb2020.pdf";
+  "/documents/ONDEK-VINYL-WORX-WARRANTY-20feb2020.pdf";
 
 export default function WarrantyHero() {
   const ref = useRef<HTMLElement>(null);
@@ -64,7 +64,7 @@ export default function WarrantyHero() {
         <div className="wh-cta mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
           <Link
             href={CTA_LINKS.quote.href}
-            className="group inline-flex items-center gap-3 px-7 py-3.5 font-bold bg-cta hover:brightness-95 transition-[filter]"
+            className="group inline-flex items-center gap-3 px-7 py-3.5 font-bold btn-wipe "
           >
             {CTA_LINKS.quote.label}
             <svg

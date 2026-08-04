@@ -26,7 +26,8 @@ export default function UltraHero() {
             { yPercent: 118, duration: 1.1, ease: "power4.out", stagger: 0.14 },
             0.3,
           )
-          .from(".ush-sub", { y: 28, opacity: 0, duration: 0.9 }, 0.7);
+          .from(".ush-sub", { y: 28, opacity: 0, duration: 0.9 }, 0.7)
+          .from(".ush-badges", { y: 28, opacity: 0, duration: 0.9 }, 0.85);
       });
 
       return () => mm.revert();
@@ -69,6 +70,26 @@ export default function UltraHero() {
                   engineered for long-term waterproof performance.
                 </p>
               </div>
+            </div>
+
+            {/* The two product marks in the photo's bottom-left corner,
+                inside the copy's pb so they clear the sub-copy above. Hidden
+                on phones, where the copy runs right down into the corner. */}
+            <div className="ush-badges absolute bottom-8 left-8 z-10 hidden items-center gap-4 sm:flex lg:bottom-10 lg:left-12">
+              <Image
+                src="/images/ultra-seam-badge.svg"
+                alt="Ultra Seam"
+                width={88}
+                height={88}
+                className="w-16 lg:w-20"
+              />
+              <Image
+                src="/images/ultra-edge-badge.svg"
+                alt="Ultra Edge"
+                width={88}
+                height={88}
+                className="w-16 lg:w-20"
+              />
             </div>
           </div>
         </div>

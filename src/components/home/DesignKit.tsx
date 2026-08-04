@@ -64,7 +64,7 @@ export default function DesignKit() {
           left over, so padding and margins here never eat into it. The top
           padding keeps the title clear of the fixed navbar. */}
       <div className="px-4 sm:px-6 lg:px-10 pt-20 pb-36 lg:py-0 lg:min-h-svh lg:pt-20 lg:pb-32 lg:flex lg:flex-col lg:justify-center">
-        <div className="mt-6 lg:mt-16 lg:pl-8 xl:pl-14">
+        <div className="mt-6 mb-4 lg:mt-16 lg:mb-8 lg:pl-8 xl:pl-14">
           {/* One line, never wrapped: the vw-based clamp keeps the ~11.8em
               line inside the viewport down to 320px, capping at 6xl. The
               pb/-mb pair leaves descenders room inside the mask. */}
@@ -96,7 +96,7 @@ export default function DesignKit() {
           </p>
           <Link
             href={CTA_LINKS.designKit.href}
-            className="mt-5 inline-block px-7 py-3.5 font-bold text-foreground bg-cta hover:brightness-95 transition-[filter]"
+            className="mt-5 inline-block px-7 py-3.5 font-bold text-foreground btn-wipe-light "
           >
             Order your free kit
           </Link>

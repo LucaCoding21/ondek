@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -295,9 +296,29 @@ export default function UltraSystem() {
                 ))}
               </ul>
 
-              <h3 className="mt-5 text-lg font-bold">
-                Ultra Seam and Ultra Edge
-              </h3>
+              {/* The two product marks sit against the title that names them.
+                  Decorative to a screen reader — the title already says it. */}
+              <div className="mt-5 flex items-center justify-between gap-4">
+                <h3 className="text-lg font-bold">
+                  Ultra Seam and Ultra Edge
+                </h3>
+                <div aria-hidden className="flex shrink-0 items-center gap-2.5">
+                  <Image
+                    src="/images/ultra-seam-badge.svg"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="w-11"
+                  />
+                  <Image
+                    src="/images/ultra-edge-badge.svg"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="w-11"
+                  />
+                </div>
+              </div>
               <p className="mt-2.5 text-foreground/70 leading-relaxed">
                 Ultra Seam welds the vinyl directly to itself, a weld that
                 proved stronger than the membrane in independent testing.

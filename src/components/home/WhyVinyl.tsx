@@ -79,13 +79,13 @@ export default function WhyVinyl() {
             <h2 className="wv-heading text-3xl sm:text-4xl font-bold leading-tight">
               <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
                 <span className="wv-heading-line block">
-                  The last deck surface
+                  Why choose
                 </span>
               </span>
               <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
                 <span className="wv-heading-line block">
                   <span className="bg-cta box-decoration-clone px-1.5">
-                    you&apos;ll ever install.
+                    vinyl decking?
                   </span>
                 </span>
               </span>
@@ -112,13 +112,14 @@ export default function WhyVinyl() {
 
               <div className="bg-surface p-6 sm:p-8">
                 <h3 className="text-xl font-bold">
-                  100% waterproof. Not water-resistant.
+                  Waterproof, not water-resistant
                 </h3>
                 <p className="mt-3 text-foreground/70 leading-relaxed">
-                  One sealed surface protects your deck structure for decades:
-                  no staining, sealing, or sanding, slip-resistant when wet,
-                  and UV-stable through freeze-thaw winters. Soap and water is
-                  all it takes.
+                  Vinyl decking is a waterproof PVC membrane that seals your
+                  whole deck as one surface. It protects the structure
+                  underneath, is slip resistant wet or dry, cleans with soap
+                  and water, and is backed by a 15 Year Waterproofing / 5 Year
+                  Appearance Warranty.
                 </p>
               </div>
             </div>
@@ -128,7 +129,7 @@ export default function WhyVinyl() {
                 href="/why-vinyl"
                 className="inline-block font-bold border-b-2 border-cta pb-0.5 hover:border-foreground transition-colors"
               >
-                More on why vinyl wins
+                Learn more about vinyl decking
               </Link>
             </div>
           </div>
@@ -152,7 +153,7 @@ export default function WhyVinyl() {
             />
             <Image
               src="/images/designs/speckled-silver-scene.jpg"
-              alt="Vinyl deck surface on a backyard deck in full sun"
+              alt="Speckled Stone Silver waterproof vinyl decking membrane on a backyard deck"
               width={1680}
               height={945}
               className="w-full h-auto"

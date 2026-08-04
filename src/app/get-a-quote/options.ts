@@ -47,7 +47,7 @@ export const PROJECT_TYPES: Record<Persona, Option[]> = {
     { value: "restoration", label: "Balcony or walkway restoration" },
     { value: "repairs", label: "Repairs to failing decks" },
     { value: "new-construction", label: "New construction" },
-    { value: "assessment", label: "Not sure — need an assessment" },
+    { value: "assessment", label: "Not sure, need an assessment" },
   ],
   designer: [
     { value: "single-family", label: "Single-family spec" },

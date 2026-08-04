@@ -53,7 +53,7 @@ const inputClass =
   "w-full min-h-[44px] border border-foreground/20 bg-background px-4 py-3 outline-none transition-colors placeholder:text-foreground/35 focus:border-cta";
 
 const ctaClass =
-  "w-full min-h-[44px] cursor-pointer bg-cta py-3.5 font-bold text-foreground transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-30";
+  "w-full min-h-[44px] cursor-pointer btn-wipe py-3.5 font-bold text-foreground  disabled:cursor-not-allowed disabled:opacity-30";
 
 function StepHeading({ title, sub }: { title: string; sub: string }) {
   return (
@@ -297,7 +297,7 @@ export default function QuoteWizard() {
               >
                 <StepHeading
                   title="I am a…"
-                  sub="Quotes look a little different depending on who is asking — this points yours the right way."
+                  sub="Quotes look a little different depending on who is asking. This points yours the right way."
                 />
                 <div className="grid grid-cols-2 gap-2 tablet:gap-3">
                   {PERSONAS.map((persona) => {
@@ -349,7 +349,7 @@ export default function QuoteWizard() {
                 <BackButton onClick={back} />
                 <StepHeading
                   title="Tell us about the project."
-                  sub="A rough idea is plenty — this is what shapes the quote."
+                  sub="A rough idea is plenty. This is what shapes the quote."
                 />
 
                 <div className="space-y-8">
@@ -506,7 +506,7 @@ export default function QuoteWizard() {
                         onChange={(event) =>
                           updateField("notes", event.target.value)
                         }
-                        placeholder="Measurements, photos you want to send later, questions about colours — whatever helps."
+                        placeholder="Measurements, photos you want to send later, questions about colours. Whatever helps."
                         className={`${inputClass} resize-y`}
                       />
                     </div>
@@ -560,8 +560,19 @@ export default function QuoteWizard() {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="py-10 text-center"
               >
-                {/* The one round thing on the page */}
-                <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-cta">
+                {/* The one round thing on the page — springs in past full
+                    size and settles, the payoff beat of the wizard */}
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 420,
+                    damping: 13,
+                    delay: 0.15,
+                  }}
+                  className="mx-auto flex size-14 items-center justify-center rounded-full bg-cta"
+                >
                   <svg
                     className="size-7"
                     viewBox="0 0 24 24"
@@ -574,14 +585,13 @@ export default function QuoteWizard() {
                   >
                     <path d="m5 12.5 4.5 4.5L19 7.5" />
                   </svg>
-                </span>
+                </motion.span>
 
                 <h2 className="mt-8 text-2xl font-bold">
                   Your quote request is received.
                 </h2>
                 <p className="mx-auto mt-4 max-w-sm leading-relaxed text-foreground/60">
-                  {"We will put your quote together and get back to you within "}
-                  <strong>one business day</strong>.
+                  We will put your quote together and get back to you soon.
                 </p>
 
                 <Link

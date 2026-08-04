@@ -90,7 +90,7 @@ export default function FaqContact() {
             <div className="flex flex-wrap items-center gap-6 lg:justify-end">
               <Link
                 href={CTA_LINKS.quote.href}
-                className="fc-cta inline-block px-7 py-3.5 font-bold bg-cta text-foreground hover:brightness-95 transition-[filter]"
+                className="fc-cta inline-block px-7 py-3.5 font-bold btn-wipe-light text-foreground "
               >
                 {CTA_LINKS.quote.label}
               </Link>

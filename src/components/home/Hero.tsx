@@ -136,7 +136,7 @@ export default function Hero() {
                       </div>
                       <Link
                         href={CTA_LINKS.quote.href}
-                        className="hero-cta whitespace-nowrap px-7 py-3.5 font-bold bg-cta text-foreground hover:brightness-95 transition-[filter]"
+                        className="hero-cta whitespace-nowrap px-7 py-3.5 font-bold btn-wipe text-foreground "
                       >
                         {CTA_LINKS.quote.label}
                       </Link>

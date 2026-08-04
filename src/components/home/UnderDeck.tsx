@@ -139,7 +139,7 @@ export default function UnderDeck() {
                 living area.
               </p>
               <Link
-                href="/why-vinyl/under-deck-living-space"
+                href="/why-vinyl#under-deck"
                 className="mt-6 inline-block text-sm font-bold border-b-2 border-cta pb-0.5 hover:border-white transition-colors"
               >
                 See under-deck living ideas

@@ -17,7 +17,7 @@ const GUIDES = [
     title: "OD 1010 Product Data Sheet",
     blurb:
       "Coverage, application temperatures, open time, and the full technical data for the pail.",
-    href: "https://ondekvinylworx.com/wp-content/uploads/2026/01/PDS-OD1010.pdf",
+    href: "/documents/PDS-OD1010.pdf",
   },
   {
     label: "Safety",
@@ -25,7 +25,7 @@ const GUIDES = [
     title: "OD 1010 Safety Data Sheet",
     blurb:
       "Handling, storage, hazard classification, and first-aid information for the job site.",
-    href: "https://ondekvinylworx.com/wp-content/uploads/2026/01/SDS-OD1010.pdf",
+    href: "/documents/SDS-OD1010.pdf",
   },
 ];
 
@@ -209,7 +209,7 @@ export default function AdhesiveGuides() {
               <div className="flex flex-wrap items-center gap-6 lg:justify-end">
                 <Link
                   href={CTA_LINKS.quote.href}
-                  className="inline-block px-7 py-3.5 font-bold bg-cta text-foreground hover:brightness-95 transition-[filter]"
+                  className="inline-block px-7 py-3.5 font-bold btn-wipe-light text-foreground "
                 >
                   {CTA_LINKS.quote.label}
                 </Link>

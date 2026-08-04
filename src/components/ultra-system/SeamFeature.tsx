@@ -70,6 +70,27 @@ export default function SeamFeature() {
           scrollTrigger: { trigger: ".sm-heading", start: "top 78%", once: true },
         });
 
+        // The badge stamps in: pressed straight down from above, the
+        // back.out overshoot squashing past resting size and rebounding
+        // like a stamp hitting paper. Opacity snaps in ahead of the press so
+        // the mark is visible mid-descent.
+        const stamp = gsap.timeline({
+          scrollTrigger: { trigger: ".sm-heading", start: "top 78%", once: true },
+          delay: 0.45,
+        });
+        stamp
+          .from(".sm-badge", { opacity: 0, duration: 0.2, ease: "power1.out" }, 0)
+          .from(
+            ".sm-badge",
+            {
+              scale: 1.8,
+              duration: 0.7,
+              ease: "back.out(2.4)",
+              transformOrigin: "50% 50%",
+            },
+            0,
+          );
+
         gsap.from(".sm-media", {
           y: 40,
           opacity: 0,
@@ -126,35 +147,52 @@ export default function SeamFeature() {
         <div>
           <SectionLabel>Ultra Seam</SectionLabel>
 
-          {/* Type scale matched to Ultra Edge's heading below, so the two
-              feature blocks on this page set at the same size */}
-          <h2 className="sm-heading mt-10 max-w-2xl font-bold leading-[1.12] text-[clamp(2.25rem,4.5vw,3.5rem)]">
-            {/* One line, in its own mask; the pb/-mb pair leaves descenders
-                room inside the mask. It wraps on narrow screens, which the
-                mask handles: the block grows and both rows rise together. */}
-            <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
-              <span className="sm-heading-line block">
-                Welded vinyl to vinyl
-              </span>
-            </span>
-          </h2>
+          {/* Heading and intro on the left, the Ultra Seam badge holding the
+              right end of the row like a product mark. It rides the sm-intro
+              tween so it arrives with the copy. Hidden on small screens where
+              the heading needs the full measure. */}
+          <div className="mt-10 flex items-start justify-between gap-8">
+            <div>
+              {/* Type scale matched to Ultra Edge's heading below, so the two
+                  feature blocks on this page set at the same size */}
+              <h2 className="sm-heading max-w-2xl font-bold leading-[1.12] text-[clamp(2.25rem,4.5vw,3.5rem)]">
+                {/* One line, in its own mask; the pb/-mb pair leaves descenders
+                    room inside the mask. It wraps on narrow screens, which the
+                    mask handles: the block grows and both rows rise together. */}
+                <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
+                  <span className="sm-heading-line block">
+                    Welded vinyl to vinyl
+                  </span>
+                </span>
+              </h2>
 
-          {/* The claim sits with the heading rather than captioning the video,
-              so the section states its case before the footage, not after */}
-          {/* max-w-2xl matches the heading and is what breaks the body onto
-              two lines: the sentence measures roughly 1020px unwrapped */}
-          <div className="sm-intro mt-5 max-w-2xl lg:mt-6">
-            <p className="text-xs font-bold tracking-[0.08em] text-foreground/50">
-              The seam strength test
-            </p>
-            <p className="mt-3 font-bold leading-snug text-[clamp(1.25rem,2vw,1.6rem)]">
-              Stronger than the membrane itself
-            </p>
-            <p className="mt-3 text-sm text-foreground/60 leading-relaxed">
-              Seam technology engineered for stronger welds and long-term
-              waterproof performance. Watch the PVC-to-PVC weld tested for
-              strength against the competition.
-            </p>
+              {/* The claim sits with the heading rather than captioning the
+                  video, so the section states its case before the footage,
+                  not after */}
+              {/* max-w-2xl matches the heading and is what breaks the body onto
+                  two lines: the sentence measures roughly 1020px unwrapped */}
+              <div className="sm-intro mt-5 max-w-2xl lg:mt-6">
+                <p className="text-xs font-bold tracking-[0.08em] text-foreground/50">
+                  The seam strength test
+                </p>
+                <p className="mt-3 font-bold leading-snug text-[clamp(1.25rem,2vw,1.6rem)]">
+                  Stronger than the membrane itself
+                </p>
+                <p className="mt-3 text-sm text-foreground/60 leading-relaxed">
+                  Seam technology engineered for stronger welds and long-term
+                  waterproof performance. Watch the PVC-to-PVC weld tested for
+                  strength against the competition.
+                </p>
+              </div>
+            </div>
+
+            <Image
+              src="/images/ultra-seam-badge.svg"
+              alt="Ultra Seam"
+              width={112}
+              height={112}
+              className="sm-badge hidden shrink-0 sm:block sm:w-20 lg:w-28"
+            />
           </div>
         </div>
 

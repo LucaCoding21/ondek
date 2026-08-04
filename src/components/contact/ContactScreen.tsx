@@ -100,6 +100,18 @@ export default function ContactScreen() {
               </p>
 
               <p className="mt-2.5 text-sm text-white/40">{HOURS.note}</p>
+
+              {/* The old site's primary contact action — kept alongside the
+                  form rather than replaced by it */}
+              <a
+                href="https://calendly.com/ondek_connect/meeting_with_jim"
+                target="_blank"
+                rel="noopener"
+                className="mt-5 inline-block text-sm font-bold underline decoration-1 underline-offset-4 decoration-white/30 transition-colors hover:decoration-white"
+              >
+                Prefer to talk? Schedule a call
+                <span className="sr-only">, opens Calendly in a new tab</span>
+              </a>
             </div>
 
           {/* Centred, not bottom-aligned: the panel is the taller of the two

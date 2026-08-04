@@ -179,7 +179,7 @@ export default function SystemSection() {
             </Link>
             <Link
               href={CTA_LINKS.quote.href}
-              className="group inline-flex items-center gap-2.5 bg-cta px-7 py-3.5 font-bold text-foreground hover:brightness-95 transition-[filter]"
+              className="group inline-flex items-center gap-2.5 btn-wipe px-7 py-3.5 font-bold text-foreground "
             >
               {CTA_LINKS.quote.label}
               <svg

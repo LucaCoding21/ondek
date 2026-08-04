@@ -10,7 +10,7 @@ import FreeKitCta from "@/components/designs-colours/FreeKitCta";
 export const metadata: Metadata = {
   title: "Why Vinyl | OnDek Vinyl Decking",
   description:
-    "Vinyl, wood, or composite: how each one handles water, why a fusion-welded OnDek membrane is the last deck surface you'll install, and what a dry space under the deck is worth.",
+    "What vinyl decking is, how it compares to wood and composite, how the welded membrane keeps a deck dry, and what a dry space under the deck is worth.",
 };
 
 export default function WhyVinylPage() {

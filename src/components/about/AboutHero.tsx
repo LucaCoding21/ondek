@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
@@ -45,18 +44,19 @@ export default function AboutHero() {
       {/* Full bleed, no gutter frame: the story section below opens with its
           own framed video, and two inset rectangles stacked read as borders */}
       <div className="ah-frame relative h-dvh min-h-[520px] overflow-hidden">
-        <Image
-          src="/images/hero-deck.jpg"
-          alt="Finished OnDek vinyl deck off the back of a house"
-          fill
-          preload
-          className="object-cover object-[55%_50%]"
-          sizes="100vw"
+        <video
+          src="/videos/about-hero.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover object-[55%_50%]"
         />
 
         {/* Three scrims, each doing one job: the nav, the headline over a
             bright sky, and the copy over a pale deck */}
-        <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-black/70 via-black/35 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -68,10 +68,10 @@ export default function AboutHero() {
               already wrapping it. */}
           <h1 className="max-w-[12ch] font-bold leading-[0.94] tracking-[-0.035em] text-[clamp(3rem,8vw,7.5rem)]">
             <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
-              <span className="ah-headline-line block">Vinyl Deck</span>
+              <span className="ah-headline-line block">About OnDek</span>
             </span>
             <span className="block overflow-hidden pb-[0.12em] -mb-[0.12em]">
-              <span className="ah-headline-line block">Manufacturer</span>
+              <span className="ah-headline-line block">Vinyl Worx</span>
             </span>
           </h1>
 
@@ -83,9 +83,10 @@ export default function AboutHero() {
                 About us
               </p>
               <p className="mt-4 text-base sm:text-lg text-white/80 leading-relaxed">
-                OnDek Vinyl Worx builds waterproof vinyl deck membranes out of
-                Aldergrove, British Columbia, and supplies them to builders,
-                dealers, and homeowners across North America.
+                OnDek Vinyl Worx is a full service waterproof vinyl decking
+                membrane company based in Aldergrove, British Columbia,
+                supplying dealers, builders, and homeowners across North
+                America.
               </p>
               <Link
                 href="/company/contact"

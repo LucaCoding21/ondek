@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
@@ -10,16 +9,13 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
- * PLACEHOLDER PROGRAM — confirm with OnDek before this page goes live.
+ * Copy drawn from the old site: the Dealer Sales Kit and sell sheets (home
+ * slide 2), "pre and post sales support ... comprehensive product sales
+ * training" (dealers page), and the closing line verbatim from the home
+ * page's dealer column. No schedule, cost, certification, or response time
+ * is promised because OnDek publishes none.
  *
- * OnDek has not published a dealer training or support program, so the two
- * blocks of copy below describe an ordinary manufacturer-supported path and
- * are NOT quoted from any OnDek document. They deliberately promise no
- * schedule, no cost, no certification, and no response time. Swap them for the
- * real program once it is supplied. The product details they lean on —
- * UltraSeam, OD1010, the design kit, the warranty document — are real.
- *
- * Full-bleed photograph with the copy set straight onto it, small block into
+ * Full-bleed looping video with the copy set straight onto it, small block into
  * the top-right corner and the larger one bottom-left. The two gradients are
  * what make that legible over a bright sky and a shadowed foreground; without
  * them the top block sits on blue and disappears.
@@ -83,21 +79,29 @@ export default function DealerSupport() {
   return (
     <section ref={ref} className="bg-background">
       <div className="relative overflow-hidden">
-        <Image
-          src="/images/hero-deck.jpg"
-          alt="Finished OnDek vinyl deck running the width of a house"
-          fill
-          sizes="100vw"
-          className="object-cover object-[50%_55%]"
+        {/* Silent 10s loop cut from the OnDek promo reel; the audio track is
+            stripped from the file itself, so muted here is belt-and-braces
+            for autoplay policy */}
+        <video
+          src="/videos/dealer-support.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-label="OnDek installers at work, looping silently"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_40%]"
         />
 
         <div className="absolute inset-0 bg-black/35" />
-        {/* The top block sits over bright sky, so it needs the heavier of the
-            two gradients to hold its contrast */}
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/85 via-black/50 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+        {/* Light gradients top and bottom — just enough to seat the copy on
+            the footage without dimming the frame */}
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/50 via-black/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
 
-        <div className="relative z-10 flex min-h-[85svh] lg:min-h-[92svh] flex-col justify-between gap-24 px-6 sm:px-10 lg:px-16 xl:px-24 py-16 lg:py-24 text-white">
+        {/* lg height tracks the video's 16:9 frame, so it shows uncropped;
+            below lg the copy needs more height than the ratio gives, so svh
+            keeps ruling there */}
+        <div className="relative z-10 flex min-h-[85svh] lg:min-h-[56.25vw] flex-col justify-between gap-24 px-6 sm:px-10 lg:px-16 xl:px-24 py-16 lg:py-24 text-white">
           {/* Everything introductory in the top-left corner, the statement and
               the way out of the section in the bottom-right */}
           <div className="max-w-2xl">
@@ -111,19 +115,17 @@ export default function DealerSupport() {
             </h2>
 
             <p className="dsu-sub mt-6 max-w-md text-base leading-relaxed text-white">
-              The membrane is manufactured under our own roof, so a question
-              about a detail on site goes to the people who made the material
-              rather than down a distribution chain. Design kits, colour
-              samples, spec sheets, and the warranty document come with the
-              account.
+              High-impact sell sheets and a comprehensive Dealer Sales Kit
+              help our dealers increase sales, backed by product sales
+              training and pre and post sales support.
             </p>
           </div>
 
           <div className="dsu-close max-w-2xl sm:self-end">
             <p className="text-xl sm:text-2xl lg:text-[1.75rem] leading-[1.4] tracking-[-0.01em] text-balance">
-              A waterproof deck is a detail job. New dealers are taken through
-              the whole system before the first one goes down, and the line
-              stays open long after it does.
+              We support our dealer network with the best waterproof vinyl
+              decking products, marketing tools, and customer service in the
+              industry.
             </p>
 
             <Link

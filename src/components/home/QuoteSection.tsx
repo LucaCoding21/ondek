@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { CTA_LINKS } from "@/lib/nav";
+import CommunityProof from "@/components/CommunityProof";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -96,14 +97,16 @@ export default function QuoteSection() {
               <div className="qs-cta mt-14 max-w-md">
                 <p className="text-lg leading-relaxed text-white/70">
                   Tell us about your project and we&apos;ll connect you with
-                  a trusted OnDek dealer for a no-pressure quote.
+                  an authorized OnDek dealer in your area.
                 </p>
                 <Link
                   href={CTA_LINKS.quote.href}
-                  className="mt-6 inline-block bg-cta px-6 py-3 font-bold text-foreground hover:brightness-95 transition-[filter]"
+                  className="mt-6 inline-block btn-wipe-light px-6 py-3 font-bold text-foreground "
                 >
                   {CTA_LINKS.quote.label}
                 </Link>
+
+                <CommunityProof dark className="mt-8" />
               </div>
             </div>
 
@@ -111,8 +114,8 @@ export default function QuoteSection() {
                 container's bottom-right cut instead of squaring it off. */}
             <div className="qs-image notch-frame-br relative overflow-hidden aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-[520px]">
               <Image
-                src="/images/hero-deck-backyard.jpg"
-                alt="Waterproof vinyl deck overlooking a backyard"
+                src="/images/grey-deck-mountain-view.jpg"
+                alt="Covered grey vinyl deck with glass railing looking out over the mountains"
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 42vw"

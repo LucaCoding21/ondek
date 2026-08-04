@@ -10,7 +10,7 @@ import SectionLabel from "@/components/SectionLabel";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const CARE_PDF =
-  "https://ondekvinylworx.com/wp-content/uploads/2020/02/ONDEK-Care-and-Cleaning-20feb2020.pdf";
+  "/documents/ONDEK-Care-and-Cleaning-20feb2020.pdf";
 
 /** The three-step clean from the care & maintenance page — nothing added */
 const STEPS = [

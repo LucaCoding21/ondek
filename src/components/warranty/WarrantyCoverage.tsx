@@ -10,7 +10,7 @@ import SectionLabel from "@/components/SectionLabel";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const WARRANTY_PDF =
-  "https://ondekvinylworx.com/wp-content/uploads/2020/02/ONDEK-VINYL-WORX-WARRANTY-20feb2020.pdf";
+  "/documents/ONDEK-VINYL-WORX-WARRANTY-20feb2020.pdf";
 
 /**
  * Straight from the warranty page — do not embellish. The first two entries
@@ -185,8 +185,8 @@ export default function WarrantyCoverage() {
                 bottom-left corner, level with the last entry. */}
             <div className="cov-img relative mt-16 aspect-[16/10] w-full overflow-hidden sm:max-w-lg lg:mt-auto lg:max-w-[34rem]">
               <Image
-                src="/images/hero-deck.jpg"
-                alt="Finished OnDek vinyl deck off the back of a house"
+                src="/images/grey-deck-farmhouse-wide.jpg"
+                alt="Grey vinyl decking membrane on a covered farmhouse deck with black posts"
                 fill
                 preload
                 sizes="(min-width: 1024px) 34rem, (min-width: 640px) 32rem, 100vw"

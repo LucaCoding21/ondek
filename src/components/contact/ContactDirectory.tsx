@@ -158,13 +158,20 @@ export default function ContactDirectory() {
           <h2 className="cd-heading mt-7 font-bold leading-[1.05] tracking-[-0.02em] text-[clamp(1.875rem,3.5vw,2.75rem)]">
             <span className="block overflow-hidden pb-[0.1em] -mb-[0.1em]">
               <span className="cd-heading-line block">
-                Offices and people.
+                Offices and people
               </span>
             </span>
           </h2>
 
           {/* The two things that are true regardless of which row you open */}
           <div className="cd-meta">
+          {/* The old contact page's own line about the team, en dash swapped
+              for a colon */}
+          <p className="mt-6 max-w-2xl text-foreground/60 leading-relaxed">
+            Great products alone don&apos;t position us at the forefront of
+            the industry: it&apos;s our qualified staff that set us apart from
+            the competition.
+          </p>
           <p className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-foreground/60">
             <span className="font-bold text-foreground">
               {HOURS.days}, {HOURS.time}
