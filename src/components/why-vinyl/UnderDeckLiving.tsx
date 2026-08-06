@@ -16,10 +16,10 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 const ANNOTATIONS = [
   {
     n: "01",
-    label: "Outdoor kitchen",
-    title: "Appliances that can live outside",
-    body: "Cabinetry, counters, and a grill stay out of the rain, so the cooking moves outdoors without moving anything back in at the end of the day.",
-    marker: { left: "30%", top: "58%" },
+    label: "Covered storage",
+    title: "The garage gets its floor back",
+    body: "Bikes, tools, and off-season furniture go under the deck instead of inside. Dry, out of the way, and off the driveway.",
+    marker: { left: "37%", top: "78%" },
     box: "lg:absolute lg:left-0 lg:top-[64%] lg:w-[21rem]",
   },
   {
@@ -27,15 +27,15 @@ const ANNOTATIONS = [
     label: "Patio",
     title: "Seating that survives the forecast",
     body: "Shade in July, shelter in November. A dry ceiling turns the space under the deck into the one outdoor room that's usable in any weather.",
-    marker: { left: "52%", top: "66%" },
+    marker: { left: "50%", top: "48%" },
     box: "lg:absolute lg:left-1/2 lg:-translate-x-1/2 lg:top-[94%] lg:w-[21rem]",
   },
   {
     n: "03",
-    label: "Covered storage",
-    title: "The garage gets its floor back",
-    body: "Bikes, tools, and off-season furniture go under the deck instead of inside. Dry, out of the way, and off the driveway.",
-    marker: { left: "84%", top: "55%" },
+    label: "Outdoor kitchen",
+    title: "Appliances that can live outside",
+    body: "Cabinetry, counters, and a grill stay out of the rain, so the cooking moves outdoors without moving anything back in at the end of the day.",
+    marker: { left: "71%", top: "71%" },
     box: "lg:absolute lg:right-0 lg:top-[60%] lg:w-[21rem]",
   },
 ];
@@ -153,10 +153,10 @@ export default function UnderDeckLiving() {
         <div className="relative mx-auto mt-12 max-w-[96rem] lg:mt-16 lg:mb-40">
           <div className="ud-art relative mx-auto max-w-6xl">
             <Image
-              src="/images/under-deck-concept.webp"
+              src="/images/under-deck-concept-v2.webp"
               alt="Line drawing of a deck with a furnished, dry living space underneath"
-              width={1536}
-              height={1024}
+              width={1400}
+              height={1092}
               className="w-full h-auto"
               sizes="(min-width: 1024px) 72rem, 100vw"
             />
@@ -180,7 +180,7 @@ export default function UnderDeckLiving() {
             {ANNOTATIONS.map(({ n, label, title, body, box }) => (
               <div
                 key={n}
-                className={`annotation border border-foreground/20 bg-background p-6 lg:p-7 ${box}`}
+                className={`annotation border border-gold bg-background p-6 lg:p-7 ${box}`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold">{n}</span>

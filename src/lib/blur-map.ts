@@ -69,6 +69,8 @@ export const BLUR_MAP: Record<string, string> = {
   "/images/ultra-layers/underlayment-v6.webp": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4WAoAAAAQAAAACQAABQAAQUxQSCcAAAARL6CmbQMWF0/fHREBnQkMRJKxVJBAFBmM/mWEiOh/eh3YK+YSHR4AVlA4ICAAAAAwAQCdASoKAAYABIB0JaQAA3AA/vBc/2n6W+rXpWQQAA==",
   "/images/ultra-layers/weld-rod.webp": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4WAoAAAAQAAAACQAABAAAQUxQSCkAAAARL0AmbZvrVQe9xiIi6C4giCQlSwMiUIIIBEDtX8YSEf3PgJ1AvoZqHwBWUDggHAAAADABAJ0BKgoABQAEgHQlpAADcAD+8BzAIvH8AAA=",
   "/images/ultra-seam-selvage.webp": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACQAQCdASoKAAcABIB0JZwAAlJUEkAA/F4ttnYPH2vypWgt53gAAA==",
+  "/images/under-deck-concept-v2.webp": "data:image/webp;base64,UklGRjAAAABXRUJQVlA4ICQAAACQAQCdASoKAAgABIB0JaQAAxf7+RAA/u/sdQLrMhvoezAAAAA=",
   "/images/under-deck-concept.webp": "data:image/webp;base64,UklGRiYAAABXRUJQVlA4IBoAAAAwAQCdASoKAAcABIB0JaQAA3AA/vDTOQAAAA==",
   "/images/under-deck-living.webp": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4WAoAAAAQAAAACQAABAAAQUxQSC4AAAARL6CwbRsUF8aLiOB2fkNBJKmtosEBvANKBPAoSFGQiP6Hwlz0sWcvd//OBpwDVlA4IBgAAAAwAQCdASoKAAUABIB0JaQAA3AA/vAYIAA=",
+  "/images/under-deck-storage-v3.webp": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4WAoAAAAQAAAACQAACAAAQUxQSDsAAAARL6CmbQMWq+9uRATOJlDUSJIa31sFZODIwd79WQBF9D+AhR0JErpnlupfu6wkIZ7Jwm3OzN6SCggCAQBWUDggGAAAADABAJ0BKgoACQAEgHQlpAADcAD+8USAAA==",
 };

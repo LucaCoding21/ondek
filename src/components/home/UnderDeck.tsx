@@ -19,9 +19,13 @@ const STATS = [
     value: "2×",
     target: null,
     place: "lg:col-start-1 lg:row-start-1",
-    art: "/images/under-deck-living.webp",
-    // Mirrored so the deck opens back toward the card
-    artClass: "left-1/4 top-[42%] w-[122%] -scale-x-100",
+    art: "/images/under-deck-storage-v3.webp",
+    artW: 900,
+    artH: 795,
+    // Near-square drawing, so it needs far less width than the wide sibling
+    // to occupy the same vertical band. No mirror — the stairs already run
+    // down toward the copy on the left.
+    artClass: "left-[30%] top-[42%] w-[72%]",
   },
   {
     title: "Waterproof",
@@ -30,6 +34,8 @@ const STATS = [
     target: 100,
     place: "lg:col-start-2 lg:row-start-1",
     art: null,
+    artW: null,
+    artH: null,
     artClass: null,
   },
   {
@@ -39,6 +45,8 @@ const STATS = [
     target: null,
     place: "lg:col-start-2 lg:row-start-2",
     art: null,
+    artW: null,
+    artH: null,
     artClass: null,
   },
   {
@@ -48,6 +56,8 @@ const STATS = [
     target: null,
     place: "lg:col-start-3 lg:row-start-2",
     art: "/images/deck-edge-detail.webp",
+    artW: 900,
+    artH: 522,
     artClass: "left-[32%] top-[52%] w-full",
   },
 ];
@@ -165,8 +175,8 @@ export default function UnderDeck() {
                   <Image
                     src={stat.art}
                     alt=""
-                    width={900}
-                    height={522}
+                    width={stat.artW ?? 900}
+                    height={stat.artH ?? 522}
                     className={`pointer-events-none absolute max-w-none -translate-y-1/2 opacity-90 ${
                       stat.artClass ?? ""
                     }`}

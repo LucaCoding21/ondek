@@ -129,7 +129,7 @@ export default function Hero() {
 
         <p className="hero-fade-sub mb-9 max-w-[512px] font-body text-lg font-light leading-[1.625] text-offwhite/80 tablet:mb-10">
           Premium vinyl membranes in modern patterns. Low maintenance, slip
-          resistant, and backed by our{" "}
+          resistant, fire resistant, and backed by our{" "}
           <span className="font-normal text-accent">
             15 / 5 Year Limited Warranty
           </span>
@@ -148,7 +148,7 @@ export default function Hero() {
           <div>
             <Link
               href={CTA_LINKS.designKit.href}
-              className="block border border-white/35 px-6 py-4 text-center font-body text-sm font-semibold uppercase tracking-[0.06em] text-white transition-colors duration-[250ms] ease-[ease] hover:border-gold hover:text-gold desktop:px-10 desktop:py-3.5"
+              className="block bg-white px-6 py-4 text-center font-body text-sm font-semibold uppercase tracking-[0.06em] text-ink transition-colors duration-[250ms] ease-[ease] hover:bg-offwhite desktop:px-10 desktop:py-3.5"
             >
               {CTA_LINKS.designKit.label}
             </Link>
