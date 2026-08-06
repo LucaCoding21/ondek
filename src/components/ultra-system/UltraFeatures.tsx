@@ -180,7 +180,7 @@ function FeatureBlock({
                 alt={badge.alt}
                 width={96}
                 height={96}
-                className="uf-badge absolute bottom-4 right-4 w-16 sm:bottom-5 sm:right-5 sm:w-20 lg:w-24"
+                className="uf-badge absolute bottom-4 right-4 h-auto w-16 sm:bottom-5 sm:right-5 sm:w-20 lg:w-24"
               />
             )}
           </div>

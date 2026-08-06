@@ -253,7 +253,7 @@ export default function ColourGallery() {
                     alt={`${design.name} vinyl decking pattern`}
                     fill
                     sizes="(min-width: 1280px) 26vw, (min-width: 1024px) 30vw, (min-width: 640px) 46vw, 72vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.24]"
                   />
 
                   {design.tag && (

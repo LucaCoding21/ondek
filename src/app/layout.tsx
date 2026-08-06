@@ -3,7 +3,6 @@ import { Titillium_Web, Ubuntu } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FooterReveal from "@/components/FooterReveal";
 import SmoothScroll from "@/components/SmoothScroll";
 
 const ubuntu = Ubuntu({
@@ -15,7 +14,7 @@ const ubuntu = Ubuntu({
 const titillium = Titillium_Web({
   variable: "--font-titillium",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["300", "400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -39,7 +38,6 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
-        <FooterReveal />
       </body>
     </html>
   );

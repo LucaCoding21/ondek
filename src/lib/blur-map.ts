@@ -29,7 +29,6 @@ export const BLUR_MAP: Record<string, string> = {
   "/images/designs/speckled-stone-silver.jpg": "data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoKAAoABIB0JaQAA3AA/uv7AAA=",
   "/images/designs/speckled-stone-tan.jpg": "data:image/webp;base64,UklGRigAAABXRUJQVlA4IBwAAABwAQCdASoKAAoABIB0JYwCdAF1AAD+7iZ+BuwA",
   "/images/designs/speckled-tan-800px.jpg": "data:image/webp;base64,UklGRigAAABXRUJQVlA4IBwAAABwAQCdASoKAAoABIB0JYwCdAF1AAD+7iZ+BuwA",
-  "/images/designs/swatches/dekplank-brown.jpg": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAABwAQCdASoKAAoABIB0JYwCdAIHgAD8BtOOtNMSAAA=",
   "/images/designs/swatches/driftwood.jpg": "data:image/webp;base64,UklGRiwAAABXRUJQVlA4ICAAAABwAQCdASoKAAoABIB0JZQCdAFAAAD+1oqtHaFicyAAAA==",
   "/images/designs/swatches/granite-brown.jpg": "data:image/webp;base64,UklGRioAAABXRUJQVlA4IB4AAABwAQCdASoKAAoABIB0JYwCdAFAAAD+214vWjNiAAA=",
   "/images/designs/swatches/granite-grey.jpg": "data:image/webp;base64,UklGRigAAABXRUJQVlA4IBwAAAAwAQCdASoKAAoABIB0JZwAA3AA/ugTyTUHAAAA",

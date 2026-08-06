@@ -6,10 +6,8 @@
   --foreground: #1a1a1a;
   --cta: #f4ce47;
 
-  /* Fold geometry — shared by the nav gutter and the hero frame.
-     Offset = nav top gutter + nav bar + hero top gutter + hero bottom gutter. */
+  /* Hero frame geometry — the white gutter around the hero photo. */
   --gutter: 0.75rem;
-  --nav-bar-h: 4.75rem;
 }
 
 @media (min-width: 640px) {
@@ -70,6 +68,13 @@
   --color-stone-200: #e8e3db;
   --color-stone-400: #a89d8e;
 
+  /* Approved nav/hero-badge tokens (handoff spec) */
+  --color-accent: #f3cf47;
+  --color-accent-hover: #dbb73d;
+  --color-gold: #b69a5a;
+  --color-cream: #f9f6f0;
+  --color-offwhite: #f5f2ee;
+
   --breakpoint-tablet: 768px;
   --breakpoint-desktop: 1025px;
 
@@ -77,17 +82,93 @@
   --font-body: var(--font-titillium);
 }
 
+/* Top-level nav link (handoff spec): Titillium 14px/600, 0.1em tracking,
+   uppercase, with a 1px yellow underline that grows from the left on hover */
+.nav-link {
+  position: relative;
+  font-family: var(--font-titillium), sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 0;
+  background-color: var(--color-accent, #f3cf47);
+  transition: width 0.25s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Hero entrance sequence (handoff spec). CSS-only, desktop only — keeps
+   mobile LCP unblocked — and disabled entirely under reduced motion.
+   Delays: headline line 1 → 0.2s · line 2 → 0.33s · paragraph → 0.5s ·
+   buttons → 0.64s · badge strip → 0.95s. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 1025px) {
+  .hero-rise-1 {
+    animation: hero-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  }
+  .hero-rise-2 {
+    animation: hero-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.33s both;
+  }
+  .hero-fade-sub {
+    animation: hero-fade-up 0.7s ease-out 0.5s both;
+  }
+  .hero-fade-cta {
+    animation: hero-fade-up 0.7s ease-out 0.64s both;
+  }
+  .hero-fade-up {
+    animation: hero-fade-up 0.7s ease-out 0.95s both;
+    will-change: transform, opacity;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise-1,
+  .hero-rise-2,
+  .hero-fade-sub,
+  .hero-fade-cta,
+  .hero-fade-up {
+    animation: none !important;
+  }
+}
+
 /* Split canvas for the rubber-band overscroll: the bounce past the top shows
    the site background, the bounce past the bottom shows dark — matching the
-   footer-reveal panel that sits at the end of every page, so the overscroll
-   reads as more of the panel instead of a white flash. The gradient is fixed
-   to the viewport, so whatever strip a bounce exposes is the matching end of
-   it; the body paints its own background over all actual content, so only
+   fixed ink footer at the end of every page, so the overscroll reads as more
+   of the footer instead of a white flash. The gradient is fixed to the
+   viewport, so whatever strip a bounce exposes is the matching end of it;
+   the body paints its own background over all actual content, so only
    overscroll ever shows this. On iOS, where fixed attachment isn't honoured,
    no-repeat keeps the fallback the plain background colour. */
 html {
   background-color: var(--background);
-  background-image: linear-gradient(var(--background) 50%, #1a1a1a 50%);
+  background-image: linear-gradient(var(--background) 50%, #0a0908 50%);
   background-repeat: no-repeat;
   background-attachment: fixed;
   /* And stop the rubber-band at the ends entirely where the browser lets us;

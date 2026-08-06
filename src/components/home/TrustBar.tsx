@@ -18,7 +18,6 @@ const PARTNERS = [
   { name: "PRI", src: "/images/partners/pri.png", w: 227, h: 120 },
   { name: "QAI Laboratories", src: "/images/partners/qai.png", w: 120, h: 120 },
   { name: "Innovative", src: "/images/partners/innovative.svg", w: 473, h: 160 },
-  { name: "rpi consultants", src: "/images/partners/rpi-consultants.svg", w: 1219, h: 419 },
 ];
 
 // Triple the set so there's enough content for a seamless infinite loop.
@@ -176,7 +175,7 @@ export default function TrustBar() {
       {/* Divider — the label straddles the rule like a fieldset legend */}
       <div className="relative border-t border-[#e8e3db]">
         <span className="absolute left-6 md:left-10 lg:left-16 -translate-y-1/2 bg-background px-3 text-[0.65rem] uppercase tracking-[0.2em] text-[#a89d8e]">
-          Trusted By
+          Family brands, sharp engineers, high standards
         </span>
       </div>
 

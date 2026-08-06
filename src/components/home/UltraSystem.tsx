@@ -303,19 +303,22 @@ export default function UltraSystem() {
                   Ultra Seam and Ultra Edge
                 </h3>
                 <div aria-hidden className="flex shrink-0 items-center gap-2.5">
+                  {/* h-auto everywhere these badges appear: sizing width
+                      alone leaves the attribute height in charge, and the
+                      mismatch squashes the circles slightly oval and soft */}
                   <Image
                     src="/images/ultra-seam-badge.svg"
                     alt=""
                     width={48}
                     height={48}
-                    className="w-11"
+                    className="w-11 h-auto"
                   />
                   <Image
                     src="/images/ultra-edge-badge.svg"
                     alt=""
                     width={48}
                     height={48}
-                    className="w-11"
+                    className="w-11 h-auto"
                   />
                 </div>
               </div>

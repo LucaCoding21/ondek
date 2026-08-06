@@ -191,7 +191,7 @@ export default function SeamFeature() {
               alt="Ultra Seam"
               width={112}
               height={112}
-              className="sm-badge hidden shrink-0 sm:block sm:w-20 lg:w-28"
+              className="sm-badge hidden h-auto shrink-0 sm:block sm:w-20 lg:w-28"
             />
           </div>
         </div>

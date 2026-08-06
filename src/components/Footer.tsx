@@ -1,7 +1,12 @@
+"use client";
+
 import Image from "@/components/SiteImage";
 import Link from "next/link";
-import { NAV_ITEMS, CTA_LINKS } from "@/lib/nav";
-import { GENERAL_EMAIL, TOLL_FREE } from "@/lib/contact";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { ChevronDown, Phone } from "lucide-react";
+import { CTA_LINKS } from "@/lib/nav";
+import { TOLL_FREE } from "@/lib/contact";
 
 /** The old site's own social profiles, unchanged */
 const SOCIALS = [
@@ -33,151 +38,219 @@ const SOCIALS = [
   },
 ];
 
-export default function Footer() {
-  return (
-    <footer className="bg-[#1a1a1a] text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-10">
-          <div className="col-span-2">
-            <div className="flex items-center gap-10">
-              <Link href="/" className="inline-block">
-                <Image
-                  src="/images/ondek-logo-white.svg"
-                  alt="OnDek"
-                  width={214}
-                  height={100}
-                  className="h-14 w-auto"
-                />
-              </Link>
+/** OnDek's own sections in the reference footer's four-column frame */
+const SECTIONS = [
+  {
+    title: "Vinyl decking",
+    links: [
+      { label: "Designs & colours", href: "/vinyl-decking/designs-colours" },
+      { label: "The Ultra system", href: "/vinyl-decking/the-ultra-system" },
+      { label: "Adhesive", href: "/vinyl-decking/adhesive" },
+      { label: "Warranty", href: "/vinyl-decking/warranty" },
+      { label: "Why vinyl", href: "/why-vinyl" },
+    ],
+  },
+  {
+    title: "Dealers",
+    links: [
+      { label: "Become a dealer", href: "/become-a-dealer" },
+      { label: "Free design kit", href: "/free-design-kit" },
+      { label: "Get a quote", href: "/get-a-quote" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Blog", href: "/resources/blog" },
+      { label: "FAQs", href: "/resources/faqs" },
+      { label: "Documents", href: "/resources/documents" },
+      { label: "Videos", href: "/resources/videos" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "/company/about" },
+      { label: "Contact", href: "/company/contact" },
+    ],
+  },
+];
 
-              {/* The mirror of the cross-promo on innovativealuminum.com,
-                  which points back here with "we also serve vinyl" and a
-                  ghosted OnDek logo. The dimming is opacity stacking — 70%
-                  label inside an 80% anchor — and hover restores only the
-                  anchor layer, brightening label and logo in one cheap
-                  composite-only transition. The colour asset is used as-is —
-                  a flat white recolour collapses this mark's stacked layers
-                  into a blob, so a real knockout would need a designed asset. */}
-              <a
-                href="https://www.innovativealuminum.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Innovative Aluminum Systems — sister brand (opens in new tab)"
-                className="inline-flex flex-col items-start opacity-80 transition-opacity hover:opacity-100"
-              >
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                  We also serve railing
-                </p>
-                <Image
-                  src="/images/innovative-aluminum-logo.svg"
-                  alt=""
-                  width={473}
-                  height={160}
-                  className="h-10 w-auto"
-                />
-              </a>
-            </div>
-            <p className="mt-4 text-sm text-white/60 leading-relaxed max-w-xs">
-              Waterproof vinyl decking membranes for decks, balconies, and
-              roof decks across North America. Part of the Innovative Group
-              of Companies.
-            </p>
-            <div className="mt-6 flex gap-3">
-              <Link
-                href={CTA_LINKS.quote.href}
-                className="px-4 py-2.5 text-sm font-bold btn-wipe-light text-foreground "
-              >
-                {CTA_LINKS.quote.label}
-              </Link>
-              <Link
-                href={CTA_LINKS.designKit.href}
-                className="px-4 py-2.5 text-sm font-bold border border-white/25 hover:border-white/60 transition-colors"
-              >
-                {CTA_LINKS.designKit.label}
-              </Link>
-            </div>
+/** Toll-free leads with the visible icon; the locals align under it via an
+ *  invisible copy of the same icon (handoff spec) */
+const PHONES = [
+  { label: `Toll free ${TOLL_FREE.display}`, href: TOLL_FREE.href, lead: true },
+  { label: "CAN 604-625-1159", href: "tel:+16046251159", lead: false },
+  { label: "USA 216-389-2212", href: "tel:+12163892212", lead: false },
+];
+
+export default function Footer() {
+  // Mobile accordion — one section open at a time
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
+  return (
+    <footer className="relative overflow-hidden bg-ink text-offwhite">
+      <div className="relative z-10 mx-auto max-w-[1440px] px-4 pb-16 pt-12 tablet:px-20 tablet:pt-20 desktop:px-32">
+        {/* Brand block — floated left at a fixed width on desktop so the
+            link grid sits beside it */}
+        <div className="pb-10 desktop:float-left desktop:mr-12 desktop:w-[280px] desktop:pb-0">
+          <div className="mb-4 flex items-end gap-5">
+            <Link href="/" className="shrink-0">
+              <Image
+                src="/images/ondek-logo-white.svg"
+                alt="OnDek"
+                width={214}
+                height={100}
+                className="h-9 w-auto"
+              />
+            </Link>
+
+            {/* The mirror of the cross-promo on innovativealuminum.com,
+                which points back here with "we also serve vinyl" and a
+                ghosted OnDek logo. The dimming is opacity stacking — 70%
+                label inside an 80% anchor — and hover restores only the
+                anchor layer, brightening label and logo in one cheap
+                composite-only transition. */}
+            <a
+              href="https://www.innovativealuminum.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Innovative Aluminum Systems — sister brand (opens in new tab)"
+              className="inline-flex flex-col items-start opacity-80 transition-opacity hover:opacity-100"
+            >
+              <p className="mb-1 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                We also serve railing
+              </p>
+              <Image
+                src="/images/innovative-aluminum-logo.svg"
+                alt=""
+                width={473}
+                height={160}
+                className="h-10 w-auto"
+              />
+            </a>
           </div>
 
-          {NAV_ITEMS.filter((i) => i.children).map((item) => (
-            <div key={item.label}>
-              <div className="text-xs font-bold uppercase tracking-widest text-white/40">
-                {item.label}
-              </div>
-              <ul className="mt-4 space-y-2.5">
-                {item.children!.map((child) => (
-                  <li key={child.href}>
+          <p className="mb-4 max-w-[260px] font-body text-sm leading-[1.625] text-white/50">
+            Waterproof vinyl decking membranes for decks, balconies, and roof
+            decks across North America, part of the Innovative Group of
+            Companies.
+          </p>
+
+          <div className="mb-6 flex flex-col gap-1.5">
+            {PHONES.map((phone) => (
+              <a
+                key={phone.href + phone.label}
+                href={phone.href}
+                className={`inline-flex items-center gap-2 font-body text-sm transition-colors hover:text-gold ${
+                  phone.lead ? "text-white/70" : "text-white/50"
+                }`}
+              >
+                <Phone
+                  size={14}
+                  aria-hidden
+                  className={phone.lead ? "" : "opacity-0"}
+                />
+                {phone.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <Link
+              href={CTA_LINKS.quote.href}
+              className="bg-accent px-4 py-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-accent-hover"
+            >
+              {CTA_LINKS.quote.label}
+            </Link>
+            <Link
+              href={CTA_LINKS.designKit.href}
+              className="border border-white/35 px-4 py-2 font-body text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:border-gold hover:text-gold"
+            >
+              {CTA_LINKS.designKit.label}
+            </Link>
+          </div>
+        </div>
+
+        {/* Link columns — desktop grid */}
+        <div className="hidden grid-cols-4 gap-x-8 pb-14 desktop:grid">
+          {SECTIONS.map((section) => (
+            <div key={section.title}>
+              <h3 className="mb-4 font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                {section.title}
+              </h3>
+              <ul className="space-y-2.5">
+                {section.links.map((link) => (
+                  <li key={link.href}>
                     <Link
-                      href={child.href}
-                      className="text-sm text-white/70 hover:text-white transition-colors"
+                      href={link.href}
+                      className="font-body text-[13px] text-white/70 transition-colors hover:text-gold"
                     >
-                      {child.label}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-
-          {/* The old footer's contact block, from the same source of truth
-              as the contact page */}
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-white/40">
-              Contact
-            </div>
-            <ul className="mt-4 space-y-2.5 text-sm text-white/70">
-              <li>
-                <a
-                  href={TOLL_FREE.href}
-                  className="hover:text-white transition-colors"
-                >
-                  Toll free {TOLL_FREE.display}
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+16046251159"
-                  className="hover:text-white transition-colors"
-                >
-                  CAN 604-625-1159
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+12163892212"
-                  className="hover:text-white transition-colors"
-                >
-                  USA 216-389-2212
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`mailto:${GENERAL_EMAIL}`}
-                  className="break-all hover:text-white transition-colors"
-                >
-                  {GENERAL_EMAIL}
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
 
-        {/* The old footer's dealer recruiting line, verbatim */}
-        <div className="mt-12 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-white/10 pt-8 text-sm text-white/60">
-          <p className="max-w-2xl leading-relaxed">
-            OnDek Vinyl Worx is seeking builders, developers, and general
-            contractors working in the new construction and renovation markets
-            across North America.
-          </p>
-          <Link
-            href="/become-a-dealer"
-            className="font-bold text-white/80 underline decoration-1 underline-offset-4 transition-colors hover:text-white"
-          >
-            Become a dealer
-          </Link>
+        {/* Link sections — mobile accordion, one open at a time */}
+        <div className="desktop:hidden">
+          {SECTIONS.map((section, i) => {
+            const open = openSection === section.title;
+            return (
+              <div
+                key={section.title}
+                className={
+                  i < SECTIONS.length - 1 ? "border-b border-white/8" : ""
+                }
+              >
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenSection(open ? null : section.title)}
+                  className="flex w-full items-center justify-between py-4"
+                >
+                  <span className="font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                    {section.title}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    aria-hidden
+                    className={`text-white/30 transition-transform duration-300 ${
+                      open ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    open ? "max-h-[400px] pb-4 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <ul className="space-y-3">
+                    {section.links.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="font-body text-sm text-white/70 transition-colors hover:text-gold"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-white/40">
-          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+        <div className="clear-both hidden desktop:block" />
+
+        {/* Copyright bar */}
+        <div className="flex flex-col items-center gap-3 pb-4 text-center tablet:flex-row tablet:justify-between tablet:text-left desktop:border-t desktop:border-white/6 desktop:py-5">
+          <div className="flex flex-col items-center gap-2 font-body text-[11px] text-white/30 tablet:flex-row tablet:items-baseline tablet:gap-5">
             <p>
               © {new Date().getFullYear()} OnDek Vinyl Worx Inc. All rights
               reserved.
@@ -187,14 +260,14 @@ export default function Footer() {
                 Letters are aria-hidden with the label on the anchor, so a
                 screen reader hears one word, not eleven spans. The lift is
                 desktop-gated so touch never strands a half-risen wave. */}
-            <p className="text-[11px] text-white/30">
+            <p>
               Built with care by{" "}
               <a
                 href="https://cloverfield.studio/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Cloverfield"
-                className="group inline-flex items-baseline align-baseline text-cta transition-colors"
+                className="group inline-flex items-baseline align-baseline text-gold transition-colors"
               >
                 {"Cloverfield".split("").map((char, i) => (
                   <span
@@ -229,7 +302,9 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="flex items-center gap-8">
+          {/* OnDek carries socials + a contact link where the reference had
+              Privacy / Terms */}
+          <div className="flex items-center gap-5">
             <ul className="flex items-center gap-4">
               {SOCIALS.map((social) => (
                 <li key={social.label}>
@@ -238,7 +313,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener"
                     aria-label={`OnDek on ${social.label}`}
-                    className="block text-white/40 hover:text-white transition-colors"
+                    className="block text-white/30 transition-colors hover:text-white/60"
                   >
                     <svg
                       className="size-4"
@@ -252,15 +327,41 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-
             <Link
               href="/company/contact"
-              className="hover:text-white/70 transition-colors"
+              className="font-body text-[11px] text-white/30 transition-colors hover:text-white/60"
             >
               Contact
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Massive brand wordmark — edge to edge, ghosted into the black,
+          shown in full. Its height is locked to the page width by the SVG's
+          aspect ratio, so shrinking the band means giving up the full-bleed
+          width, not cropping. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none relative z-0 -mt-16 select-none overflow-hidden"
+      >
+        <motion.div
+          initial={{ y: "20%", opacity: 0 }}
+          whileInView={{ y: "0%", opacity: 1 }}
+          viewport={{ once: true, margin: "-5% 0px" }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Plain img on purpose — a decorative full-bleed SVG needs no
+              next/image pipeline */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/ondek-wordmark.svg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="block h-auto w-full opacity-10"
+          />
+        </motion.div>
       </div>
     </footer>
   );

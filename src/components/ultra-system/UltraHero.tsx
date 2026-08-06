@@ -81,14 +81,14 @@ export default function UltraHero() {
                 alt="Ultra Seam"
                 width={88}
                 height={88}
-                className="w-16 lg:w-20"
+                className="w-16 lg:w-20 h-auto"
               />
               <Image
                 src="/images/ultra-edge-badge.svg"
                 alt="Ultra Edge"
                 width={88}
                 height={88}
-                className="w-16 lg:w-20"
+                className="w-16 lg:w-20 h-auto"
               />
             </div>
           </div>

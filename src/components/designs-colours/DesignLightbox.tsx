@@ -1,8 +1,35 @@
 "use client";
 
 import Image from "@/components/SiteImage";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 import { DESIGN_TAG_LABELS, type Design } from "@/lib/designs";
+
+/**
+ * One swatch in the viewer. The active one and its two neighbours stay
+ * mounted, so by the time an arrow is pressed the next image is already
+ * loaded and the step animation never waits on the network. The wrapper's
+ * visibility is driven by GSAP in the parent; the inner fade only covers
+ * the not-yet-loaded case. `placeholder="empty"` skips SiteImage's blur
+ * tile — it fills the whole frame, not the photo's contained shape, which
+ * is what used to flash on every step.
+ */
+function LightboxImage({ design }: { design: Design }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <Image
+      src={design.swatch}
+      alt={`${design.name} vinyl decking pattern`}
+      fill
+      sizes="100vw"
+      placeholder="empty"
+      onLoad={() => setLoaded(true)}
+      className={`object-contain transition-opacity duration-300 ${
+        loaded ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
 
 /**
  * Full-screen swatch viewer. Same conventions as the Ultra system's project
@@ -23,6 +50,11 @@ export default function DesignLightbox({
   const closeRef = useRef<HTMLButtonElement>(null);
   const open = openAt !== null;
 
+  /** Swatch wrappers by slug, for the step animation */
+  const tileEls = useRef<Record<string, HTMLDivElement | null>>({});
+  const captionRef = useRef<HTMLDivElement>(null);
+  const prevIndexRef = useRef<number | null>(null);
+
   const step = useCallback(
     (delta: number) => {
       if (openAt === null) return;
@@ -30,6 +62,62 @@ export default function DesignLightbox({
     },
     [openAt, designs.length, onChange],
   );
+
+  // The step transition: a plain crossfade — the outgoing swatch fades under
+  // the incoming one, the caption fades with it. Neighbours are already
+  // mounted and loaded, so this never races the network.
+  useEffect(() => {
+    if (openAt === null) {
+      prevIndexRef.current = null;
+      return;
+    }
+
+    const prev = prevIndexRef.current;
+    prevIndexRef.current = openAt;
+
+    const activeSlug = designs[openAt].slug;
+    const outgoingSlug =
+      prev !== null && prev !== openAt ? designs[prev].slug : null;
+    const incoming = tileEls.current[activeSlug];
+    if (!incoming) return;
+
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    for (const [slug, el] of Object.entries(tileEls.current)) {
+      if (!el || slug === activeSlug) continue;
+      if (slug === outgoingSlug && !reduce) {
+        gsap.to(el, {
+          autoAlpha: 0,
+          duration: 0.35,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      } else {
+        gsap.set(el, { autoAlpha: 0, overwrite: "auto" });
+      }
+    }
+
+    gsap.fromTo(
+      incoming,
+      { autoAlpha: reduce ? 1 : 0 },
+      {
+        autoAlpha: 1,
+        duration: reduce ? 0 : 0.45,
+        ease: "power2.inOut",
+        overwrite: "auto",
+      },
+    );
+
+    if (captionRef.current && !reduce) {
+      gsap.fromTo(
+        captionRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.45, ease: "power2.inOut", overwrite: "auto" },
+      );
+    }
+  }, [openAt, designs]);
 
   useEffect(() => {
     if (!open) return;
@@ -53,6 +141,16 @@ export default function DesignLightbox({
 
   if (openAt === null) return null;
   const design = designs[openAt];
+
+  // Active swatch plus its neighbours, deduped for tiny lists. Keyed by
+  // slug below, so a neighbour that becomes active keeps its loaded state.
+  const mounted = [
+    ...new Set([
+      openAt,
+      (openAt + 1) % designs.length,
+      (openAt - 1 + designs.length) % designs.length,
+    ]),
+  ];
 
   return (
     <div
@@ -129,18 +227,26 @@ export default function DesignLightbox({
         onClick={(e) => e.stopPropagation()}
         className="relative flex h-full w-full max-w-5xl flex-col justify-center"
       >
+        {/* Wrappers start invisible; the effect above fades the active one
+            in over the outgoing one. */}
         <div className="relative min-h-0 flex-1">
-          <Image
-            key={design.swatch}
-            src={design.swatch}
-            alt={`${design.name} vinyl decking pattern`}
-            fill
-            sizes="100vw"
-            className="object-contain"
-          />
+          {mounted.map((i) => (
+            <div
+              key={designs[i].slug}
+              ref={(el) => {
+                tileEls.current[designs[i].slug] = el;
+              }}
+              className="absolute inset-0 opacity-0"
+            >
+              <LightboxImage design={designs[i]} />
+            </div>
+          ))}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-white">
+        <div
+          ref={captionRef}
+          className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-white"
+        >
           <h3 className="text-xl font-bold">{design.name}</h3>
           {design.tag && (
             <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-cta">

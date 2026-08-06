@@ -176,18 +176,6 @@ export const DESIGNS: Design[] = [
     family: "grey",
     tag: "coming-soon",
   },
-  {
-    name: "Dekplank Brown",
-    slug: "dekplank-brown",
-    blurb: "Wide plank grain in a classic stained-timber brown.",
-    swatch: SWATCH("dekplank-brown"),
-    scene: SCENE("1574120583586-de8847ae992c"),
-    tile: SWATCH("dekplank-brown"),
-    tileTone: "#978775",
-    tone: "#978775",
-    family: "brown",
-    tag: "coming-soon",
-  },
 ];
 
 /** Picks surfaced in the homepage carousel — order matters */

@@ -7,23 +7,16 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { CTA_LINKS } from "@/lib/nav";
-import { DESIGNS, DESIGN_TAG_LABELS, familiesInUse } from "@/lib/designs";
+import { DESIGNS, DESIGN_TAG_LABELS } from "@/lib/designs";
 import SectionLabel from "@/components/SectionLabel";
 import DesignLightbox from "@/components/designs-colours/DesignLightbox";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// DESIGNS is ordered by pattern series, which would scatter the greys across
-// the grid. Grouping by family instead puts like next to like, so the block
-// reads as a range rather than a shuffle. Coming-soon colours sit in the grid
-// with everything else, marked under their name.
-const FAMILY_ORDER = familiesInUse(DESIGNS);
-const SWATCHES = FAMILY_ORDER.flatMap((family) =>
-  DESIGNS.filter((d) => d.family === family)
-);
-
-/** Tiles on the top row; the rest share the row below */
-const TOP_ROW = 4;
+// Shown in pattern-series order: the Speckled Stones fill the top row, the
+// Granites the middle, and the remaining colours the last. Coming-soon
+// colours sit in the grid with everything else, marked under their name.
+const SWATCHES = DESIGNS;
 
 export default function DesignsIntro() {
   const ref = useRef<HTMLElement>(null);
@@ -130,22 +123,16 @@ export default function DesignsIntro() {
             </div>
           </div>
 
-          {/* Every colour shown at once — no hover, nothing hidden. Five even
-              columns keep every tile the same size; the fifth slot on the top
-              row is left empty so the block steps 4 / 5 / 3 instead of
-              filling flush and leaving the hole in the bottom corner. */}
+          {/* Every colour shown at once — no hover, nothing hidden. Four even
+              columns line the series up as rows: Speckled Stones, Granites,
+              then the rest. */}
           <div className="flex flex-col">
             {/* Negative bottom margin lets the block settle below the copy's
                 last line, into the section's bottom padding */}
             <div className="di-grid mt-auto pt-4 lg:pt-24">
-              <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-5 sm:gap-x-4">
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-4 sm:gap-x-4">
                 {SWATCHES.map((design, i) => (
-                  <li
-                    key={design.slug}
-                    className={`colour-tile ${
-                      i === TOP_ROW ? "sm:col-start-1" : ""
-                    }`}
-                  >
+                  <li key={design.slug} className="colour-tile">
                     <button
                       type="button"
                       onClick={() => setOpenAt(i)}
@@ -164,7 +151,7 @@ export default function DesignsIntro() {
                             alt={`${design.name} pattern`}
                             fill
                             sizes="(min-width: 1024px) 150px, (min-width: 640px) 15vw, 42vw"
-                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.24]"
                           />
                         )}
                       </div>
