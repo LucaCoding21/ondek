@@ -147,15 +147,21 @@ export default function SeamFeature() {
         <div>
           <SectionLabel>Ultra Seam</SectionLabel>
 
-          {/* Heading and intro on the left, the Ultra Seam badge holding the
-              right end of the row like a product mark. It rides the sm-intro
-              tween so it arrives with the copy. Hidden on small screens where
-              the heading needs the full measure. */}
-          <div className="mt-10 flex items-start justify-between gap-8">
-            <div>
+          {/* The Ultra Seam mark leads the heading from the left, matching
+              Ultra Edge below. min-w-0 keeps the heading, not the mark,
+              absorbing the squeeze when the line wraps. */}
+          <div className="mt-10">
+            <div className="flex items-center gap-4">
+              <Image
+                src="/images/ultra-seam-badge.svg"
+                alt="Ultra Seam"
+                width={112}
+                height={112}
+                className="sm-badge h-auto w-12 shrink-0 sm:w-14 lg:w-18"
+              />
               {/* Type scale matched to Ultra Edge's heading below, so the two
                   feature blocks on this page set at the same size */}
-              <h2 className="sm-heading max-w-2xl font-bold leading-[1.12] text-[clamp(2.25rem,4.5vw,3.5rem)]">
+              <h2 className="sm-heading min-w-0 max-w-2xl font-bold leading-[1.12] text-[clamp(2.25rem,4.5vw,3.5rem)]">
                 {/* One line, in its own mask; the pb/-mb pair leaves descenders
                     room inside the mask. It wraps on narrow screens, which the
                     mask handles: the block grows and both rows rise together. */}
@@ -165,34 +171,26 @@ export default function SeamFeature() {
                   </span>
                 </span>
               </h2>
-
-              {/* The claim sits with the heading rather than captioning the
-                  video, so the section states its case before the footage,
-                  not after */}
-              {/* max-w-2xl matches the heading and is what breaks the body onto
-                  two lines: the sentence measures roughly 1020px unwrapped */}
-              <div className="sm-intro mt-5 max-w-2xl lg:mt-6">
-                <p className="text-xs font-bold tracking-[0.08em] text-foreground/50">
-                  The seam strength test
-                </p>
-                <p className="mt-3 font-bold leading-snug text-[clamp(1.25rem,2vw,1.6rem)]">
-                  Stronger than the membrane itself
-                </p>
-                <p className="mt-3 text-sm text-foreground/60 leading-relaxed">
-                  Seam technology engineered for stronger welds and long-term
-                  waterproof performance. Watch the PVC-to-PVC weld tested for
-                  strength against the competition.
-                </p>
-              </div>
             </div>
 
-            <Image
-              src="/images/ultra-seam-badge.svg"
-              alt="Ultra Seam"
-              width={112}
-              height={112}
-              className="sm-badge hidden h-auto shrink-0 sm:block sm:w-20 lg:w-28"
-            />
+            {/* The claim sits with the heading rather than captioning the
+                video, so the section states its case before the footage,
+                not after */}
+            {/* max-w-2xl matches the heading and is what breaks the body onto
+                two lines: the sentence measures roughly 1020px unwrapped */}
+            <div className="sm-intro mt-5 max-w-2xl lg:mt-6">
+              <p className="text-xs font-bold tracking-[0.08em] text-foreground/50">
+                The seam strength test
+              </p>
+              <p className="mt-3 font-bold leading-snug text-[clamp(1.25rem,2vw,1.6rem)]">
+                Stronger than the membrane itself
+              </p>
+              <p className="mt-3 text-sm text-foreground/60 leading-relaxed">
+                Seam technology engineered for stronger welds and long-term
+                waterproof performance. Watch the PVC-to-PVC weld tested for
+                strength against the competition.
+              </p>
+            </div>
           </div>
         </div>
 

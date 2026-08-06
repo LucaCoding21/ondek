@@ -41,7 +41,7 @@ function FeatureBlock({
   headingLines: string[];
   standfirst: string;
   points: Point[];
-  /** Circular product mark stamped in the picture's bottom-right corner */
+  /** Circular product mark that leads the heading from the left */
   badge?: { src: string; alt: string };
   /** Alternates the section background against its neighbours */
   surface?: boolean;
@@ -111,9 +111,8 @@ function FeatureBlock({
           },
         });
 
-        // The badge stamps into the picture's corner once the shot has
-        // settled: pressed straight down from above, the back.out overshoot
-        // rebounding like a stamp hitting paper.
+        // The badge stamps in beside the heading: pressed straight down from
+        // above, the back.out overshoot rebounding like a stamp hitting paper.
         const stamp = gsap.timeline({
           scrollTrigger: {
             trigger: ".uf-points",
@@ -173,31 +172,36 @@ function FeatureBlock({
               sizes="(min-width: 1024px) 40vw, 100vw"
               className="object-cover"
             />
-            {/* The product mark stamped into the picture's corner like a seal */}
-            {badge && (
-              <Image
-                src={badge.src}
-                alt={badge.alt}
-                width={96}
-                height={96}
-                className="uf-badge absolute bottom-4 right-4 h-auto w-16 sm:bottom-5 sm:right-5 sm:w-20 lg:w-24"
-              />
-            )}
           </div>
 
           <div>
-            {/* Each line in its own mask; the pb/-mb pair leaves descenders
-                room inside the mask. */}
-            <h2 className="uf-heading font-bold leading-[1.12] text-[clamp(2rem,3.4vw,2.75rem)]">
-              {headingLines.map((line) => (
-                <span
-                  key={line}
-                  className="block overflow-hidden pb-[0.1em] -mb-[0.1em]"
-                >
-                  <span className="uf-heading-line block">{line}</span>
-                </span>
-              ))}
-            </h2>
+            {/* The product mark leads the heading from the left. Row rather
+                than an overlay on the picture, so the mark reads as part of
+                the title. min-w-0 keeps the heading, not the mark, absorbing
+                the squeeze at narrow widths. */}
+            <div className="flex items-center gap-4">
+              {badge && (
+                <Image
+                  src={badge.src}
+                  alt={badge.alt}
+                  width={96}
+                  height={96}
+                  className="uf-badge h-auto w-12 shrink-0 sm:w-14"
+                />
+              )}
+              {/* Each line in its own mask; the pb/-mb pair leaves descenders
+                  room inside the mask. */}
+              <h2 className="uf-heading min-w-0 font-bold leading-[1.12] text-[clamp(2rem,3.4vw,2.75rem)]">
+                {headingLines.map((line) => (
+                  <span
+                    key={line}
+                    className="block overflow-hidden pb-[0.1em] -mb-[0.1em]"
+                  >
+                    <span className="uf-heading-line block">{line}</span>
+                  </span>
+                ))}
+              </h2>
+            </div>
             <p className="uf-standfirst mt-4 text-sm text-foreground/60 leading-relaxed">
               {standfirst}
             </p>

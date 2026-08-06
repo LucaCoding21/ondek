@@ -27,7 +27,9 @@ export default function UltraHero() {
             0.3,
           )
           .from(".ush-sub", { y: 28, opacity: 0, duration: 0.9 }, 0.7)
-          .from(".ush-badges", { y: 28, opacity: 0, duration: 0.9 }, 0.85);
+          // Badges lead the headline now that they sit above it — arriving
+          // last would read as an afterthought bolted onto the top
+          .from(".ush-badges", { y: 20, opacity: 0, duration: 0.8 }, 0.15);
       });
 
       return () => mm.revert();
@@ -56,6 +58,26 @@ export default function UltraHero() {
 
             <div className="relative z-10 flex h-full items-end">
               <div className="w-full px-14 sm:px-28 lg:px-44 pb-24 lg:pb-32">
+                {/* The two product marks lead the headline. Left edges line
+                    up with the h1 because both sit in this same padded
+                    column. */}
+                <div className="ush-badges mb-6 flex items-center gap-3">
+                  <Image
+                    src="/images/ultra-seam-badge.svg"
+                    alt="Ultra Seam"
+                    width={88}
+                    height={88}
+                    className="w-12 lg:w-14 h-auto"
+                  />
+                  <Image
+                    src="/images/ultra-edge-badge.svg"
+                    alt="Ultra Edge"
+                    width={88}
+                    height={88}
+                    className="w-12 lg:w-14 h-auto"
+                  />
+                </div>
+
                 {/* One thought, one line, one mask. The pb/-mb pair leaves
                     descenders ("system" has a y) room inside the mask. */}
                 <h1 className="text-6xl sm:text-7xl xl:text-8xl font-bold leading-[1.02] tracking-[-0.02em] text-balance text-white max-w-4xl">
@@ -72,25 +94,6 @@ export default function UltraHero() {
               </div>
             </div>
 
-            {/* The two product marks in the photo's bottom-left corner,
-                inside the copy's pb so they clear the sub-copy above. Hidden
-                on phones, where the copy runs right down into the corner. */}
-            <div className="ush-badges absolute bottom-8 left-8 z-10 hidden items-center gap-4 sm:flex lg:bottom-10 lg:left-12">
-              <Image
-                src="/images/ultra-seam-badge.svg"
-                alt="Ultra Seam"
-                width={88}
-                height={88}
-                className="w-16 lg:w-20 h-auto"
-              />
-              <Image
-                src="/images/ultra-edge-badge.svg"
-                alt="Ultra Edge"
-                width={88}
-                height={88}
-                className="w-16 lg:w-20 h-auto"
-              />
-            </div>
           </div>
         </div>
       </div>

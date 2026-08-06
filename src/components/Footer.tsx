@@ -90,10 +90,13 @@ export default function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-ink text-offwhite">
-      <div className="relative z-10 mx-auto max-w-[1440px] px-4 pb-16 pt-12 tablet:px-20 tablet:pt-20 desktop:px-32">
+      {/* Full width on purpose — no max-w cap, so the columns run out to the
+          same edges as the wordmark below and the nav row above. The padding
+          scale is copied from Navbar so all three align. */}
+      <div className="relative z-10 w-full px-4 pb-16 pt-12 tablet:px-20 tablet:pt-20 desktop:px-40">
         {/* Brand block — floated left at a fixed width on desktop so the
             link grid sits beside it */}
-        <div className="pb-10 desktop:float-left desktop:mr-12 desktop:w-[280px] desktop:pb-0">
+        <div className="pb-10 desktop:float-left desktop:mr-12 desktop:w-[360px] desktop:pb-0">
           <div className="mb-4 flex items-end gap-5">
             <Link href="/" className="shrink-0">
               <Image
@@ -101,7 +104,7 @@ export default function Footer() {
                 alt="OnDek"
                 width={214}
                 height={100}
-                className="h-9 w-auto"
+                className="h-10 w-auto"
               />
             </Link>
 
@@ -131,7 +134,7 @@ export default function Footer() {
             </a>
           </div>
 
-          <p className="mb-4 max-w-[260px] font-body text-sm leading-[1.625] text-white/50">
+          <p className="mb-4 max-w-[360px] font-body text-[15px] leading-[1.6] text-white/50">
             Waterproof vinyl decking membranes for decks, balconies, and roof
             decks across North America, part of the Innovative Group of
             Companies.
@@ -142,7 +145,7 @@ export default function Footer() {
               <a
                 key={phone.href + phone.label}
                 href={phone.href}
-                className={`inline-flex items-center gap-2 font-body text-sm transition-colors hover:text-gold ${
+                className={`inline-flex items-center gap-2 font-body text-[15px] transition-colors hover:text-gold ${
                   phone.lead ? "text-white/70" : "text-white/50"
                 }`}
               >
@@ -159,13 +162,13 @@ export default function Footer() {
           <div className="flex gap-2">
             <Link
               href={CTA_LINKS.quote.href}
-              className="bg-accent px-4 py-2 font-body text-[10px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-accent-hover"
+              className="bg-accent px-4 py-2 font-body text-[11px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-accent-hover"
             >
               {CTA_LINKS.quote.label}
             </Link>
             <Link
               href={CTA_LINKS.designKit.href}
-              className="border border-white/35 px-4 py-2 font-body text-[10px] font-bold uppercase tracking-wider text-white transition-colors hover:border-gold hover:text-gold"
+              className="border border-white/35 px-4 py-2 font-body text-[11px] font-bold uppercase tracking-wider text-white transition-colors hover:border-gold hover:text-gold"
             >
               {CTA_LINKS.designKit.label}
             </Link>
@@ -173,10 +176,16 @@ export default function Footer() {
         </div>
 
         {/* Link columns — desktop grid */}
-        <div className="hidden grid-cols-4 gap-x-8 pb-14 desktop:grid">
+        {/* Width-capped on purpose: the tracks are 1fr, so without a cap they
+            absorb every pixel left over by the floated brand block and the
+            columns drift apart on wide screens. The cap sets the gap, and
+            ml-auto parks the capped block against the right edge — the grid
+            establishes its own formatting context, so it clears the float
+            rather than sliding under it. */}
+        <div className="ml-auto hidden max-w-[720px] grid-cols-4 gap-x-8 pb-14 desktop:grid">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <h3 className="mb-4 font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+              <h3 className="mb-4 font-body text-[12px] font-semibold uppercase tracking-[0.2em] text-white/80">
                 {section.title}
               </h3>
               <ul className="space-y-2.5">
@@ -184,7 +193,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-body text-[13px] text-white/70 transition-colors hover:text-gold"
+                      className="font-body text-[14px] text-white/70 transition-colors hover:text-gold"
                     >
                       {link.label}
                     </Link>
@@ -212,7 +221,7 @@ export default function Footer() {
                   onClick={() => setOpenSection(open ? null : section.title)}
                   className="flex w-full items-center justify-between py-4"
                 >
-                  <span className="font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                  <span className="font-body text-[12px] font-semibold uppercase tracking-[0.2em] text-white/80">
                     {section.title}
                   </span>
                   <ChevronDown
@@ -233,7 +242,7 @@ export default function Footer() {
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="font-body text-sm text-white/70 transition-colors hover:text-gold"
+                          className="font-body text-[15px] text-white/70 transition-colors hover:text-gold"
                         >
                           {link.label}
                         </Link>
@@ -250,7 +259,7 @@ export default function Footer() {
 
         {/* Copyright bar */}
         <div className="flex flex-col items-center gap-3 pb-4 text-center tablet:flex-row tablet:justify-between tablet:text-left desktop:border-t desktop:border-white/6 desktop:py-5">
-          <div className="flex flex-col items-center gap-2 font-body text-[11px] text-white/30 tablet:flex-row tablet:items-baseline tablet:gap-5">
+          <div className="flex flex-col items-center gap-2 font-body text-[12px] text-white/30 tablet:flex-row tablet:items-baseline tablet:gap-5">
             <p>
               © {new Date().getFullYear()} OnDek Vinyl Worx Inc. All rights
               reserved.
@@ -316,7 +325,7 @@ export default function Footer() {
                     className="block text-white/30 transition-colors hover:text-white/60"
                   >
                     <svg
-                      className="size-4"
+                      className="size-[18px]"
                       viewBox="0 0 24 24"
                       fill="currentColor"
                       aria-hidden
@@ -329,7 +338,7 @@ export default function Footer() {
             </ul>
             <Link
               href="/company/contact"
-              className="font-body text-[11px] text-white/30 transition-colors hover:text-white/60"
+              className="font-body text-[12px] text-white/30 transition-colors hover:text-white/60"
             >
               Contact
             </Link>
