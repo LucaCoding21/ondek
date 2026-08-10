@@ -6,7 +6,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { PART_ANCHORS } from "@/lib/deckAssemblyAnchors";
+import { PART_ANCHORS, PART_APPEARS } from "@/lib/deckAssemblyAnchors";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -17,23 +17,24 @@ const frameSrc = (i: number) =>
 /** The three parts in the render, with the colour each is drawn in sampled
  *  from the frames. `labelAt` is a fixed spot on the canvas — the words stay
  *  put and only the leader tracks the part. Each was picked from a coverage
- *  map of all 40 frames: these three regions are the ones never painted, so a
- *  label there never sits on top of the render. */
+ *  map of all 40 frames: the parts fly through most of the canvas at some
+ *  point, so a spot only has to stay clear while its own label is visible
+ *  (each label fades in with its part, see PART_APPEARS). */
 const PARTS = [
   {
-    swatch: "#753b10",
+    swatch: "#aa8965",
     title: "Deck substrate",
     labelAt: [0.88, 0.9] as const,
   },
   {
-    swatch: "#1f1e1d",
+    swatch: "#6a6a6b",
     title: "Edge trim",
     labelAt: [0.1, 0.93] as const,
   },
   {
-    swatch: "#969696",
+    swatch: "#ccc4b8",
     title: "Vinyl membrane",
-    labelAt: [0.72, 0.07] as const,
+    labelAt: [0.14, 0.08] as const,
   },
 ];
 
@@ -42,6 +43,8 @@ export default function UltraSystem() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const leaderRefs = useRef<(SVGPolylineElement | null)[]>([]);
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
+  const groupRefs = useRef<(SVGGElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useGSAP(
     () => {
@@ -99,7 +102,21 @@ export default function UltraSystem() {
       // and the elbow tracks the part on the same interpolated playhead as the
       // frames, keeping line and part together mid-blend
       const moveAnnotations = (index: number, next: number, blend: number) => {
+        const exact = index + blend;
         PART_ANCHORS.forEach((track, part) => {
+          // The trim and membrane fly in mid-sequence; each annotation fades
+          // in with its part (over the two frames it takes to arrive) instead
+          // of pointing at empty canvas
+          const alpha = gsap.utils.clamp(
+            0,
+            1,
+            (exact - PART_APPEARS[part] + 2) / 2
+          );
+          const groupStyle = groupRefs.current[part]?.style;
+          if (groupStyle) groupStyle.opacity = String(alpha);
+          const labelStyle = labelRefs.current[part]?.style;
+          if (labelStyle) labelStyle.opacity = String(alpha);
+
           const from = track[index];
           const to = track[next];
           // Canvas units, so the stroke scales with the render
@@ -208,18 +225,17 @@ export default function UltraSystem() {
             }
           );
 
-          gsap.to(playhead, {
-            frame: FRAME_COUNT - 1,
-            ease: "none",
-            onUpdate: render,
+          const tl = gsap.timeline({
             scrollTrigger: desktop
               ? {
                   // Scroll-locked: pin the section and scrub through the frames.
-                  // Kept short deliberately: with only 40 frames, a longer pin
-                  // spends more scroll on each one, which reads as stepping.
+                  // The animation spans 1.25 screens of scroll — the frame
+                  // cross-fade in render() keeps that from reading as stepping
+                  // even at 40 source frames; the last quarter-screen is the
+                  // hold below.
                   trigger: sectionRef.current,
                   start: "top top",
-                  end: "+=100%",
+                  end: "+=150%",
                   pin: true,
                   // Higher than a typical scrub: with only 40 source frames
                   // the playhead's own easing is doing real smoothing work
@@ -234,6 +250,17 @@ export default function UltraSystem() {
                   scrub: 0.5,
                 },
           });
+          // Durations are relative scroll shares: 1.25 screens of animation,
+          // then a quarter-screen hold
+          tl.to(playhead, {
+            frame: FRAME_COUNT - 1,
+            ease: "none",
+            onUpdate: render,
+            duration: 1.25,
+          });
+          // Rest on the finished assembly before the pin releases — also lets
+          // the scrub's smoothing catch up so the last frames aren't cut off
+          if (desktop) tl.to({}, { duration: 0.25 });
         }
       );
 
@@ -372,7 +399,13 @@ export default function UltraSystem() {
                     const originX = part.labelAt[0] * 1047;
                     const originY = part.labelAt[1] * 654;
                     return (
-                      <g key={part.title}>
+                      <g
+                        key={part.title}
+                        ref={(node) => {
+                          groupRefs.current[i] = node;
+                        }}
+                        style={{ opacity: PART_APPEARS[i] === 0 ? 1 : 0 }}
+                      >
                         <polyline
                           ref={(node) => {
                             leaderRefs.current[i] = node;
@@ -396,12 +429,16 @@ export default function UltraSystem() {
                   })}
                 </svg>
 
-                {PARTS.map((part) => (
+                {PARTS.map((part, i) => (
                   <div
                     key={part.title}
+                    ref={(node) => {
+                      labelRefs.current[i] = node;
+                    }}
                     style={{
                       left: `${part.labelAt[0] * 100}%`,
                       top: `${part.labelAt[1] * 100}%`,
+                      opacity: PART_APPEARS[i] === 0 ? 1 : 0,
                     }}
                     className="absolute -translate-x-1/2 -translate-y-1/2"
                   >
