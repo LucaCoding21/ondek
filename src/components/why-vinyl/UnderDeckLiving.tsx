@@ -157,7 +157,9 @@ export default function UnderDeckLiving() {
               alt="Line drawing of a deck with a furnished, dry living space underneath"
               width={1400}
               height={1092}
-              className="w-full h-auto"
+              // Fade the top-right corner (house wall and downspout) into the
+              // page background so the drawing doesn't end on a hard edge.
+              className="w-full h-auto [mask-image:radial-gradient(26%_26%_at_92%_0%,transparent_35%,black_92%)]"
               sizes="(min-width: 1024px) 72rem, 100vw"
             />
 
