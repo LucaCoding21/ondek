@@ -6,37 +6,109 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { PART_ANCHORS, PART_APPEARS } from "@/lib/deckAssemblyAnchors";
+// Two updated install renders were delivered (Ultra Seam / Ultra Edge); the
+// section runs one at a time. To preview the other scene, swap the anchors
+// import, FRAME_COUNT, frameSrc base, and PARTS for the alternates below.
+import {
+  PART_ANCHORS,
+  PART_APPEARS,
+  PART_HIDES,
+} from "@/lib/ultraSeamAnchors";
+// import { PART_ANCHORS, PART_APPEARS, PART_HIDES } from "@/lib/ultraEdgeAnchors";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const FRAME_COUNT = 40;
+const FRAME_COUNT = 238; // Ultra Edge scene: 180
 const frameSrc = (i: number) =>
-  `/images/deck-assembly/frame-${String(i + 1).padStart(3, "0")}.webp`;
+  `/images/ultra-seam/frame_${String(i + 1).padStart(4, "0")}.webp`;
+// `/images/ultra-edge/frame_${String(i + 1).padStart(4, "0")}.webp`;
 
-/** The three parts in the render, with the colour each is drawn in sampled
- *  from the frames. `labelAt` is a fixed spot on the canvas — the words stay
- *  put and only the leader tracks the part. Each was picked from a coverage
- *  map of all 40 frames: the parts fly through most of the canvas at some
- *  point, so a spot only has to stay clear while its own label is visible
- *  (each label fades in with its part, see PART_APPEARS). */
-const PARTS = [
+// Annotations fade in/out over this many frames of the scrub
+const LABEL_FADE = 6;
+// Brand gold — the chip flashes it while its part flashes in the render
+const GOLD = "#f4ce47";
+
+type PartLabel = {
+  swatch: string;
+  title: string;
+  sub: string;
+  labelAt: readonly [number, number];
+  icon?: string;
+  /** Frame window (0-based, inclusive) where the chip goes gold. */
+  flash?: readonly [number, number];
+  /** The clip chip re-badges as the combined product when it flashes. */
+  becomes?: { title: string; sub: string; icon: string; at: number };
+};
+
+/** The labelled parts in the render — chip copy, icons, flash windows and the
+ *  clip's re-badge all come from the config the animation was delivered with.
+ *  `labelAt` is a fixed spot on the canvas — the words stay put and only the
+ *  leader tracks the part; the spots are the delivered label homes, clear of
+ *  the action for the stretch each label is visible (see PART_APPEARS /
+ *  PART_HIDES). `swatch` is sampled from the frames for the card's key. */
+const PARTS: PartLabel[] = [
   {
-    swatch: "#aa8965",
-    title: "Deck substrate",
-    labelAt: [0.88, 0.9] as const,
+    swatch: "#5f5f64",
+    title: "Ultra Flashing",
+    sub: "mechanically fastened",
+    labelAt: [0.1, 0.64],
+    flash: [73, 82],
   },
   {
-    swatch: "#6a6a6b",
-    title: "Edge trim",
-    labelAt: [0.1, 0.93] as const,
+    swatch: "#c4bdb1",
+    title: "Ultra Seam",
+    sub: "clean selvage edge · welded vinyl to vinyl",
+    labelAt: [0.74, 0.1],
+    icon: "/images/ultra-seam/icons/ultra-seam-badge.svg",
+    flash: [176, 185],
   },
   {
-    swatch: "#ccc4b8",
-    title: "Vinyl membrane",
-    labelAt: [0.14, 0.08] as const,
+    swatch: "#88888a",
+    title: "Ultra Clip",
+    sub: "screw-free snap fit",
+    labelAt: [0.13, 0.86],
+    flash: [215, 224],
+    becomes: {
+      title: "Ultra Edge",
+      sub: "Ultra Flashing together with Ultra Clip",
+      icon: "/images/ultra-seam/icons/ultra-edge-badge.svg",
+      at: 215,
+    },
   },
 ];
+/* Ultra Edge scene alternates:
+const PARTS: PartLabel[] = [
+  { swatch: "#5a595e", title: "Ultra Flashing", sub: "mechanically fastened",
+    labelAt: [0.1, 0.62], flash: [73, 82] },
+  { swatch: "#d4cbbd", title: "ONDEK membrane", sub: "fully adhered",
+    labelAt: [0.72, 0.1] },
+  { swatch: "#888789", title: "Ultra Clip", sub: "screw-free snap fit",
+    labelAt: [0.13, 0.86], flash: [157, 166],
+    becomes: { title: "Ultra Edge", sub: "Ultra Flashing together with Ultra Clip",
+      icon: "/images/ultra-edge/icons/ultra-edge-badge.svg", at: 157 } },
+]; */
+
+/** Point where the anchor→chip-centre ray meets the chip's (padded)
+ *  rectangle, so the leader stops at the chip edge instead of running
+ *  underneath the label. All in canvas units. */
+function chipEdge(
+  ax: number,
+  ay: number,
+  cx: number,
+  cy: number,
+  w: number,
+  h: number,
+  gap = 8
+) {
+  const dx = cx - ax;
+  const dy = cy - ay;
+  const hw = w / 2 + gap;
+  const hh = h / 2 + gap;
+  let t = 0;
+  if (Math.abs(dx) > hw) t = Math.max(t, 1 - hw / Math.abs(dx));
+  if (Math.abs(dy) > hh) t = Math.max(t, 1 - hh / Math.abs(dy));
+  return [ax + dx * t, ay + dy * t] as const;
+}
 
 export default function UltraSystem() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -45,6 +117,13 @@ export default function UltraSystem() {
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
   const groupRefs = useRef<(SVGGElement | null)[]>([]);
   const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const chipRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const iconRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const titleRefs = useRef<(HTMLElement | null)[]>([]);
+  const subRefs = useRef<(HTMLElement | null)[]>([]);
+  // Whether each chip has re-badged (the clip → Ultra Edge), so the DOM is
+  // only touched when the state actually flips
+  const becameRef = useRef<boolean[]>([]);
 
   useGSAP(
     () => {
@@ -53,49 +132,67 @@ export default function UltraSystem() {
       // Bitmap size comes from the width/height attributes in the markup —
       // the layout derives the drawn width from them, so they can't wait for JS
 
-      // ImageBitmaps, not <img>: drawing an <img> the browser has not decoded
-      // yet forces a synchronous decode on the main thread, and one of those
-      // mid-scrub is a dropped frame. createImageBitmap does that work off the
-      // main thread once, up front, so every draw is a straight blit.
-      const frames: (ImageBitmap | null)[] = new Array(FRAME_COUNT).fill(null);
+      // Plain <img> elements, decoded lazily by the browser: at 238 frames,
+      // decoding everything up front (the old ImageBitmap approach at 40
+      // frames) would pin over a gigabyte of bitmaps. The read-ahead in
+      // render() keeps the frames near the playhead decoded, and this dense
+      // a sequence needs no cross-fade — the nearest frame is smooth enough.
+      const images: (HTMLImageElement | undefined)[] = new Array(FRAME_COUNT);
       const playhead = { frame: 0 };
       let cancelled = false;
 
+      const loadFrame = (i: number) => {
+        let img = images[i];
+        if (!img) {
+          // window.Image — the bare name is the SiteImage component up top
+          img = new window.Image();
+          img.decoding = "async";
+          img.src = frameSrc(i);
+          images[i] = img;
+        }
+        return img;
+      };
+
       // Skips redundant draws: the scrub fires far more often than the picture
       // actually changes, and every skipped tick is a full-canvas blit saved
-      let lastDrawn = -1;
+      let drawn = -1;
+      // The frame waiting on its image, so a late arrival only draws if it is
+      // still the one wanted — not a stale frame over a newer one
+      let pendingDraw = -1;
 
-      const render = () => {
-        const exact = playhead.frame;
-        const key = Math.round(exact * 20);
-        if (key === lastDrawn) return;
-
-        const index = Math.floor(exact);
-        const next = Math.min(index + 1, FRAME_COUNT - 1);
-        const blend = exact - index;
-        const current = frames[index];
-        // Marked drawn only once it actually is — otherwise the decode that
-        // lands later is skipped as a repeat and the canvas stays blank
-        if (!current) return;
-
-        lastDrawn = key;
+      const draw = (i: number) => {
+        const img = loadFrame(i);
+        if (!img.complete || !img.naturalWidth) {
+          pendingDraw = i;
+          img.onload = () => {
+            if (!cancelled && pendingDraw === i) draw(i);
+          };
+          return;
+        }
+        pendingDraw = -1;
+        drawn = i;
         // Required, not hygiene: these frames carry real transparency, so
         // without a clear the previous frame shows through every gap
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(current, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      };
 
-        // 40 frames is coarse enough to read as stepping, so the next frame is
-        // dissolved over the current one by the fractional part. Drawing it
-        // *over* an already-opaque frame (rather than blending both down) keeps
-        // the body solid and confines the blend to the moving edges.
-        const upcoming = frames[next];
-        if (blend > 0.01 && upcoming) {
-          ctx.globalAlpha = blend;
-          ctx.drawImage(upcoming, 0, 0, canvas.width, canvas.height);
-          ctx.globalAlpha = 1;
+      const render = () => {
+        const exact = playhead.frame;
+        const index = Math.floor(exact);
+        const next = Math.min(index + 1, FRAME_COUNT - 1);
+        // Leaders track the fractional playhead even when the drawn frame
+        // holds still, so they never visibly step
+        moveAnnotations(index, next, exact - index);
+
+        const want = Math.round(exact);
+        if (want !== drawn) draw(want);
+        // Read-ahead both ways so a fast scrub lands on frames already
+        // requested rather than a burst of misses
+        for (let d = 1; d <= 4; d++) {
+          if (want + d < FRAME_COUNT) loadFrame(want + d);
+          if (want - d >= 0) loadFrame(want - d);
         }
-
-        moveAnnotations(index, next, blend);
       };
 
       // Only the leader moves — the labels are static, so the words stay put
@@ -104,65 +201,102 @@ export default function UltraSystem() {
       const moveAnnotations = (index: number, next: number, blend: number) => {
         const exact = index + blend;
         PART_ANCHORS.forEach((track, part) => {
-          // The trim and membrane fly in mid-sequence; each annotation fades
-          // in with its part (over the two frames it takes to arrive) instead
-          // of pointing at empty canvas
-          const alpha = gsap.utils.clamp(
+          const cfg = PARTS[part];
+          // The parts fly in mid-sequence; each annotation fades in with its
+          // part instead of pointing at empty canvas, and back out once the
+          // part is buried under later ones (the flashing, see PART_HIDES)
+          const fadeIn = gsap.utils.clamp(
             0,
             1,
-            (exact - PART_APPEARS[part] + 2) / 2
+            (exact - PART_APPEARS[part] + LABEL_FADE) / LABEL_FADE
           );
+          const hideAt = PART_HIDES[part];
+          const fadeOut =
+            hideAt === null
+              ? 1
+              : gsap.utils.clamp(0, 1, (hideAt - exact) / LABEL_FADE + 1);
+          const alpha = Math.min(fadeIn, fadeOut);
           const groupStyle = groupRefs.current[part]?.style;
           if (groupStyle) groupStyle.opacity = String(alpha);
           const labelStyle = labelRefs.current[part]?.style;
           if (labelStyle) labelStyle.opacity = String(alpha);
+
+          // The clip chip re-badges as the combined product when it flashes;
+          // swap the copy only on the flip, not every tick
+          const became = !!cfg.becomes && exact >= cfg.becomes.at;
+          if (became !== !!becameRef.current[part]) {
+            becameRef.current[part] = became;
+            const face = became && cfg.becomes ? cfg.becomes : cfg;
+            const titleEl = titleRefs.current[part];
+            if (titleEl) titleEl.textContent = face.title;
+            const subEl = subRefs.current[part];
+            if (subEl) subEl.textContent = face.sub;
+            const iconEl = iconRefs.current[part];
+            if (iconEl) {
+              if (face.icon) {
+                iconEl.src = face.icon;
+                iconEl.style.display = "";
+              } else {
+                iconEl.style.display = "none";
+              }
+            }
+          }
+
+          // Chip goes brand gold while its part flashes in the render
+          const chip = chipRefs.current[part];
+          if (chip) {
+            chip.style.background =
+              cfg.flash && exact >= cfg.flash[0] && exact <= cfg.flash[1]
+                ? GOLD
+                : "#fff";
+          }
 
           const from = track[index];
           const to = track[next];
           // Canvas units, so the stroke scales with the render
           const x = (from[0] + (to[0] - from[0]) * blend) * canvas.width;
           const y = (from[1] + (to[1] - from[1]) * blend) * canvas.height;
-          const [labelX, labelY] = PARTS[part].labelAt;
+          const [labelX, labelY] = cfg.labelAt;
           const originX = labelX * canvas.width;
           const originY = labelY * canvas.height;
 
-          // Right-angle leader: out from the label along its own row, then a
-          // single turn down or up onto the part
+          // Straight leader from the chip's edge onto the part — the chip is
+          // measured in CSS pixels, the line lives in canvas units
+          let ex = originX;
+          let ey = originY;
+          const label = labelRefs.current[part];
+          if (label && canvas.clientWidth > 0) {
+            const scale = canvas.width / canvas.clientWidth;
+            [ex, ey] = chipEdge(
+              x,
+              y,
+              originX,
+              originY,
+              label.offsetWidth * scale,
+              label.offsetHeight * scale
+            );
+          }
           leaderRefs.current[part]?.setAttribute(
             "points",
-            `${originX},${originY} ${x},${originY} ${x},${y}`
+            `${ex},${ey} ${x},${y}`
           );
           dotRefs.current[part]?.setAttribute("cx", String(x));
           dotRefs.current[part]?.setAttribute("cy", String(y));
         });
       };
 
-      const load = async (i: number) => {
-        try {
-          const response = await fetch(frameSrc(i));
-          const bitmap = await createImageBitmap(await response.blob());
-          if (cancelled) {
-            bitmap.close();
-            return;
-          }
-          frames[i] = bitmap;
-          render();
-        } catch {
-          // A dropped frame degrades to holding the previous one, which is far
-          // better than tearing down the whole sequence
-        }
-      };
-
       // The first frame right away so the canvas is never empty, the rest once
-      // the section is within a screen of view. Nothing is requested during the
-      // scrub itself — each frame is fetched and decoded once, then blitted.
-      load(0);
+      // the section is within a screen of view — coarse-to-fine, so a scrub
+      // that starts before the fetch finishes lands near a loaded frame
+      // instead of at the far end of a sequential queue.
+      draw(0);
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top bottom+=100%",
         once: true,
         onEnter: () => {
-          for (let i = 1; i < FRAME_COUNT; i++) load(i);
+          for (let step = 32; step >= 1; step >>= 1)
+            for (let i = 0; i < FRAME_COUNT; i += step) loadFrame(i);
         },
       });
 
@@ -171,8 +305,7 @@ export default function UltraSystem() {
       // Reduced motion: skip the scrub, show the assembled system
       mm.add("(prefers-reduced-motion: reduce)", () => {
         playhead.frame = FRAME_COUNT - 1;
-        // The last frame may not be requested yet; every load calls render(),
-        // so this settles as soon as it arrives
+        // draw() waits on the image itself if it has not arrived yet
         render();
       });
 
@@ -228,17 +361,13 @@ export default function UltraSystem() {
           const tl = gsap.timeline({
             scrollTrigger: desktop
               ? {
-                  // Scroll-locked: pin the section and scrub through the frames.
-                  // The animation spans 1.25 screens of scroll — the frame
-                  // cross-fade in render() keeps that from reading as stepping
-                  // even at 40 source frames; the last quarter-screen is the
-                  // hold below.
+                  // Scroll-locked: pin the section and scrub through the
+                  // frames. The animation spans 1.25 screens of scroll; the
+                  // last quarter-screen is the hold below.
                   trigger: sectionRef.current,
                   start: "top top",
                   end: "+=150%",
                   pin: true,
-                  // Higher than a typical scrub: with only 40 source frames
-                  // the playhead's own easing is doing real smoothing work
                   scrub: 1,
                   anticipatePin: 1,
                 }
@@ -266,9 +395,7 @@ export default function UltraSystem() {
 
       return () => {
         mm.revert();
-        // Decoded bitmaps are not garbage collected on their own
         cancelled = true;
-        for (const frame of frames) frame?.close();
       };
     },
     { scope: sectionRef }
@@ -372,10 +499,10 @@ export default function UltraSystem() {
             <div className="relative w-full lg:w-auto">
               <canvas
                 ref={canvasRef}
-                width={1047}
-                height={654}
+                width={1600}
+                height={1000}
                 role="img"
-                aria-label="The Ultra system assembling onto a deck edge: substrate, edge trim, and vinyl membrane coming together"
+                aria-label="The Ultra system assembling onto a deck edge: flashing, welded seam, and clip coming together"
                 className="block w-full h-auto lg:w-auto lg:max-w-full lg:max-h-[56svh]"
               />
 
@@ -387,17 +514,17 @@ export default function UltraSystem() {
                 className="pointer-events-none absolute inset-0 hidden lg:block"
               >
                 <svg
-                  viewBox="0 0 1047 654"
-                  className="absolute inset-0 h-full w-full text-foreground/40"
+                  viewBox="0 0 1600 1000"
+                  className="absolute inset-0 h-full w-full text-foreground/70"
                 >
                   {PARTS.map((part, i) => {
                     // Frame 0 placement, so the overlay is right on the very
                     // first paint rather than snapping into position
                     const [ax, ay] = PART_ANCHORS[i][0];
-                    const x = ax * 1047;
-                    const y = ay * 654;
-                    const originX = part.labelAt[0] * 1047;
-                    const originY = part.labelAt[1] * 654;
+                    const x = ax * 1600;
+                    const y = ay * 1000;
+                    const originX = part.labelAt[0] * 1600;
+                    const originY = part.labelAt[1] * 1000;
                     return (
                       <g
                         key={part.title}
@@ -410,10 +537,11 @@ export default function UltraSystem() {
                           ref={(node) => {
                             leaderRefs.current[i] = node;
                           }}
-                          points={`${originX},${originY} ${x},${originY} ${x},${y}`}
+                          points={`${originX},${originY} ${x},${y}`}
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="1.5"
+                          strokeWidth="2"
+                          strokeLinecap="round"
                         />
                         <circle
                           ref={(node) => {
@@ -442,12 +570,46 @@ export default function UltraSystem() {
                     }}
                     className="absolute -translate-x-1/2 -translate-y-1/2"
                   >
-                    <span className="flex items-center gap-2 whitespace-nowrap bg-background px-2 py-1 text-xs font-bold">
-                      <span
-                        style={{ backgroundColor: part.swatch }}
-                        className="block h-2.5 w-2.5 shrink-0"
+                    {/* Chip styled after the delivered demo: white card,
+                        product icon, bold name over a quiet spec line. The
+                        background is driven imperatively (gold flash) in
+                        moveAnnotations, so it lives in style, not a class. */}
+                    <span
+                      ref={(node) => {
+                        chipRefs.current[i] = node;
+                      }}
+                      style={{ background: "#fff" }}
+                      className="flex items-center gap-2 whitespace-nowrap rounded px-2.5 py-1.5 text-[#1a1a1a] transition-colors duration-[250ms]"
+                    >
+                      {/* Plain img: src is swapped imperatively on re-badge */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        ref={(node) => {
+                          iconRefs.current[i] = node;
+                        }}
+                        src={part.icon}
+                        alt=""
+                        style={{ display: part.icon ? undefined : "none" }}
+                        className="h-9 w-9 shrink-0"
                       />
-                      {part.title}
+                      <span className="leading-tight">
+                        <b
+                          ref={(node) => {
+                            titleRefs.current[i] = node;
+                          }}
+                          className="block text-[13px] font-bold tracking-[0.02em]"
+                        >
+                          {part.title}
+                        </b>
+                        <small
+                          ref={(node) => {
+                            subRefs.current[i] = node;
+                          }}
+                          className="block text-[11px] font-normal opacity-65"
+                        >
+                          {part.sub}
+                        </small>
+                      </span>
                     </span>
                   </div>
                 ))}
