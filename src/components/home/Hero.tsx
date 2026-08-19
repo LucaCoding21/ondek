@@ -18,14 +18,14 @@ const BADGES = [
     alt: "15 / 5 Year Limited Warranty",
     width: 198,
     height: 92,
-    className: "h-12 w-auto tablet:h-14",
+    className: "h-14 w-auto tablet:h-16",
   },
   {
     src: "/images/badges/eco.svg",
     alt: "Eco-friendly",
-    width: 100,
-    height: 57,
-    className: "h-12 w-auto tablet:h-14",
+    width: 143,
+    height: 89,
+    className: "h-10 w-auto tablet:h-12",
   },
   {
     src: "/images/badges/canadian-owned-operated.svg",
