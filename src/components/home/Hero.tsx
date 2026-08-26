@@ -84,17 +84,28 @@ export default function Hero() {
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-img-wrap absolute inset-0">
           {/* TEMP: video stand-in for the hero photo, just to preview.
-              Restore the Image below when done evaluating. */}
+              Restore the Image below when done evaluating.
+              AV1 first, H.264 second for browsers without AV1 decode. The
+              codec strings are read off each file's own av1C/avcC box, so a
+              browser that can't decode AV1 skips cleanly to the mp4. */}
           <video
-            src="/videos/hero-temp-2.mp4"
-            poster="/videos/hero-temp-2-poster.jpg"
+            poster="/videos/hero-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
             className="hero-img absolute inset-0 h-full w-full object-cover"
-          />
+          >
+            <source
+              src="/videos/hero.av1.mp4"
+              type='video/mp4; codecs="av01.0.08M.08"'
+            />
+            <source
+              src="/videos/hero.mp4"
+              type='video/mp4; codecs="avc1.640028"'
+            />
+          </video>
           {/* <Image
             src="/images/hero-deck-backyard.jpg"
             alt="Waterproof vinyl deck surface on a raised backyard deck"
