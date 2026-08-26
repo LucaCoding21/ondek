@@ -29,7 +29,6 @@ const LABEL_FADE = 6;
 const GOLD = "#f4ce47";
 
 type PartLabel = {
-  swatch: string;
   title: string;
   sub: string;
   labelAt: readonly [number, number];
@@ -45,17 +44,15 @@ type PartLabel = {
  *  `labelAt` is a fixed spot on the canvas — the words stay put and only the
  *  leader tracks the part; the spots are the delivered label homes, clear of
  *  the action for the stretch each label is visible (see PART_APPEARS /
- *  PART_HIDES). `swatch` is sampled from the frames for the card's key. */
+ *  PART_HIDES). */
 const PARTS: PartLabel[] = [
   {
-    swatch: "#5f5f64",
     title: "Ultra Flashing",
     sub: "mechanically fastened",
     labelAt: [0.1, 0.64],
     flash: [73, 82],
   },
   {
-    swatch: "#c4bdb1",
     title: "Ultra Seam",
     sub: "clean selvage edge · welded vinyl to vinyl",
     labelAt: [0.74, 0.1],
@@ -63,7 +60,6 @@ const PARTS: PartLabel[] = [
     flash: [176, 185],
   },
   {
-    swatch: "#88888a",
     title: "Ultra Clip",
     sub: "screw-free snap fit",
     labelAt: [0.13, 0.86],
@@ -78,15 +74,45 @@ const PARTS: PartLabel[] = [
 ];
 /* Ultra Edge scene alternates:
 const PARTS: PartLabel[] = [
-  { swatch: "#5a595e", title: "Ultra Flashing", sub: "mechanically fastened",
+  { title: "Ultra Flashing", sub: "mechanically fastened",
     labelAt: [0.1, 0.62], flash: [73, 82] },
-  { swatch: "#d4cbbd", title: "ONDEK membrane", sub: "fully adhered",
+  { title: "ONDEK membrane", sub: "fully adhered",
     labelAt: [0.72, 0.1] },
-  { swatch: "#888789", title: "Ultra Clip", sub: "screw-free snap fit",
+  { title: "Ultra Clip", sub: "screw-free snap fit",
     labelAt: [0.13, 0.86], flash: [157, 166],
     becomes: { title: "Ultra Edge", sub: "Ultra Flashing together with Ultra Clip",
       icon: "/images/ultra-edge/icons/ultra-edge-badge.svg", at: 157 } },
 ]; */
+
+/** The two products the section is about, as they head the card. */
+const CARD_MARKS = [
+  { title: "Ultra Seam", icon: "/images/ultra-seam-badge.svg" },
+  { title: "Ultra Edge", icon: "/images/ultra-edge-badge.svg" },
+] as const;
+
+/** The parts underneath, one row each. Flashing and clip carry the Ultra Edge
+ *  mark because together they are Ultra Edge — not a stand-in for a missing
+ *  asset. Card copy only; the render's chips read from PARTS. */
+const CARD_FEATURES = [
+  {
+    icon: "/images/ultra-edge-badge.svg",
+    title: "Ultra Flashing",
+    blurb:
+      "Mechanically fastened around the deck perimeter, giving the clip a solid anchor to snap onto.",
+  },
+  {
+    icon: "/images/ultra-seam-badge.svg",
+    title: "Ultra Seam",
+    blurb:
+      "A clean selvage edge welds vinyl straight to vinyl, a bond that outlasted the membrane in testing.",
+  },
+  {
+    icon: "/images/ultra-edge-badge.svg",
+    title: "Ultra Clip",
+    blurb:
+      "Snaps onto the flashing with no fasteners through the finish, and holds through hot and cold seasons.",
+  },
+] as const;
 
 /** Point where the anchor→chip-centre ray meets the chip's (padded)
  *  rectangle, so the leader stops at the chip edge instead of running
@@ -410,12 +436,12 @@ export default function UltraSystem() {
       {/* Wider than the site's max-w-7xl sections, matching the padding scale
           UltraPinned uses for this same subject; the cap keeps line lengths
           sane on very large displays instead of running full-bleed. */}
-      <div className="mx-auto flex w-full max-w-[100rem] flex-col justify-center px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:min-h-screen lg:pt-12 lg:pb-28">
+      <div className="mx-auto flex w-full max-w-[100rem] flex-col justify-center px-5 md:px-8 lg:px-12 xl:px-16 py-16 lg:min-h-screen lg:pt-12 lg:pb-24">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-stretch lg:gap-14">
           {/* Headline pinned to the top, card pushed to the bottom — the gap
               between them is what gives the column its shape, so it is the
               justify-between doing the work rather than a fixed margin. */}
-          <div className="flex flex-col justify-between gap-10 lg:gap-14">
+          <div className="flex flex-col justify-between gap-10">
             {/* Split where the thought breaks, each line in its own mask. The
                 pb/-mb pair leaves descenders room inside the mask. */}
             <h2 className="text-4xl sm:text-5xl font-bold leading-[1.08]">
@@ -432,59 +458,55 @@ export default function UltraSystem() {
             </h2>
 
             <div className="ultra-fade bg-surface p-6 sm:p-7">
-              {/* A key to the render, so it leads the card — each swatch is
-                  sampled from the part it names */}
-              <ul className="flex flex-wrap gap-x-6 gap-y-2 border-b border-foreground/10 pb-4">
-                {PARTS.map((part) => (
-                  <li
-                    key={part.title}
-                    className="flex items-center gap-2 text-xs text-foreground/60"
+              {/* The two products head the card, mark against name, over the
+                  rule that separates them from the parts they are made of */}
+              <div className="flex flex-wrap items-center gap-x-10 gap-y-3 border-b border-foreground/25 pb-5">
+                {CARD_MARKS.map((mark) => (
+                  <h3
+                    key={mark.title}
+                    className="flex items-center gap-3 text-lg font-bold"
                   >
-                    <span
-                      aria-hidden
-                      style={{ backgroundColor: part.swatch }}
-                      className="block h-2.5 w-2.5 shrink-0"
+                    {/* h-auto everywhere these badges appear: sizing width
+                        alone leaves the attribute height in charge, and the
+                        mismatch squashes the circles slightly oval and soft */}
+                    <Image
+                      src={mark.icon}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="w-12 h-auto"
                     />
-                    {part.title}
+                    {mark.title}
+                  </h3>
+                ))}
+              </div>
+
+              <ul className="mt-5 space-y-4">
+                {CARD_FEATURES.map((feature) => (
+                  <li key={feature.title} className="flex items-start gap-3.5">
+                    <Image
+                      src={feature.icon}
+                      alt=""
+                      width={40}
+                      height={40}
+                      aria-hidden
+                      className="mt-0.5 w-10 h-auto shrink-0"
+                    />
+                    <div>
+                      <b className="block text-[15px] font-bold">
+                        {feature.title}
+                      </b>
+                      <p className="mt-1 text-[13px] leading-snug text-foreground/65">
+                        {feature.blurb}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
 
-              {/* The two product marks sit against the title that names them.
-                  Decorative to a screen reader — the title already says it. */}
-              <div className="mt-5 flex items-center justify-between gap-4">
-                <h3 className="text-lg font-bold">
-                  Ultra Seam and Ultra Edge
-                </h3>
-                <div aria-hidden className="flex shrink-0 items-center gap-2.5">
-                  {/* h-auto everywhere these badges appear: sizing width
-                      alone leaves the attribute height in charge, and the
-                      mismatch squashes the circles slightly oval and soft */}
-                  <Image
-                    src="/images/ultra-seam-badge.svg"
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="w-11 h-auto"
-                  />
-                  <Image
-                    src="/images/ultra-edge-badge.svg"
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="w-11 h-auto"
-                  />
-                </div>
-              </div>
-              <p className="mt-2.5 text-foreground/70 leading-relaxed">
-                Ultra Seam welds the vinyl directly to itself, a weld that
-                proved stronger than the membrane in independent testing.
-                Ultra Edge finishes the perimeter with a screw-free snap fit
-                built to hold through hot and cold seasons.
-              </p>
               <Link
                 href="/vinyl-decking/the-ultra-system"
-                className="mt-5 inline-block font-bold border-b-2 border-cta pb-0.5 hover:border-foreground transition-colors"
+                className="mt-6 inline-block font-bold border-b-2 border-cta pb-0.5 hover:border-foreground transition-colors"
               >
                 See how the Ultra system works
               </Link>
