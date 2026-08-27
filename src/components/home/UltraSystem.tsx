@@ -8,13 +8,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 // Two updated install renders were delivered (Ultra Seam / Ultra Edge); the
 // section runs one at a time. To preview the other scene, swap the anchors
-// import, FRAME_COUNT, frameSrc base, and PARTS for the alternates below.
-import {
-  PART_ANCHORS,
-  PART_APPEARS,
-  PART_HIDES,
-} from "@/lib/ultraSeamAnchors";
-// import { PART_ANCHORS, PART_APPEARS, PART_HIDES } from "@/lib/ultraEdgeAnchors";
+// import, FRAME_COUNT, frameSrc base, and LEADERS for the alternates below.
+import { PART_ANCHORS, PART_APPEARS } from "@/lib/ultraSeamAnchors";
+// import { PART_ANCHORS, PART_APPEARS } from "@/lib/ultraEdgeAnchors";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -28,60 +24,88 @@ const LABEL_FADE = 6;
 // Brand gold — the chip flashes it while its part flashes in the render
 const GOLD = "#f4ce47";
 
-type PartLabel = {
+type Stage = {
+  /** Index into PART_ANCHORS for the leader's endpoint during this stage */
+  part: number;
   title: string;
   sub: string;
-  labelAt: readonly [number, number];
-  icon?: string;
-  /** Frame window (0-based, inclusive) where the chip goes gold. */
-  flash?: readonly [number, number];
-  /** The clip chip re-badges as the combined product when it flashes. */
-  becomes?: { title: string; sub: string; icon: string; at: number };
+  /** Frame the stage takes over (0-based); defaults to the part's appear */
+  at?: number;
+  /** Frame the stage hides (0-based) — the flashing buried under the vinyl */
+  until?: number;
+  /** Frame window (0-based, inclusive) where the chip goes gold */
+  gold?: readonly [number, number];
 };
 
-/** The labelled parts in the render — chip copy, icons, flash windows and the
- *  clip's re-badge all come from the config the animation was delivered with.
- *  `labelAt` is a fixed spot on the canvas — the words stay put and only the
- *  leader tracks the part; the spots are the delivered label homes, clear of
- *  the action for the stretch each label is visible (see PART_APPEARS /
- *  PART_HIDES). */
-const PARTS: PartLabel[] = [
+type Leader = {
+  /** Chip centre as fractions of the canvas, before `shift` */
+  home: readonly [number, number];
+  /** Extra centre offset in chip widths/heights — hangs the chip off home */
+  shift?: readonly [number, number];
+  icon?: string;
+  /** The product chips run larger than plain part labels */
+  big?: boolean;
+  stages: Stage[];
+};
+
+/** The leader-line tags over the render — chip copy, icons, stage hand-offs
+ *  and gold flash windows all come from the config the animation was
+ *  delivered with (frame numbers converted to 0-based). Each leader is one
+ *  chip at a fixed home; its stages decide which part the line tracks and
+ *  what the chip says — the Edge chip starts as Ultra Flashing, hides while
+ *  the vinyl buries it, returns as Ultra Clip and re-badges as Ultra Edge
+ *  when the clip flashes. */
+const LEADERS: Leader[] = [
   {
-    title: "Ultra Flashing",
-    sub: "mechanically fastened",
-    labelAt: [0.1, 0.64],
-    flash: [73, 82],
-  },
-  {
-    title: "Ultra Seam",
-    sub: "clean selvage edge · welded vinyl to vinyl",
-    labelAt: [0.74, 0.1],
+    home: [0.74, 0.1],
     icon: "/images/ultra-seam/icons/ultra-seam-badge.svg",
-    flash: [176, 185],
+    big: true,
+    stages: [
+      {
+        part: 1,
+        title: "Ultra Seam",
+        sub: "clean selvage edge · welded vinyl to vinyl",
+        gold: [176, 185],
+      },
+    ],
   },
   {
-    title: "Ultra Clip",
-    sub: "screw-free snap fit",
-    labelAt: [0.13, 0.86],
-    flash: [215, 224],
-    becomes: {
-      title: "Ultra Edge",
-      sub: "Ultra Flashing together with Ultra Clip",
-      icon: "/images/ultra-seam/icons/ultra-edge-badge.svg",
-      at: 215,
-    },
+    home: [0.13, 0.74],
+    shift: [-0.5, 0],
+    icon: "/images/ultra-seam/icons/ultra-edge-badge.svg",
+    big: true,
+    stages: [
+      {
+        part: 0,
+        title: "Ultra Flashing",
+        sub: "mechanically fastened",
+        gold: [73, 82],
+        until: 163,
+      },
+      { part: 2, title: "Ultra Clip", sub: "screw-free snap fit" },
+      {
+        part: 2,
+        at: 215,
+        title: "Ultra Edge",
+        sub: "Ultra Flashing together with Ultra Clip",
+        gold: [215, 224],
+      },
+    ],
   },
 ];
 /* Ultra Edge scene alternates:
-const PARTS: PartLabel[] = [
-  { title: "Ultra Flashing", sub: "mechanically fastened",
-    labelAt: [0.1, 0.62], flash: [73, 82] },
-  { title: "ONDEK membrane", sub: "fully adhered",
-    labelAt: [0.72, 0.1] },
-  { title: "Ultra Clip", sub: "screw-free snap fit",
-    labelAt: [0.13, 0.86], flash: [157, 166],
-    becomes: { title: "Ultra Edge", sub: "Ultra Flashing together with Ultra Clip",
-      icon: "/images/ultra-edge/icons/ultra-edge-badge.svg", at: 157 } },
+const LEADERS: Leader[] = [
+  { home: [0.72, 0.1], stages: [
+      { part: 1, title: "ONDEK membrane", sub: "fully adhered" } ] },
+  { home: [0.13, 0.74], shift: [-0.5, 0], big: true,
+    icon: "/images/ultra-edge/icons/ultra-edge-badge.svg",
+    stages: [
+      { part: 0, title: "Ultra Flashing", sub: "mechanically fastened",
+        gold: [73, 82], until: 125 },
+      { part: 2, title: "Ultra Clip", sub: "screw-free snap fit" },
+      { part: 2, at: 157, title: "Ultra Edge",
+        sub: "Ultra Flashing together with Ultra Clip", gold: [157, 166] },
+    ] },
 ]; */
 
 /** The two products the section is about, as they head the card. */
@@ -92,7 +116,7 @@ const CARD_MARKS = [
 
 /** The parts underneath, one row each. Flashing and clip carry the Ultra Edge
  *  mark because together they are Ultra Edge — not a stand-in for a missing
- *  asset. Card copy only; the render's chips read from PARTS. */
+ *  asset. Card copy only; the render's chips read from LEADERS. */
 const CARD_FEATURES = [
   {
     icon: "/images/ultra-edge-badge.svg",
@@ -144,12 +168,11 @@ export default function UltraSystem() {
   const groupRefs = useRef<(SVGGElement | null)[]>([]);
   const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const chipRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const iconRefs = useRef<(HTMLImageElement | null)[]>([]);
   const titleRefs = useRef<(HTMLElement | null)[]>([]);
   const subRefs = useRef<(HTMLElement | null)[]>([]);
-  // Whether each chip has re-badged (the clip → Ultra Edge), so the DOM is
-  // only touched when the state actually flips
-  const becameRef = useRef<boolean[]>([]);
+  // The stage each chip currently shows, so the DOM copy is only swapped
+  // when the stage actually flips (the clip re-badging as Ultra Edge)
+  const stageIdxRef = useRef<number[]>([]);
 
   useGSAP(
     () => {
@@ -221,93 +244,111 @@ export default function UltraSystem() {
         }
       };
 
-      // Only the leader moves — the labels are static, so the words stay put
-      // and the elbow tracks the part on the same interpolated playhead as the
+      // Only the leader moves — the chips are static, so the words stay put
+      // and the line tracks the part on the same interpolated playhead as the
       // frames, keeping line and part together mid-blend
+      const startOf = (st: Stage) =>
+        Math.max(st.at ?? 0, PART_APPEARS[st.part]);
+      const endOf = (st: Stage) => st.until ?? Infinity;
       const moveAnnotations = (index: number, next: number, blend: number) => {
         const exact = index + blend;
-        PART_ANCHORS.forEach((track, part) => {
-          const cfg = PARTS[part];
-          // The parts fly in mid-sequence; each annotation fades in with its
-          // part instead of pointing at empty canvas, and back out once the
-          // part is buried under later ones (the flashing, see PART_HIDES)
-          const fadeIn = gsap.utils.clamp(
-            0,
-            1,
-            (exact - PART_APPEARS[part] + LABEL_FADE) / LABEL_FADE
-          );
-          const hideAt = PART_HIDES[part];
-          const fadeOut =
-            hideAt === null
-              ? 1
-              : gsap.utils.clamp(0, 1, (hideAt - exact) / LABEL_FADE + 1);
-          const alpha = Math.min(fadeIn, fadeOut);
-          const groupStyle = groupRefs.current[part]?.style;
-          if (groupStyle) groupStyle.opacity = String(alpha);
-          const labelStyle = labelRefs.current[part]?.style;
-          if (labelStyle) labelStyle.opacity = String(alpha);
+        LEADERS.forEach((leader, li) => {
+          // Delivered stage logic: the last stage that has started and not
+          // ended owns the chip; none active hides it. A stage starts at its
+          // own `at` or its part's appear, and only while the part is on the
+          // canvas.
+          let active = -1;
+          leader.stages.forEach((st, si) => {
+            const track = PART_ANCHORS[st.part];
+            const [nx, ny] = track[Math.min(index, track.length - 1)];
+            const onscreen = nx > -0.02 && nx < 1.02 && ny > -0.02 && ny < 1.02;
+            const started =
+              exact >= (st.at ?? 0) &&
+              exact >= PART_APPEARS[st.part] &&
+              onscreen;
+            if (started && exact < endOf(st)) active = si;
+          });
 
-          // The clip chip re-badges as the combined product when it flashes;
-          // swap the copy only on the flip, not every tick
-          const became = !!cfg.becomes && exact >= cfg.becomes.at;
-          if (became !== !!becameRef.current[part]) {
-            becameRef.current[part] = became;
-            const face = became && cfg.becomes ? cfg.becomes : cfg;
-            const titleEl = titleRefs.current[part];
-            if (titleEl) titleEl.textContent = face.title;
-            const subEl = subRefs.current[part];
-            if (subEl) subEl.textContent = face.sub;
-            const iconEl = iconRefs.current[part];
-            if (iconEl) {
-              if (face.icon) {
-                iconEl.src = face.icon;
-                iconEl.style.display = "";
-              } else {
-                iconEl.style.display = "none";
-              }
+          const groupStyle = groupRefs.current[li]?.style;
+          const labelStyle = labelRefs.current[li]?.style;
+          if (active < 0) {
+            if (groupStyle) groupStyle.opacity = "0";
+            if (labelStyle) labelStyle.opacity = "0";
+            return;
+          }
+          const st = leader.stages[active];
+
+          // The chip fades with its whole visible run, not each stage — the
+          // clip re-badging as Ultra Edge must not blink out over the swap.
+          // Grow the active stage's window across any stages that touch it.
+          let ws = startOf(st);
+          let we = endOf(st);
+          for (let grew = true; grew; ) {
+            grew = false;
+            for (const other of leader.stages) {
+              const s = startOf(other);
+              const e = endOf(other);
+              if (s < ws && e >= ws) { ws = s; grew = true; }
+              if (s <= we && e > we) { we = e; grew = true; }
             }
+          }
+          const fadeIn = gsap.utils.clamp(0, 1, (exact - ws) / LABEL_FADE);
+          const fadeOut =
+            we === Infinity
+              ? 1
+              : gsap.utils.clamp(0, 1, (we - exact) / LABEL_FADE);
+          const alpha = String(Math.min(fadeIn, fadeOut));
+          if (groupStyle) groupStyle.opacity = alpha;
+          if (labelStyle) labelStyle.opacity = alpha;
+
+          // Swap the chip copy only on the flip, not every tick
+          if (stageIdxRef.current[li] !== active) {
+            stageIdxRef.current[li] = active;
+            const titleEl = titleRefs.current[li];
+            if (titleEl) titleEl.textContent = st.title;
+            const subEl = subRefs.current[li];
+            if (subEl) subEl.textContent = st.sub;
           }
 
           // Chip goes brand gold while its part flashes in the render
-          const chip = chipRefs.current[part];
+          const chip = chipRefs.current[li];
           if (chip) {
             chip.style.background =
-              cfg.flash && exact >= cfg.flash[0] && exact <= cfg.flash[1]
+              st.gold && exact >= st.gold[0] && exact <= st.gold[1]
                 ? GOLD
                 : "#fff";
           }
 
-          const from = track[index];
-          const to = track[next];
-          // Canvas units, so the stroke scales with the render
+          const track = PART_ANCHORS[st.part];
+          const from = track[Math.min(index, track.length - 1)];
+          const to = track[Math.min(next, track.length - 1)];
+          // Canvas units, so the geometry scales with the render
           const x = (from[0] + (to[0] - from[0]) * blend) * canvas.width;
           const y = (from[1] + (to[1] - from[1]) * blend) * canvas.height;
-          const [labelX, labelY] = cfg.labelAt;
-          const originX = labelX * canvas.width;
-          const originY = labelY * canvas.height;
+          let originX = leader.home[0] * canvas.width;
+          let originY = leader.home[1] * canvas.height;
 
           // Straight leader from the chip's edge onto the part — the chip is
           // measured in CSS pixels, the line lives in canvas units
           let ex = originX;
           let ey = originY;
-          const label = labelRefs.current[part];
+          const label = labelRefs.current[li];
           if (label && canvas.clientWidth > 0) {
             const scale = canvas.width / canvas.clientWidth;
-            [ex, ey] = chipEdge(
-              x,
-              y,
-              originX,
-              originY,
-              label.offsetWidth * scale,
-              label.offsetHeight * scale
-            );
+            const w = label.offsetWidth * scale;
+            const h = label.offsetHeight * scale;
+            if (leader.shift) {
+              originX += leader.shift[0] * w;
+              originY += leader.shift[1] * h;
+            }
+            [ex, ey] = chipEdge(x, y, originX, originY, w, h, 6 * scale);
           }
-          leaderRefs.current[part]?.setAttribute(
+          leaderRefs.current[li]?.setAttribute(
             "points",
             `${ex},${ey} ${x},${y}`
           );
-          dotRefs.current[part]?.setAttribute("cx", String(x));
-          dotRefs.current[part]?.setAttribute("cy", String(y));
+          dotRefs.current[li]?.setAttribute("cx", String(x));
+          dotRefs.current[li]?.setAttribute("cy", String(y));
         });
       };
 
@@ -406,12 +447,22 @@ export default function UltraSystem() {
                 },
           });
           // Durations are relative scroll shares: 1.25 screens of animation,
-          // then a quarter-screen hold
+          // then a quarter-screen hold. The opening runs about twice as hot
+          // as the rest — hesitant scrollers see the flashing land and flash
+          // gold on the first nudge instead of a barely-moving render. The
+          // segment break sits in the still hold after the flash, where the
+          // speed change can't be seen; scrub smoothing rounds off the kink.
+          tl.to(playhead, {
+            frame: 89,
+            ease: "none",
+            onUpdate: render,
+            duration: 0.3,
+          });
           tl.to(playhead, {
             frame: FRAME_COUNT - 1,
             ease: "none",
             onUpdate: render,
-            duration: 1.25,
+            duration: 0.95,
           });
           // Rest on the finished assembly before the pin releases — also lets
           // the scrub's smoothing catch up so the last frames aren't cut off
@@ -515,7 +566,12 @@ export default function UltraSystem() {
 
           {/* Capped by height as well as width so the render gives way first on
               a short screen — nothing past 100vh survives the pin */}
-          <div className="ultra-fade flex items-center justify-center lg:justify-end">
+          {/* The Edge tag hangs off the render's left edge (the clip flies
+              through the space to its right, so it can't sit over the
+              canvas). The left padding reserves that hang room so the tag
+              never reaches the card; the negative margin bleeds the render
+              right into the page padding to give some of that width back. */}
+          <div className="ultra-fade flex items-center justify-center lg:justify-end lg:pl-24 xl:-mr-10">
             {/* Shrink-wraps the canvas so the annotations, positioned as
                 percentages of this box, land on the render itself */}
             <div className="relative w-full lg:w-auto">
@@ -537,32 +593,35 @@ export default function UltraSystem() {
               >
                 <svg
                   viewBox="0 0 1600 1000"
-                  className="absolute inset-0 h-full w-full text-foreground/70"
+                  className="absolute inset-0 h-full w-full"
                 >
-                  {PARTS.map((part, i) => {
+                  {LEADERS.map((leader, i) => {
                     // Frame 0 placement, so the overlay is right on the very
                     // first paint rather than snapping into position
-                    const [ax, ay] = PART_ANCHORS[i][0];
+                    const [ax, ay] = PART_ANCHORS[leader.stages[0].part][0];
                     const x = ax * 1600;
                     const y = ay * 1000;
-                    const originX = part.labelAt[0] * 1600;
-                    const originY = part.labelAt[1] * 1000;
+                    const originX = leader.home[0] * 1600;
+                    const originY = leader.home[1] * 1000;
                     return (
                       <g
-                        key={part.title}
+                        key={i}
                         ref={(node) => {
                           groupRefs.current[i] = node;
                         }}
-                        style={{ opacity: PART_APPEARS[i] === 0 ? 1 : 0 }}
+                        style={{ opacity: 0 }}
                       >
+                        {/* 2px ink leader and 3.5px dot at the render's
+                            typical on-screen size — the units are canvas
+                            space, drawn at roughly half scale */}
                         <polyline
                           ref={(node) => {
                             leaderRefs.current[i] = node;
                           }}
                           points={`${originX},${originY} ${x},${y}`}
                           fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                          stroke="#1a1a1a"
+                          strokeWidth="4"
                           strokeLinecap="round"
                         />
                         <circle
@@ -571,70 +630,85 @@ export default function UltraSystem() {
                           }}
                           cx={x}
                           cy={y}
-                          r="4"
-                          fill="currentColor"
+                          r="7"
+                          fill="#1a1a1a"
                         />
                       </g>
                     );
                   })}
                 </svg>
 
-                {PARTS.map((part, i) => (
-                  <div
-                    key={part.title}
-                    ref={(node) => {
-                      labelRefs.current[i] = node;
-                    }}
-                    style={{
-                      left: `${part.labelAt[0] * 100}%`,
-                      top: `${part.labelAt[1] * 100}%`,
-                      opacity: PART_APPEARS[i] === 0 ? 1 : 0,
-                    }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                  >
-                    {/* Chip styled after the delivered demo: white card,
-                        product icon, bold name over a quiet spec line. The
-                        background is driven imperatively (gold flash) in
-                        moveAnnotations, so it lives in style, not a class. */}
-                    <span
+                {LEADERS.map((leader, i) => {
+                  const first = leader.stages[0];
+                  const [sx, sy] = leader.shift ?? [0, 0];
+                  return (
+                    <div
+                      key={i}
                       ref={(node) => {
-                        chipRefs.current[i] = node;
+                        labelRefs.current[i] = node;
                       }}
-                      style={{ background: "#fff" }}
-                      className="flex items-center gap-2 whitespace-nowrap rounded px-2.5 py-1.5 text-[#1a1a1a] transition-colors duration-[250ms]"
+                      style={{
+                        left: `${leader.home[0] * 100}%`,
+                        top: `${leader.home[1] * 100}%`,
+                        opacity: 0,
+                        // `shift` hangs the chip off its home in chip widths
+                        transform: `translate(${-50 + sx * 100}%, ${
+                          -50 + sy * 100
+                        }%)`,
+                        // The chip is sized in em so the delivered
+                        // proportions hold; the clamp tracks the render,
+                        // which runs ~60% of the viewport here
+                        fontSize: leader.big
+                          ? "clamp(12px, 1.1vw, 15px)"
+                          : "clamp(10px, 0.85vw, 12px)",
+                      }}
+                      className="absolute"
                     >
-                      {/* Plain img: src is swapped imperatively on re-badge */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      {/* Chip styled after the delivered demo: white card
+                          with a 1.5px ink stroke, product badge at 2x above
+                          the bold name over a quiet spec line, left-aligned.
+                          The background is driven imperatively (gold flash)
+                          in moveAnnotations, so it lives in style, not a
+                          class. */}
+                      <span
                         ref={(node) => {
-                          iconRefs.current[i] = node;
+                          chipRefs.current[i] = node;
                         }}
-                        src={part.icon}
-                        alt=""
-                        style={{ display: part.icon ? undefined : "none" }}
-                        className="h-9 w-9 shrink-0"
-                      />
-                      <span className="leading-tight">
-                        <b
-                          ref={(node) => {
-                            titleRefs.current[i] = node;
-                          }}
-                          className="block text-[13px] font-bold tracking-[0.02em]"
-                        >
-                          {part.title}
-                        </b>
-                        <small
-                          ref={(node) => {
-                            subRefs.current[i] = node;
-                          }}
-                          className="block text-[11px] font-normal opacity-65"
-                        >
-                          {part.sub}
-                        </small>
+                        style={{ background: "#fff" }}
+                        className="flex flex-col items-start gap-[0.4em] whitespace-nowrap rounded border-[1.5px] border-[#1a1a1a] pb-[0.5em] pl-[0.6em] pr-[0.8em] pt-[0.5em] text-[#1a1a1a] transition-colors duration-[250ms]"
+                      >
+                        {leader.icon && (
+                          /* Plain img: inside a canvas overlay, no sizing
+                             pipeline needed for a small SVG badge */
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={leader.icon}
+                            alt=""
+                            className="h-[5.2em] w-[5.2em] shrink-0"
+                          />
+                        )}
+                        <span>
+                          <b
+                            ref={(node) => {
+                              titleRefs.current[i] = node;
+                            }}
+                            className="block font-bold leading-[1.15] tracking-[0.02em]"
+                          >
+                            {first.title}
+                          </b>
+                          <small
+                            ref={(node) => {
+                              subRefs.current[i] = node;
+                            }}
+                            className="block text-[0.82em] font-normal leading-[1.2] opacity-65"
+                          >
+                            {first.sub}
+                          </small>
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
