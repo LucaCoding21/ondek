@@ -360,3 +360,40 @@ body {
   background: var(--cta);
   color: #1a1a1a;
 }
+
+/* ── Visualizer generation sheen ────────────────────────────────────────
+   A band of light sweeping across the photo while the model repaints the
+   deck — the generative-fill idiom: the wait is shown as work happening
+   on the image itself, with nothing to clock-watch. */
+@keyframes viz-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+/* The band sweeps via transform, not background-position: transforms run
+   on the compositor thread, so the sweep stays fluid even while the main
+   thread is busy, and the linear loop restarts offscreen — no visible
+   seam between sweeps. */
+.viz-sheen {
+  overflow: hidden;
+}
+.viz-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 60%
+  );
+  animation: viz-sheen 2.4s linear infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .viz-sheen::after {
+    animation: none;
+    background: none;
+  }
+}

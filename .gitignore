@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# visualizer: local usage/lead logs and unapproved stock renders
+/.data/
+/visualizer-review/

@@ -27,6 +27,8 @@ export default function SmoothScroll() {
 
     const lenis = new Lenis({ anchors: true });
     lenisRef.current = lenis;
+    // Overlays (visualizer modals) freeze the page through this handle
+    window.__lenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -43,6 +45,7 @@ export default function SmoothScroll() {
       gsap.ticker.remove(update);
       lenis.destroy();
       lenisRef.current = null;
+      delete window.__lenis;
     };
   }, []);
 

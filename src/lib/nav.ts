@@ -54,6 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Resources",
     href: "/resources",
     children: [
+      { label: "Deck visualizer", href: "/visualizer" },
       { label: "Blog", href: "/resources/blog" },
       { label: "FAQs", href: "/resources/faqs" },
       { label: "Documents", href: "/resources/documents" },
