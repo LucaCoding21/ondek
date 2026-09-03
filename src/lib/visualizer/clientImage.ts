@@ -154,13 +154,3 @@ export function designFilename(vinylName: string) {
   return `ondek-${vinylName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.jpg`;
 }
 
-/** True when the image at `url` is taller than it is wide — the stage
- *  swaps to a portrait frame so phone photos don't render tiny */
-export function isPortraitUrl(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img.naturalHeight > img.naturalWidth);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
-}

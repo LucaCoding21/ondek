@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import VisualizerExperience from "@/components/visualizer/VisualizerExperience";
+import VisualizerIntro from "@/components/visualizer/VisualizerIntro";
 
 export const metadata: Metadata = {
   title: "Deck Visualizer | OnDek Vinyl Decking",
@@ -20,6 +21,7 @@ export default async function VisualizerPage({
 
   return (
     <div className="bg-background">
+      <VisualizerIntro />
       <VisualizerExperience initialVinylSku={vinyl} initialLayoutId={layout} />
     </div>
   );

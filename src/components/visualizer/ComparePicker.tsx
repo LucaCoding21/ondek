@@ -14,21 +14,18 @@ export type CompareItem = {
   previewSrc?: string;
   label: string;
   sublabel?: string;
-  /** Section heading this card sits under */
-  group?: string;
   /** Colour card: the vinyl to show on the current photo when picked */
   sku?: string;
   /** Already generated — comparing it is instant and free */
   rendered?: boolean;
-  /** Object URL created just for this picker — revoked on close unless picked */
-  ephemeral?: boolean;
 };
 
 /**
  * The compare flow: one Compare button, then this picker. Everything
- * comparable is a card — the original photo, past renders, stock combos.
- * The design on stage comes pre-selected as side A, so one tap usually
- * finishes the job; the second selection launches the slider immediately.
+ * comparable on the photo on stage is a card — its original, every vinyl.
+ * The design on stage comes pre-picked; the visitor taps one more (the
+ * first pick goes left, the second right; a third tap swaps out the
+ * oldest) and confirms with the button pinned at the bottom.
  */
 export default function ComparePicker({
   open,
@@ -41,6 +38,7 @@ export default function ComparePicker({
   onClose: () => void;
   /** Resolved fresh on every open, so the list is never stale */
   loadItems: () => Promise<CompareItem[]>;
+  /** The design on stage, picked before the visitor touches anything */
   preselectedId: string | null;
   onCompare: (a: CompareItem, b: CompareItem) => void;
 }) {
@@ -53,9 +51,7 @@ export default function ComparePicker({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    let loaded: CompareItem[] = [];
     loadItems().then((resolved) => {
-      loaded = resolved;
       if (cancelled) return;
       setItems(resolved);
       setPicked(
@@ -66,9 +62,6 @@ export default function ComparePicker({
     });
     return () => {
       cancelled = true;
-      for (const item of loaded) {
-        if (item.ephemeral) URL.revokeObjectURL(item.src);
-      }
       setItems(null);
       setPicked([]);
     };
@@ -88,19 +81,17 @@ export default function ComparePicker({
       setPicked(picked.filter((id) => id !== item.id));
       return;
     }
-    if (picked.length === 0) {
-      setPicked([item.id]);
-      return;
-    }
-    // Second pick completes the pair — straight to the slider
-    const first = items?.find((candidate) => candidate.id === picked[0]);
-    if (!first) return;
-    // A picked URL leaves with onCompare — clearing the flag on the shared
-    // item object stops the close-time cleanup from revoking it
-    for (const chosen of [first, item]) {
-      chosen.ephemeral = false;
-    }
-    onCompare(first, item);
+    // Two already picked: the newest tap takes the place of the oldest
+    setPicked(picked.length < 2 ? [...picked, item.id] : [picked[1], item.id]);
+  }
+
+  const pair = picked.map((id) => items?.find((item) => item.id === id));
+  const ready = pair.length === 2 && pair.every(Boolean);
+
+  function confirm() {
+    if (!ready) return;
+    const [first, second] = pair as [CompareItem, CompareItem];
+    onCompare(first, second);
   }
 
   return (
@@ -122,23 +113,15 @@ export default function ComparePicker({
             aria-modal="true"
             aria-label="Compare two looks"
             data-lenis-prevent
-            className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-contain bg-background p-6 tablet:p-8"
+            className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-contain bg-background"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em]">
-                  Compare
-                </p>
-                <h2 className="mt-3 text-xl font-bold tablet:text-2xl">
-                  Pick two looks.
-                </h2>
-                <p className="mt-2 text-sm text-foreground/55">
-                  They go side by side on a slider. A colour you have not
-                  tried yet renders first.
-                  {picked.length === 1 && " One picked, one to go."}
-                </p>
-              </div>
+            {/* The title bar stays put while the grid scrolls under it, so
+                the way out is always in reach */}
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-foreground/10 bg-background px-6 py-4 tablet:px-8">
+              <p className="text-xs font-bold uppercase tracking-[0.2em]">
+                Compare
+              </p>
               <button
                 type="button"
                 onClick={onClose}
@@ -149,27 +132,25 @@ export default function ComparePicker({
               </button>
             </div>
 
+            <div className="p-6 pt-5 tablet:p-8 tablet:pt-6">
+              <h2 className="text-xl font-bold tablet:text-2xl">
+                Compare two vinyls side by side.
+              </h2>
+              <p className="mt-2 text-sm text-foreground/55">
+                Choose two vinyls, or a vinyl and the original photo.
+              </p>
+
             <div className="mt-6">
               {items === null ? (
                 <p className="text-sm text-foreground/45">Loading…</p>
               ) : items.length < 2 ? (
                 <p className="text-sm leading-relaxed text-foreground/55">
-                  Nothing to compare yet. Try a couple of colours first and
-                  they&apos;ll show up here.
+                  No previews of this deck yet. Pick another deck or upload
+                  your own photo.
                 </p>
               ) : (
-                [...new Set(items.map((item) => item.group ?? ""))].map(
-                  (group) => (
-                    <div key={group || "main"} className="mb-6 last:mb-0">
-                      {group && (
-                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.15em] text-foreground/45">
-                          {group}
-                        </p>
-                      )}
-                      <ul className="grid grid-cols-2 gap-3 tablet:grid-cols-3">
-                        {items
-                          .filter((item) => (item.group ?? "") === group)
-                          .map((item) => {
+                <ul className="grid grid-cols-2 gap-3 tablet:grid-cols-3">
+                  {items.map((item) => {
                     const pickIndex = picked.indexOf(item.id);
                     return (
                       <li key={item.id}>
@@ -193,19 +174,9 @@ export default function ComparePicker({
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             {pickIndex >= 0 && (
-                              <span className="absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-cta text-[11px] font-bold text-foreground">
-                                A
-                              </span>
-                            )}
-                            {item.rendered && pickIndex < 0 && (
-                              <span
-                                title="Already rendered, instant"
-                                className="absolute bottom-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-cta"
-                              >
-                                <Check size={12} strokeWidth={3} aria-hidden />
-                                <span className="sr-only">
-                                  Already rendered
-                                </span>
+                              <span className="absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-cta text-white shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
+                                <Check size={14} strokeWidth={3} aria-hidden />
+                                <span className="sr-only">Picked</span>
                               </span>
                             )}
                           </span>
@@ -213,22 +184,50 @@ export default function ComparePicker({
                             <span className="block truncate text-xs font-bold leading-tight">
                               {item.label}
                             </span>
-                            {item.sublabel && (
+                            {(item.sublabel ?? (item.rendered && "Ready")) && (
                               <span className="mt-0.5 block text-[11px] text-foreground/45">
-                                {item.sublabel}
+                                {item.sublabel ?? "Ready"}
                               </span>
                             )}
                           </span>
                         </button>
                       </li>
                     );
-                          })}
-                      </ul>
-                    </div>
-                  ),
-                )
+                  })}
+                </ul>
               )}
             </div>
+            </div>
+
+            {items !== null && items.length >= 2 && (
+              <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-foreground/10 bg-background px-6 py-4 tablet:px-8">
+                <p className="min-w-0 truncate text-sm text-foreground/60">
+                  {ready ? (
+                    <>
+                      <span className="font-bold text-foreground">
+                        {pair[0]?.label}
+                      </span>
+                      {" vs "}
+                      <span className="font-bold text-foreground">
+                        {pair[1]?.label}
+                      </span>
+                    </>
+                  ) : picked.length === 1 ? (
+                    "Choose one more to compare against."
+                  ) : (
+                    "Choose two to compare."
+                  )}
+                </p>
+                <button
+                  type="button"
+                  onClick={confirm}
+                  disabled={!ready}
+                  className="flex-none cursor-pointer bg-cta px-5 py-2.5 text-sm font-bold text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Compare
+                </button>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

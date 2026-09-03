@@ -4,20 +4,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  ArrowUpRight,
   Columns2,
   Download,
-  History,
   RefreshCw,
+  X,
 } from "lucide-react";
 import SiteImage from "@/components/SiteImage";
 import GeneratingOverlay from "./GeneratingOverlay";
 import CompareSlider from "./CompareSlider";
 import SwatchStrip from "./SwatchStrip";
 import LayoutSwitcher from "./LayoutSwitcher";
-import UploadPanel from "./UploadPanel";
 import QuoteDialog from "./QuoteDialog";
-import HistoryPanel from "./HistoryPanel";
 import ComparePicker, { type CompareItem } from "./ComparePicker";
 import { getAvailableVinyls, getVinyl } from "@/config/vinyls";
 import { GENERAL_EMAIL } from "@/lib/contact";
@@ -29,23 +26,21 @@ import {
 } from "@/config/visualizer";
 import { hasStockCombo } from "@/config/stockCombos";
 import {
-  getPhoto,
   getRender,
   hashBytes,
-  listHistory,
+  lastPhotoHash,
+  listPhotos,
   putPhoto,
   putRender,
   recordHistory,
   renderedSkus as cachedSkus,
-  restoreLastPhoto,
-  type HistoryEntry,
+  setLastPhoto,
 } from "@/lib/visualizer/clientCache";
 import {
   compositeCompare,
   designFilename,
   downloadBlob,
   imageToJpeg,
-  isPortraitUrl,
   shrinkUpload,
 } from "@/lib/visualizer/clientImage";
 import {
@@ -62,8 +57,6 @@ type Photo = {
   url: string;
   /** What gets POSTed to the generate route */
   blob: Blob;
-  /** Taller than wide — the stage swaps to a portrait frame */
-  portrait: boolean;
 };
 
 const GENERIC_ERROR =
@@ -89,6 +82,9 @@ export default function VisualizerExperience({
       STOCK_LAYOUTS[0].id,
   );
 
+  /** Every photo the visitor has uploaded, oldest first (the scene row) */
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  /** The one on stage in Custom Mode */
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [renders, setRenders] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
@@ -118,10 +114,11 @@ export default function VisualizerExperience({
   } | null>(null);
   const [split, setSplit] = useState(0.5);
   const [pickerOpen, setPickerOpen] = useState(false);
+  /** A compare pick is rendering before the slider can open: the stage
+   *  shows the wait even though the colour on stage isn't the one in flight */
+  const [compareRendering, setCompareRendering] = useState(false);
 
   const [quoteOpen, setQuoteOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyCount, setHistoryCount] = useState(0);
 
   // One render in flight at a time; a second request would double-spend
   const inFlight = useRef(false);
@@ -142,6 +139,10 @@ export default function VisualizerExperience({
   useEffect(() => {
     rendersRef.current = renders;
   }, [renders]);
+  const photosRef = useRef(photos);
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
   const limitsRef = useRef({ sessionDone: false, customUnavailable: false });
 
   const vinyl = getVinyl(sku) ?? vinyls[0];
@@ -164,19 +165,25 @@ export default function VisualizerExperience({
     });
   }, []);
 
-  // A refresh mid-session picks the photo and its renders back up
+  // A refresh mid-session brings every uploaded photo back into the scene
+  // row, and the last one viewed back onto the stage with its renders
   useEffect(() => {
     let cancelled = false;
-    restoreLastPhoto().then(async (restored) => {
-      if (!restored || cancelled) return;
-      const url = URL.createObjectURL(restored.blob);
-      const portrait = await isPortraitUrl(url);
-      if (cancelled) return;
-      setPhoto({ hash: restored.hash, url, blob: restored.blob, portrait });
-      hydrateRenders(restored.hash);
-    });
-    listHistory().then((entries) => {
-      if (!cancelled) setHistoryCount(entries.length);
+    listPhotos().then(async (stored) => {
+      const loaded: Photo[] = [];
+      for (const { hash, blob } of stored) {
+        loaded.push({ hash, url: URL.createObjectURL(blob), blob });
+      }
+      if (cancelled) {
+        for (const p of loaded) URL.revokeObjectURL(p.url);
+        return;
+      }
+      setPhotos(loaded);
+      const last = loaded.find((p) => p.hash === lastPhotoHash());
+      if (last) {
+        setPhoto(last);
+        hydrateRenders(last.hash);
+      }
     });
     return () => {
       cancelled = true;
@@ -275,7 +282,6 @@ export default function VisualizerExperience({
         const blob = await (await fetch(payload.image)).blob();
         await putRender(targetPhoto.hash, targetSku, blob);
         recordHistory(targetPhoto.hash, targetSku);
-        listHistory().then((entries) => setHistoryCount(entries.length));
         const url = URL.createObjectURL(blob);
         // Only surface it if the visitor is still on this photo — a render
         // finishing after a photo switch must not land on the wrong deck
@@ -362,21 +368,18 @@ export default function VisualizerExperience({
       const hash = await hashBytes(originalBytes);
       // Pre-shrink in the browser when it can decode the format; otherwise
       // the original goes up and the server downscales instead
-      const shrunk = await shrinkUpload(file);
-      const blob = shrunk ?? file;
-      const url = URL.createObjectURL(blob);
-      const nextPhoto: Photo = {
-        hash,
-        url,
-        blob,
-        portrait: await isPortraitUrl(url),
-      };
-      if (photoRef.current && photoRef.current.hash !== hash) {
-        URL.revokeObjectURL(photoRef.current.url);
+      let nextPhoto = photosRef.current.find((p) => p.hash === hash);
+      if (!nextPhoto) {
+        const shrunk = await shrinkUpload(file);
+        const blob = shrunk ?? file;
+        const url = URL.createObjectURL(blob);
+        nextPhoto = { hash, url, blob };
+        setPhotos((list) => [...list, nextPhoto as Photo]);
       }
       setPhoto(nextPhoto);
       setMode("custom");
-      putPhoto(hash, blob);
+      // Also moves it to the end of the stored list, matching the row
+      putPhoto(hash, nextPhoto.blob);
       // Same photo re-uploaded finds its old renders instantly. No render
       // fires here: uploading just shows the photo, and the first render
       // starts when the visitor picks a colour.
@@ -385,36 +388,10 @@ export default function VisualizerExperience({
     [hydrateRenders, setQueued],
   );
 
-  // Bring a past design straight back from the cache — no API call
-  const openFromHistory = useCallback(
-    async (entry: HistoryEntry) => {
-      const photoBlob = await getPhoto(entry.hash);
-      if (!photoBlob) return;
-      setHistoryOpen(false);
-      setComparePair(null);
-      setQueued(null);
-      setError(null);
-      if (photo?.hash !== entry.hash) {
-        const url = URL.createObjectURL(photoBlob);
-        setPhoto({
-          hash: entry.hash,
-          url,
-          blob: photoBlob,
-          portrait: await isPortraitUrl(url),
-        });
-        // Keep the restore pointer on whatever was viewed last
-        putPhoto(entry.hash, photoBlob);
-        await hydrateRenders(entry.hash);
-      }
-      setSku(entry.sku);
-      setMode("custom");
-    },
-    [photo, hydrateRenders, setQueued],
-  );
-
   // ── Compare ─────────────────────────────────────────────────────────
-  // One button, one picker: everything comparable becomes a card — the
-  // original photo, every past render (any photo), or stock combos.
+  // One button, one picker: everything comparable on the photo or layout
+  // on stage becomes a card — its original, and every vinyl on it. Never
+  // across photos: two different decks on one slider compares nothing.
 
   const loadCompareItems = useCallback(async (): Promise<CompareItem[]> => {
     if (mode === "stock") {
@@ -446,7 +423,6 @@ export default function VisualizerExperience({
         id: `orig:${photo.hash}`,
         src: photo.url,
         label: "Original photo",
-        group: "This photo",
       });
       // Every colour is on the table, shown as its swatch: a checkmark
       // means it's already rendered (instant), the rest render when picked
@@ -460,25 +436,8 @@ export default function VisualizerExperience({
           previewSrc: v.swatchPath,
           label: v.name,
           sublabel: rendered ? undefined : "New render",
-          group: "This photo",
           sku: v.sku,
           rendered,
-        });
-      }
-    }
-    // Renders made on other photos, in their own section
-    for (const entry of await listHistory()) {
-      if (photo && entry.hash === photo.hash) continue;
-      const name = getVinyl(entry.sku)?.name;
-      if (!name) continue;
-      const blob = await getRender(entry.hash, entry.sku);
-      if (blob) {
-        items.push({
-          id: `${entry.hash}:${entry.sku}`,
-          src: URL.createObjectURL(blob),
-          label: name,
-          group: "Earlier photos",
-          ephemeral: true,
         });
       }
     }
@@ -498,17 +457,23 @@ export default function VisualizerExperience({
       // A side picked as a bare colour renders now, progress theater and
       // all; if it fails, generate() has already surfaced the error state
       const sides: { src: string; label: string }[] = [];
-      for (const item of [a, b]) {
-        // A colour card resolves to its render on the current photo,
-        // generating first when there isn't one yet
-        if (item.sku && mode === "custom") {
-          if (!photo) return;
-          const url = renders[item.sku] ?? (await generate(item.sku, photo));
-          if (!url) return;
-          sides.push({ src: url, label: item.label });
-        } else {
-          sides.push({ src: item.src, label: item.label });
+      setCompareRendering(true);
+      try {
+        for (const item of [a, b]) {
+          // A colour card resolves to its render on the current photo,
+          // generating first when there isn't one yet
+          if (item.sku && mode === "custom") {
+            if (!photo) return;
+            const url =
+              renders[item.sku] ?? (await generate(item.sku, photo));
+            if (!url) return;
+            sides.push({ src: url, label: item.label });
+          } else {
+            sides.push({ src: item.src, label: item.label });
+          }
         }
+      } finally {
+        setCompareRendering(false);
       }
       setSplit(0.5);
       setComparePair({ a: sides[0], b: sides[1] });
@@ -538,10 +503,28 @@ export default function VisualizerExperience({
     [setQueued],
   );
 
-  const switchLayout = useCallback((nextLayoutId: string) => {
-    setLayoutId(nextLayoutId);
-    setComparePair(null);
-  }, []);
+  // The scene row is the only mode switch: a stock deck puts Stock Mode on
+  // stage, the photo tile puts the visitor's own photo there
+  const selectLayout = useCallback(
+    (nextLayoutId: string) => {
+      switchMode("stock");
+      setLayoutId(nextLayoutId);
+    },
+    [switchMode],
+  );
+
+  const selectPhoto = useCallback(
+    async (hash: string) => {
+      const next = photosRef.current.find((p) => p.hash === hash);
+      if (!next) return;
+      switchMode("custom");
+      if (photoRef.current?.hash === hash) return;
+      setPhoto(next);
+      setLastPhoto(hash);
+      await hydrateRenders(hash);
+    },
+    [switchMode, hydrateRenders],
+  );
 
   // ── Stage + downloads ───────────────────────────────────────────────
 
@@ -633,77 +616,17 @@ export default function VisualizerExperience({
   // ── Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto max-w-7xl px-6 pb-32 pt-24 tablet:pb-24 tablet:pt-28">
-      <p className="text-xs font-bold uppercase tracking-[0.2em]">
-        Deck visualizer
-      </p>
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-x-10 gap-y-3 border-b border-foreground/10 pb-5">
-        <h1 className="text-2xl font-bold leading-tight tablet:text-4xl">
-          See your deck in OnDek vinyl.
-        </h1>
-        <p className="max-w-md text-sm leading-relaxed text-foreground/60">
-          Try the lineup on our decks or upload a photo of yours. Compare
-          favourites, download the look, send it with a quote request.
-        </p>
-      </div>
-
-      {/* Mode tabs + render history */}
-      <div className="mt-6 flex items-end justify-between border-b border-foreground/10">
-        <div className="flex gap-6">
-          {(
-            [
-              ["stock", "Our decks"],
-              ["custom", "Your deck"],
-            ] as [Mode, string][]
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => switchMode(value)}
-              aria-pressed={mode === value}
-              className={`-mb-px cursor-pointer border-b-2 pb-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors ${
-                mode === value
-                  ? "border-cta text-foreground"
-                  : "border-transparent text-foreground/45 hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {historyCount > 0 && (
-          <button
-            type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="inline-flex cursor-pointer items-center gap-2 pb-3 text-sm font-bold text-foreground/60 transition-colors hover:text-foreground"
-          >
-            <History size={15} />
-            <span className="hidden min-[420px]:inline">My designs</span>
-            <span className="flex size-5 items-center justify-center rounded-full bg-cta text-[11px] font-bold text-foreground">
-              {historyCount}
-            </span>
-          </button>
-        )}
-      </div>
-
-      <div className="mt-6 grid gap-8 desktop:grid-cols-[1fr_340px]">
+    <section className="mx-auto max-w-[96rem] px-6 pb-32 tablet:pb-24">
+      {/* minmax(0,…) + min-w-0: the scene row scrolls inside its column
+          rather than widening it (a bare 1fr is at least content-wide) */}
+      <div className="grid gap-10 desktop:grid-cols-[minmax(0,1fr)_400px]">
         {/* ── Stage ── */}
-        <div>
+        <div className="min-w-0">
           <div
-            className={`relative overflow-hidden bg-stone-100 desktop:aspect-auto desktop:min-h-[360px] ${
-              mode === "custom" && photo?.portrait
-                ? "h-[52vh] desktop:h-[72vh]"
-                : "aspect-[4/3] desktop:h-[54vh]"
-            }`}
+            // One height for every photo, portrait or landscape: the frame
+            // never resizes when switching, so the page never jumps
+            className="relative h-[56vh] min-h-[360px] overflow-hidden bg-stone-100 desktop:h-[72vh]"
           >
-            {comparePair ? null : mode === "custom" && !photo ? (
-              <div className="flex h-full items-center justify-center p-6">
-                <div className="w-full max-w-md">
-                  <UploadPanel onFile={handleUpload} />
-                </div>
-              </div>
-            ) : null}
             {comparePair ? (
               <CompareSlider
                 srcA={comparePair.a.src}
@@ -761,6 +684,10 @@ export default function VisualizerExperience({
                           initial={{ clipPath: "inset(0 100% 0 0)" }}
                           animate={{ clipPath: "inset(0 0% 0 0)" }}
                           transition={{ duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
+                          // Wipe done: drop the underlay, whose URL may be
+                          // revoked any moment (a regenerate releases the
+                          // old render after a few seconds)
+                          onAnimationComplete={() => setReveal(null)}
                           className="absolute inset-0"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -816,14 +743,15 @@ export default function VisualizerExperience({
             </AnimatePresence>
 
             {/* Overlay only where the visitor is actually waiting: on the
-                sku being rendered (or one queued behind it). Viewing an
+                sku being rendered (or one queued behind it), or a compare
+                pick rendering before the slider opens. Viewing an
                 already-cached colour mid-render gets the swatch spinner
                 instead of a blocking overlay. Keyed per render so the
-                progress bar restarts for a queued follow-up. */}
+                progress ring restarts for a queued follow-up. */}
             {generating &&
               mode === "custom" &&
               !showCompare &&
-              (stagePending || sku === generatingSku) && (
+              (stagePending || sku === generatingSku || compareRendering) && (
                 <GeneratingOverlay
                   key={generatingSku ?? "render"}
                   refining={previewSrc !== null}
@@ -841,8 +769,52 @@ export default function VisualizerExperience({
 
             {mode === "custom" && photo && stagePending && !busy && !showCompare && (
               <span className="absolute bottom-3 left-3 bg-ink/70 px-3 py-1.5 text-xs font-semibold text-white">
-                Pick a vinyl to lay it on your deck
+                Pick a vinyl
               </span>
+            )}
+
+            {/* Frame controls, bottom right: regenerate (when a render is
+                up) beside compare, which turns into the way out of a pair */}
+            {(mode === "stock" || photo) && (
+              <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+                {mode === "custom" &&
+                  photo &&
+                  renders[sku] &&
+                  !sessionDone &&
+                  !customUnavailable &&
+                  !showCompare && (
+                    <button
+                      type="button"
+                      onClick={regenerate}
+                      disabled={busy}
+                      title="Not quite right? Take another pass at this colour"
+                      className="inline-flex cursor-pointer items-center gap-1.5 bg-background/95 px-3.5 py-2 text-xs font-bold transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <RefreshCw size={13} />
+                      Regenerate
+                    </button>
+                  )}
+                {showCompare ? (
+                  <button
+                    type="button"
+                    onClick={() => setComparePair(null)}
+                    className="inline-flex cursor-pointer items-center gap-1.5 bg-background/95 px-3.5 py-2 text-xs font-bold transition-colors hover:bg-background"
+                  >
+                    <X size={14} />
+                    Exit compare
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    disabled={busy}
+                    className="inline-flex cursor-pointer items-center gap-1.5 bg-background/95 px-3.5 py-2 text-xs font-bold transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Columns2 size={14} />
+                    Compare
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
@@ -863,90 +835,40 @@ export default function VisualizerExperience({
                     )
                   : []
               }
+              renderedSkus={mode === "custom" ? Object.keys(renders) : []}
             />
           </div>
 
-          {/* Deck scenes — the three stock locations, under the main photo */}
-          {mode === "stock" && (
-            <div className="mt-4">
-              <LayoutSwitcher selectedId={layoutId} onSelect={switchLayout} />
-            </div>
-          )}
+          {/* Scene row: the three stock decks and the visitor's photos */}
+          <div className="mt-4">
+            <LayoutSwitcher
+              selectedId={mode === "stock" ? layoutId : null}
+              onSelect={selectLayout}
+              photos={photos}
+              selectedPhotoHash={photo?.hash ?? null}
+              onSelectPhoto={selectPhoto}
+              onFile={handleUpload}
+            />
+          </div>
 
-          {/* Under-stage row: railing promo / photo controls + actions */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-            {mode === "stock" ? (
-              <a
-                href={layout.railing.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-1.5 text-sm text-foreground/60 transition-colors hover:text-foreground"
-              >
-                Interested in this railing? {layout.railing.name}
-                <ArrowUpRight
-                  size={14}
-                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </a>
-            ) : photo ? (
-              <div className="flex items-center gap-4">
-                <UploadPanel onFile={handleUpload} compact />
-                {renders[sku] && !sessionDone && !customUnavailable && (
-                  <button
-                    type="button"
-                    onClick={regenerate}
-                    disabled={busy}
-                    title="Not quite right? Take another pass at this colour"
-                    className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-bold underline underline-offset-4 transition-colors hover:text-foreground/70 disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    <RefreshCw size={13} />
-                    Regenerate
-                  </button>
-                )}
-              </div>
-            ) : (
-              <span />
-            )}
-
-            <div className="hidden items-center gap-2 tablet:flex">
-              {showCompare ? (
+          {/* Tablet only: no vinyl column yet, no pinned bar any more */}
+          <div className="mt-4 hidden items-center justify-end gap-2 tablet:flex desktop:hidden">
                 <button
                   type="button"
-                  onClick={() => setComparePair(null)}
-                  className="cursor-pointer border border-foreground/20 px-4 py-2.5 text-sm font-bold transition-colors hover:border-foreground"
+                  onClick={handleDownload}
+                  disabled={!canDownload}
+                  className="inline-flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-bold text-foreground/70 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
                 >
-                  Back to single view
+                  <Download size={15} />
+                  Download preview
                 </button>
-              ) : (
                 <button
                   type="button"
-                  onClick={() => setPickerOpen(true)}
-                  disabled={busy}
-                  className="inline-flex cursor-pointer items-center gap-2 border border-foreground/20 px-4 py-2.5 text-sm font-bold transition-colors hover:border-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                  onClick={() => setQuoteOpen(true)}
+                  className="btn-wipe cursor-pointer px-5 py-2.5 text-sm font-bold text-foreground"
                 >
-                  <Columns2 size={15} />
-                  Compare
+                  Get a quote for this look
                 </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleDownload}
-                disabled={!canDownload}
-                className="inline-flex cursor-pointer items-center gap-2 border border-foreground/20 px-4 py-2.5 text-sm font-bold transition-colors hover:border-foreground disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <Download size={15} />
-                Download
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuoteOpen(true)}
-                className="btn-wipe cursor-pointer px-5 py-2.5 text-sm font-bold text-foreground"
-              >
-                Get a quote
-              </button>
-            </div>
           </div>
 
           {/* Friendly failure states */}
@@ -1036,6 +958,7 @@ export default function VisualizerExperience({
                     )
                   : []
               }
+              renderedSkus={mode === "custom" ? Object.keys(renders) : []}
             />
             {vinyl?.blurb && (
               <p className="mt-3 text-sm leading-relaxed text-foreground/55">
@@ -1043,47 +966,48 @@ export default function VisualizerExperience({
               </p>
             )}
           </div>
+
+          {/* The ask, then the keepsake: quote leads, download is the plain
+              text step under it */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setQuoteOpen(true)}
+              className="btn-wipe w-full cursor-pointer px-5 py-3.5 text-sm font-bold text-foreground"
+            >
+              Get a quote for this look
+            </button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={!canDownload}
+              className="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 py-2.5 text-sm font-bold text-foreground/70 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <Download size={15} />
+              Download preview
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile action bar — pinned like the quote wizard's CTA, with the
           money button always one thumb away */}
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-foreground/10 bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] tablet:hidden">
-        {showCompare ? (
-          <button
-            type="button"
-            onClick={() => setComparePair(null)}
-            className="min-h-[44px] flex-1 cursor-pointer border border-foreground/20 px-3 text-sm font-bold"
-          >
-            Back to single view
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setPickerOpen(true)}
-            disabled={busy}
-            aria-label="Compare"
-            className="flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 border border-foreground/20 px-3.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <Columns2 size={16} />
-            Compare
-          </button>
-        )}
         <button
           type="button"
           onClick={handleDownload}
           disabled={!canDownload}
-          aria-label="Download image"
-          className="flex min-h-[44px] cursor-pointer items-center justify-center border border-foreground/20 px-3.5 disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex min-h-[44px] cursor-pointer items-center justify-center gap-1.5 px-3.5 text-sm font-bold text-foreground/70 disabled:cursor-not-allowed disabled:opacity-30"
         >
           <Download size={16} />
+          Download preview
         </button>
         <button
           type="button"
           onClick={() => setQuoteOpen(true)}
           className="btn-wipe min-h-[44px] flex-1 cursor-pointer px-3 text-sm font-bold text-foreground"
         >
-          Get a quote
+          Get a quote for this look
         </button>
       </div>
 
@@ -1103,17 +1027,6 @@ export default function VisualizerExperience({
         onCompare={startCompare}
       />
 
-      <HistoryPanel
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        onPick={openFromHistory}
-        currentKey={
-          mode === "custom" && photo && renders[sku]
-            ? `${photo.hash}:${sku}`
-            : null
-        }
-      />
-
       <QuoteDialog
         open={quoteOpen}
         onClose={() => setQuoteOpen(false)}
@@ -1121,6 +1034,6 @@ export default function VisualizerExperience({
         context={{ vinylSku: sku, mode, layoutId }}
         getImage={getQuoteImage}
       />
-    </div>
+    </section>
   );
 }

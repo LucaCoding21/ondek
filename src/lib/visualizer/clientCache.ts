@@ -187,7 +187,10 @@ async function pruneCache() {
     const keepRenders = new Set(
       list.map((entry) => `render:${entry.hash}:${entry.sku}`),
     );
-    const keepHashes = new Set(list.map((entry) => entry.hash));
+    const keepHashes = new Set([
+      ...list.map((entry) => entry.hash),
+      ...readPhotoList(),
+    ]);
     const last = localStorage.getItem(LAST_PHOTO_KEY);
     if (last) keepHashes.add(last);
     for (const key of await idbKeys()) {
@@ -237,32 +240,66 @@ export async function listHistory(): Promise<HistoryEntry[]> {
   return list.sort((a, b) => b.at - a.at);
 }
 
-// ── Refresh survival: the photo itself ──────────────────────────────────
+// ── The visitor's photos ────────────────────────────────────────────────
+// Every upload is kept (blob in IndexedDB, order in localStorage) so the
+// scene row can show them all, and a refresh lands back on the last one.
+
+const PHOTOS_KEY = "odk-viz-photos";
+/** Oldest uploads fall off the list past this; their blobs get pruned
+ *  unless a history render still points at them */
+const MAX_PHOTOS = 12;
+
+function readPhotoList(): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PHOTOS_KEY) ?? "[]");
+    return Array.isArray(parsed)
+      ? parsed.filter((h): h is string => typeof h === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 export function getPhoto(photoHash: string) {
   return idbGet(`photo:${photoHash}`);
 }
 
-export function putPhoto(photoHash: string, blob: Blob) {
+/** Marks a photo as the one on stage, for refresh survival */
+export function setLastPhoto(photoHash: string) {
   try {
     localStorage.setItem(LAST_PHOTO_KEY, photoHash);
   } catch {
     // storage blocked — refresh survival off, everything else still works
   }
-  return idbPut(`photo:${photoHash}`, blob);
 }
 
-export async function restoreLastPhoto(): Promise<{
-  hash: string;
-  blob: Blob;
-} | null> {
-  let hash: string | null = null;
+export function lastPhotoHash(): string | null {
   try {
-    hash = localStorage.getItem(LAST_PHOTO_KEY);
+    return localStorage.getItem(LAST_PHOTO_KEY);
   } catch {
     return null;
   }
-  if (!hash) return null;
-  const blob = await idbGet(`photo:${hash}`);
-  return blob ? { hash, blob } : null;
+}
+
+/** Stores a photo and appends it to the list (re-uploads move to the end) */
+export function putPhoto(photoHash: string, blob: Blob) {
+  setLastPhoto(photoHash);
+  try {
+    const list = readPhotoList().filter((h) => h !== photoHash);
+    list.push(photoHash);
+    localStorage.setItem(PHOTOS_KEY, JSON.stringify(list.slice(-MAX_PHOTOS)));
+  } catch {
+    // storage blocked — the photo still shows for this visit
+  }
+  return idbPut(`photo:${photoHash}`, blob);
+}
+
+/** Every photo the visitor has uploaded, oldest first */
+export async function listPhotos(): Promise<{ hash: string; blob: Blob }[]> {
+  const photos: { hash: string; blob: Blob }[] = [];
+  for (const hash of readPhotoList()) {
+    const blob = await idbGet(`photo:${hash}`);
+    if (blob) photos.push({ hash, blob });
+  }
+  return photos;
 }

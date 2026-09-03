@@ -1,13 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { Check } from "lucide-react";
 import type { Vinyl } from "@/config/vinyls";
 
 /**
  * The vinyl lineup: horizontal scroll on mobile, wrapping grid from
  * tablet up. Tapping a swatch shows that vinyl on the stage (rendering it
  * first in Custom Mode). The strip stays live while a render is in
- * flight — swatches being rendered or queued carry a small spinner.
+ * flight — swatches being rendered or queued carry a small spinner, and
+ * ones already rendered on this photo carry a check: tapping those is
+ * instant.
  */
 export default function SwatchStrip({
   vinyls,
@@ -15,6 +18,7 @@ export default function SwatchStrip({
   onSelect,
   disabled = false,
   pendingSkus = [],
+  renderedSkus = [],
 }: {
   vinyls: Vinyl[];
   selectedSku: string;
@@ -22,6 +26,8 @@ export default function SwatchStrip({
   disabled?: boolean;
   /** Skus rendering or queued right now — marked with a spinner */
   pendingSkus?: string[];
+  /** Skus with a finished render on the current photo — marked done */
+  renderedSkus?: string[];
 }) {
   return (
     <div
@@ -54,7 +60,7 @@ export default function SwatchStrip({
                 sizes="(max-width: 768px) 96px, 140px"
                 className="object-cover"
               />
-              {pendingSkus.includes(vinyl.sku) && (
+              {pendingSkus.includes(vinyl.sku) ? (
                 <>
                   <span
                     aria-hidden
@@ -62,14 +68,27 @@ export default function SwatchStrip({
                   />
                   <span className="sr-only">Rendering</span>
                 </>
-              )}
+              ) : null}
             </span>
             <span
-              className={`block truncate px-2 py-2 text-[11px] font-bold leading-tight tablet:text-xs ${
+              className={`flex items-center gap-1 px-2 py-2 text-[11px] font-bold leading-tight tablet:text-xs ${
                 selected ? "" : "text-foreground/70"
               }`}
             >
-              {vinyl.name}
+              {/* Rendered on this photo: a yellow check leading the name,
+                  off the swatch so it never reads as a selection */}
+              {renderedSkus.includes(vinyl.sku) && (
+                <>
+                  <Check
+                    size={13}
+                    strokeWidth={3.5}
+                    aria-hidden
+                    className="flex-none text-cta"
+                  />
+                  <span className="sr-only">Rendered on your deck</span>
+                </>
+              )}
+              <span className="min-w-0 truncate">{vinyl.name}</span>
             </span>
           </button>
         );

@@ -96,11 +96,10 @@ export default function CompareSlider({
         </div>
       </div>
 
-      {/* Vinyl name labels */}
-      <span className="absolute left-3 top-3 bg-ink/70 px-2.5 py-1.5 text-xs font-bold text-white">
+      {/* One chip, top left: left side vs right side, in reading order */}
+      <span className="absolute left-3 top-3 bg-ink/70 px-2.5 py-1.5 text-xs font-medium text-white">
         {labelA}
-      </span>
-      <span className="absolute right-3 top-3 bg-ink/70 px-2.5 py-1.5 text-xs font-bold text-white">
+        <span className="mx-1.5 text-white/55">vs</span>
         {labelB}
       </span>
     </div>
