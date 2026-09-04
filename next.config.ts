@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   // Dev only: lets a phone (or a browser automation tab) on the LAN load
   // the dev server's JS and HMR. Ignored by production builds.
   allowedDevOrigins: ["192.168.1.66", "*.local"],
+  // Vercel's function bundler traces require() calls but misses sharp's
+  // libvips native library, which sharp dlopens from @img/ at runtime —
+  // the deployed /api/visualizer/generate died with ERR_DLOPEN_FAILED.
+  // On a Linux install @img/ holds only the linux-x64 pair, so the glob
+  // stays small in the bundle that matters.
+  outputFileTracingIncludes: {
+    "/**": ["node_modules/@img/**/*"],
+  },
   experimental: {
     serverActions: {
       // The visualizer quote action carries the current design as a JPEG
