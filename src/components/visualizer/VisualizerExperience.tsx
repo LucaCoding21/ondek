@@ -190,11 +190,15 @@ export default function VisualizerExperience({
     };
   }, [hydrateRenders]);
 
-  // Stock combos for the current layout, warmed so switching never flickers
+  // Stock combos for the current layout, warmed so switching never flickers.
+  // decode() goes beyond fetching: the bitmap is decompressed off-thread,
+  // so a later click paints without a decode hitch on the main thread.
   useEffect(() => {
     for (const v of vinyls) {
       if (hasStockCombo(layout.id, v.sku)) {
-        new Image().src = stockComboPath(layout.id, v.sku);
+        const img = new Image();
+        img.src = stockComboPath(layout.id, v.sku);
+        img.decode().catch(() => {});
       }
     }
   }, [layout.id, vinyls]);
@@ -531,9 +535,32 @@ export default function VisualizerExperience({
   const stockCombo = hasStockCombo(layout.id, sku)
     ? stockComboPath(layout.id, sku)
     : null;
-  const stageSrc =
+  const stageTarget =
     mode === "stock" ? (stockCombo ?? layout.photoPath) : (renders[sku] ?? photo?.url ?? null);
   const stagePending = mode === "stock" ? !stockCombo : !renders[sku];
+
+  // The crossfade below keys on stageSrc, so if it advanced the moment the
+  // selection changed, the incoming layer would fade in before its bitmap
+  // arrived and the photo would pop in mid-fade on a cold load. Instead the
+  // stage holds what it has until the target is decoded, then crossfades
+  // between two ready images. A warmed target decodes from cache, so the
+  // common case still swaps immediately.
+  const [decodedSrc, setDecodedSrc] = useState<string | null>(stageTarget);
+  useEffect(() => {
+    if (!stageTarget || stageTarget === decodedSrc) return;
+    let cancelled = false;
+    const img = new Image();
+    img.src = stageTarget;
+    const show = () => {
+      if (!cancelled) setDecodedSrc(stageTarget);
+    };
+    // A failed decode still swaps: a broken image beats a stuck stage
+    img.decode().then(show, show);
+    return () => {
+      cancelled = true;
+    };
+  }, [stageTarget, decodedSrc]);
+  const stageSrc = stageTarget === null ? null : decodedSrc;
 
   const showCompare = comparePair !== null;
 
@@ -660,7 +687,7 @@ export default function VisualizerExperience({
                       aria-hidden
                       className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
                     />
-                    {stageSrc.startsWith("/") ? (
+                    {stageSrc === layout.photoPath ? (
                       <SiteImage
                         src={stageSrc}
                         alt={`${layout.name} in ${vinyl?.name ?? "vinyl"}`}
@@ -668,6 +695,17 @@ export default function VisualizerExperience({
                         sizes="(max-width: 1025px) 100vw, 60vw"
                         preload
                         className="object-contain"
+                      />
+                    ) : stageSrc.startsWith("/") ? (
+                      // Stock renders skip the optimizer on purpose: the
+                      // warm-up and the decode gate fetch this exact URL,
+                      // while next/image would request a separate variant
+                      // that is cold at the moment of the crossfade
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={stageSrc}
+                        alt={`${layout.name} in ${vinyl?.name ?? "vinyl"}`}
+                        className="relative h-full w-full object-contain"
                       />
                     ) : reveal?.to === stageSrc ? (
                       // Before/after wipe: the previous view sits under
