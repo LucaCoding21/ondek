@@ -6,6 +6,7 @@ import {
   GENERATION_MESSAGES,
   GENERATION_PROGRESS,
   REFINING_MESSAGE,
+  SLOW_RENDER,
 } from "@/config/visualizer";
 
 /**
@@ -21,7 +22,10 @@ import {
  * moves backwards and never sits still.
  *
  * `refining` is set once a streamed preview is on the stage: the cycling
- * copy stops guessing and says what's actually left.
+ * copy stops guessing and says what's actually left. Past
+ * SLOW_RENDER.afterSeconds the chip says so instead, whatever else is
+ * going on: an unusual wait should read as unusual, not as the tool
+ * quietly hanging.
  */
 export default function GeneratingOverlay({
   refining = false,
@@ -32,6 +36,7 @@ export default function GeneratingOverlay({
   progressFloor?: number;
 }) {
   const [messageIndex, setMessageIndex] = useState(0);
+  const [slow, setSlow] = useState(false);
   const [paced, setPaced] = useState(0);
   // Floors only ever rise — a late or out-of-order event can't pull the
   // bar backwards (the documented derive-during-render pattern)
@@ -50,11 +55,23 @@ export default function GeneratingOverlay({
         (1 - Math.exp(-elapsed / GENERATION_PROGRESS.tauSeconds));
       setPaced((current) => Math.max(current, next));
     }, 200);
+    const slowTimer = setTimeout(
+      () => setSlow(true),
+      SLOW_RENDER.afterSeconds * 1000,
+    );
     return () => {
       clearInterval(cycle);
       clearInterval(pace);
+      clearTimeout(slowTimer);
     };
   }, []);
+
+  const message = slow
+    ? SLOW_RENDER.message
+    : refining
+      ? REFINING_MESSAGE
+      : GENERATION_MESSAGES[messageIndex];
+  const messageKey = slow ? "slow" : refining ? "refining" : messageIndex;
 
   const percent = Math.round(Math.max(paced, floor) * 100);
   // Ring geometry: r=7 in a 20px box, stroke 2.5
@@ -103,14 +120,14 @@ export default function GeneratingOverlay({
         </svg>
         <AnimatePresence mode="wait">
           <motion.span
-            key={refining ? "refining" : messageIndex}
+            key={messageKey}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
             className="block whitespace-nowrap text-xs font-semibold text-white"
           >
-            {refining ? REFINING_MESSAGE : GENERATION_MESSAGES[messageIndex]}
+            {message}
           </motion.span>
         </AnimatePresence>
       </div>

@@ -40,6 +40,9 @@ export type DeckRenderInput = {
     onPartial?: (image: Buffer, index: number) => void | Promise<void>;
     /** How many intermediate frames to ask for (1–3). Default 2. */
     partialImages?: number;
+    /** Abort the provider call after this long. Defaults to
+     *  DEFAULT_TIMEOUT_MS; the route passes what's left of its budget. */
+    timeoutMs?: number;
   };
 };
 
@@ -77,9 +80,10 @@ const MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-2";
 // Client's call: medium everywhere — roughly a quarter of the cost of
 // high, and the input photos are read at high fidelity regardless
 const QUALITY = process.env.OPENAI_IMAGE_QUALITY ?? "medium";
-// Observed renders land in 30–45s; 90s is twice the slow end. The route's
-// maxDuration has to cover this × its attempt count, so raise both together.
-const TIMEOUT_MS = 90_000;
+// Observed renders land in 30–45s; 90s is twice the slow end. This is
+// the ceiling for callers that don't pass options.timeoutMs (the stock
+// script, which can afford to wait). The route passes its own budget.
+const DEFAULT_TIMEOUT_MS = 90_000;
 
 async function openAiRender(input: DeckRenderInput): Promise<DeckRenderResult> {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -127,7 +131,7 @@ async function openAiRender(input: DeckRenderInput): Promise<DeckRenderResult> {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: form,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(input.options?.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     });
   } catch (error) {
     // Network failure or timeout — both worth one retry

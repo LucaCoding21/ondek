@@ -22,7 +22,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
-import { LIMITS, PARTIAL_PREVIEWS } from "@/config/visualizer";
+import {
+  GENERATION_BUDGET,
+  LIMITS,
+  PARTIAL_PREVIEWS,
+} from "@/config/visualizer";
 import {
   STREAM_CONTENT_TYPE,
   type GenerateStreamMessage,
@@ -40,9 +44,9 @@ import { allowRequest, hashIp } from "@/lib/visualizer/rateLimit";
 import { logGeneration, monthlyCapReached } from "@/lib/visualizer/usage";
 
 // Renders run 30–45s in practice (see .data/visualizer/usage.jsonl). The
-// budget below must cover ATTEMPTS × the per-call timeout in generate.ts
-// plus the sharp passes either side: 2 × 90s + a few seconds, well
-// inside 300.
+// attempt loop below never runs past GENERATION_BUDGET.totalMs, so this
+// only needs to cover that plus the sharp passes either side: 100s + a
+// few seconds, well inside 300.
 export const maxDuration = 300;
 const ATTEMPTS = 2;
 
@@ -143,9 +147,22 @@ export async function POST(request: NextRequest) {
   // throws so the stream always ends with exactly one terminal message.
   const run = async (send: (message: GenerateStreamMessage) => void) => {
     let lastError = "";
+    const deadline = started + GENERATION_BUDGET.totalMs;
     // One automatic retry on transient failures — a visitor deep in
-    // designing is a lead, and a flaky upstream moment must not lose them
+    // designing is a lead, and a flaky upstream moment must not lose them.
+    // But the retry lives inside the same budget as the first attempt: a
+    // slow first call leaves it less time, and if too little is left the
+    // visitor gets the error now rather than after another paid call that
+    // can't finish. Worst case is totalMs, not ATTEMPTS × a timeout.
     for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+      const remainingMs = deadline - Date.now();
+      if (attempt > 0 && remainingMs < GENERATION_BUDGET.minRetryMs) {
+        console.warn(
+          `[visualizer] skipping retry: ${Math.round(remainingMs / 1000)}s of budget left`,
+        );
+        break;
+      }
+      const timeoutMs = Math.min(GENERATION_BUDGET.attemptMs, remainingMs);
       try {
         const result = await generateDeckRender({
           deckPhoto: deck.data,
@@ -155,6 +172,7 @@ export async function POST(request: NextRequest) {
           options:
             PARTIAL_PREVIEWS.count > 0
               ? {
+                  timeoutMs,
                   partialImages: PARTIAL_PREVIEWS.count,
                   // Intermediate frames still show the old boards; only a
                   // thumbnail leaves the server (see PARTIAL_PREVIEWS)
@@ -172,7 +190,7 @@ export async function POST(request: NextRequest) {
                     });
                   },
                 }
-              : undefined,
+              : { timeoutMs },
         });
 
         const webp = await sharp(result.image)

@@ -86,6 +86,23 @@ export const LIMITS = {
   monthlyCap: Number(process.env.VISUALIZER_MONTHLY_CAP ?? 550),
 };
 
+/**
+ * How long a Custom Mode render gets before the visitor is told to try
+ * again. Observed renders land in 30–45s (median ~37s); anything past a
+ * minute is the model having a bad day, and a visitor watching a spinner
+ * for two minutes reads the tool as broken. The route retries once on
+ * transient failures, but only inside this budget.
+ */
+export const GENERATION_BUDGET = {
+  /** Longest a single call to the image API may run */
+  attemptMs: 60_000,
+  /** Wall-clock for the whole request, retry included */
+  totalMs: 100_000,
+  /** A retry only starts with at least this much budget left. Below the
+   *  median render time it's mostly a paid call that can't finish. */
+  minRetryMs: 40_000,
+};
+
 /** Inbox visualizer quote requests are delivered to */
 export const LEAD_INBOX =
   process.env.VISUALIZER_LEAD_INBOX ?? "info@ondekvinylworx.com";
@@ -102,6 +119,16 @@ export const GENERATION_MESSAGES = [
 
 /** Shown once a streamed preview is on the stage and the final is coming */
 export const REFINING_MESSAGE = "Sharpening the details…";
+
+/**
+ * Past the slow tail of normal renders the cycling copy stops and this
+ * takes over, so the visitor knows the tool is alive and the wait is
+ * unusual, not the norm. Replaces both the cycle and REFINING_MESSAGE.
+ */
+export const SLOW_RENDER = {
+  afterSeconds: 45,
+  message: "Taking longer than usual. Hang tight…",
+};
 
 /**
  * The progress bar under the status chip. The API gives no true percent,
