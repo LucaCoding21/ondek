@@ -19,23 +19,22 @@ export type StockLayout = {
   };
 };
 
-// PLACEHOLDER PHOTOS — these three are existing site photography standing in
-// until the client drops the real stock layout shots into the repo. Swap
-// photoPath (and re-run the stock combo script) when they land; ids can stay.
+// The client's chosen stock shots (supplied Sep 2026, replacing the
+// placeholder site photography). Ids predate the swap and stay stable.
 export const STOCK_LAYOUTS: StockLayout[] = [
   {
     id: "lakeview",
     name: "Lakeview deck",
-    photoPath: "/images/grey-deck-lake-view.jpg",
+    photoPath: "/images/lakeview-balcony-glass-railing.jpg",
     railing: {
-      name: "Innovative Aluminum picket railing",
+      name: "Innovative Aluminum glass railing",
       url: "https://www.innovativealuminum.com/",
     },
   },
   {
     id: "glassrail",
     name: "Glass rail deck",
-    photoPath: "/images/tan-plank-deck-glass-railing.jpg",
+    photoPath: "/images/mountain-balcony-glass-railing.jpg",
     railing: {
       name: "Innovative Aluminum glass railing",
       url: "https://www.innovativealuminum.com/",
@@ -44,9 +43,9 @@ export const STOCK_LAYOUTS: StockLayout[] = [
   {
     id: "backyard",
     name: "Backyard deck",
-    photoPath: "/images/silver-deck-backyard.jpg",
+    photoPath: "/images/pond-deck-picket-railing.jpg",
     railing: {
-      name: "Innovative Aluminum aluminum railing",
+      name: "Innovative Aluminum picket railing",
       url: "https://www.innovativealuminum.com/",
     },
   },

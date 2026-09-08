@@ -1,6 +1,6 @@
 export type DesignTag = "best-seller" | "new" | "sold-out" | "coming-soon";
 
-export type DesignFamily = "grey" | "silver" | "tan" | "brown";
+export type DesignFamily = "grey" | "silver" | "tan" | "brown" | "wood";
 
 export type Design = {
   name: string;
@@ -32,6 +32,7 @@ export const DESIGN_FAMILY_LABELS: Record<DesignFamily, string> = {
   silver: "Silvers",
   tan: "Tans",
   brown: "Browns",
+  wood: "Woodgrains",
 };
 
 /** Families that actually have designs, in first-appearance order */
@@ -173,8 +174,40 @@ export const DESIGNS: Design[] = [
     tile: SWATCH("driftwood"),
     tileTone: "#a29a8e",
     tone: "#a29a8e",
-    family: "grey",
-    tag: "coming-soon",
+    family: "wood",
+  },
+  // The US-side woodgrains, added when the owners supplied the full
+  // CAN + US pattern set (Sep 2026). Swatches are square crops of those
+  // 1600px pattern strips; tones sampled from the crops.
+  {
+    name: "Ipe",
+    slug: "ipe",
+    blurb: "Deep, rich hardwood tones in a classic plank layout.",
+    swatch: SWATCH("ipe"),
+    tile: SWATCH("ipe"),
+    tileTone: "#733b28",
+    tone: "#733b28",
+    family: "wood",
+  },
+  {
+    name: "Boardwalk",
+    slug: "boardwalk",
+    blurb: "Chevron planks in a cool, weathered grey-brown.",
+    swatch: SWATCH("boardwalk"),
+    tile: SWATCH("boardwalk"),
+    tileTone: "#7d7063",
+    tone: "#7d7063",
+    family: "wood",
+  },
+  {
+    name: "Hansberry",
+    slug: "hansberry",
+    blurb: "Warm chevron woodgrain with a hand-laid character.",
+    swatch: SWATCH("hansberry"),
+    tile: SWATCH("hansberry"),
+    tileTone: "#8d7361",
+    tone: "#8d7361",
+    family: "wood",
   },
 ];
 
