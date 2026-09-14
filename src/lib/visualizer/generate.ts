@@ -75,12 +75,14 @@ export async function generateDeckRender(
 // ── OpenAI implementation (nothing below leaves this file) ──────────────
 
 const OPENAI_EDITS_URL = "https://api.openai.com/v1/images/edits";
-// gpt-image-2 is the current flagship; gpt-image-1 retires Oct 23, 2026
-const MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-2";
+// gpt-image-2.5 Flare (Sep 2026): same price and edit fidelity as
+// gpt-image-2, ~2.5x faster on our job (15-20s vs 35-45s), and truer
+// colour on the woodgrains. Sunburst showed no quality gain for +25% time.
+const MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-2.5-flare";
 // Client's call: medium everywhere — roughly a quarter of the cost of
 // high, and the input photos are read at high fidelity regardless
 const QUALITY = process.env.OPENAI_IMAGE_QUALITY ?? "medium";
-// Observed renders land in 30–45s; 90s is twice the slow end. This is
+// Observed Flare renders land in 15–20s; 90s is a generous ceiling. This is
 // the ceiling for callers that don't pass options.timeoutMs (the stock
 // script, which can afford to wait). The route passes its own budget.
 const DEFAULT_TIMEOUT_MS = 90_000;

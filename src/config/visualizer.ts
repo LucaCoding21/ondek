@@ -90,19 +90,19 @@ export const LIMITS = {
 
 /**
  * How long a Custom Mode render gets before the visitor is told to try
- * again. Observed renders land in 30–45s (median ~37s); anything past a
- * minute is the model having a bad day, and a visitor watching a spinner
- * for two minutes reads the tool as broken. The route retries once on
+ * again. Observed renders land in 15–20s on gpt-image-2.5 Flare (median
+ * ~16s); anything past 40s is the model having a bad day, and a visitor
+ * watching a spinner for over a minute reads the tool as broken. The route retries once on
  * transient failures, but only inside this budget.
  */
 export const GENERATION_BUDGET = {
   /** Longest a single call to the image API may run */
-  attemptMs: 60_000,
+  attemptMs: 40_000,
   /** Wall-clock for the whole request, retry included */
-  totalMs: 100_000,
+  totalMs: 70_000,
   /** A retry only starts with at least this much budget left. Below the
    *  median render time it's mostly a paid call that can't finish. */
-  minRetryMs: 40_000,
+  minRetryMs: 25_000,
 };
 
 /** Inbox visualizer quote requests are delivered to */
@@ -128,7 +128,7 @@ export const REFINING_MESSAGE = "Sharpening the details…";
  * unusual, not the norm. Replaces both the cycle and REFINING_MESSAGE.
  */
 export const SLOW_RENDER = {
-  afterSeconds: 45,
+  afterSeconds: 25,
   message: "Taking longer than usual. Hang tight…",
 };
 
@@ -143,19 +143,20 @@ export const SLOW_RENDER = {
 export const GENERATION_PROGRESS = {
   /** Time constant of the pacing curve, in seconds. Progress follows
    *  cap × (1 − e^(−t/tau)): quick early movement, slowing as it goes.
-   *  16 puts ~45% at 12s and ~84% at the 37s median. */
-  tauSeconds: 16,
+   *  7 puts ~50% at 5s and ~82% at the 16s median. */
+  tauSeconds: 7,
   /** Pacing alone never passes this */
   cap: 0.92,
   /** Floors snapped to when partial frame 1 / frame 2 actually arrive
-   *  (~12s / ~22s observed) — the bar's tie to reality */
+   *  (a third and two thirds of the way in, ~5s / ~10s on Flare) — the
+   *  bar's tie to reality */
   floors: [0.45, 0.72],
 };
 
 /**
  * Streamed previews while a Custom Mode render is in flight. The model can
  * send intermediate frames (the first lands around a third of the way in,
- * ~12s of a ~33s render). They are NOT blurred drafts: each is a full-
+ * ~5s of a ~16s render). They are NOT blurred drafts: each is a full-
  * detail guess that still shows the old deck boards, so the route shrinks
  * every frame to `edgePx` before it leaves the server and the stage shows
  * it as a soft colour wash. Nothing misleading can survive 96px.
