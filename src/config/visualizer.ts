@@ -20,12 +20,14 @@ export type StockLayout = {
 };
 
 // The client's chosen stock shots (supplied Sep 2026, replacing the
-// placeholder site photography). Ids predate the swap and stay stable.
+// placeholder site photography). Ids predate the swap and stay stable —
+// "lakeview" is an ocean view, but the id lives in deep links and 13
+// combo filenames, so only the name says so.
 export const STOCK_LAYOUTS: StockLayout[] = [
   {
     id: "lakeview",
-    name: "Lakeview deck",
-    photoPath: "/images/lakeview-balcony-glass-railing.jpg",
+    name: "Oceanview deck",
+    photoPath: "/images/oceanview-balcony-glass-railing.jpg",
     railing: {
       name: "Innovative Aluminum glass railing",
       url: "https://www.innovativealuminum.com/",
