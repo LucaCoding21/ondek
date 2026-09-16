@@ -32,6 +32,7 @@ import {
   type GenerateStreamMessage,
 } from "@/lib/visualizer/stream";
 import { getVinyl } from "@/config/vinyls";
+import { buildGenerationPrompt } from "@/lib/visualizer/prompt";
 import {
   generateDeckRender,
   GenerationError,
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       const timeoutMs = Math.min(GENERATION_BUDGET.attemptMs, remainingMs);
+      const prompt = buildGenerationPrompt(vinyl.scaleHint);
       try {
         const result = await generateDeckRender({
           deckPhoto: deck.data,
@@ -173,6 +175,7 @@ export async function POST(request: NextRequest) {
             PARTIAL_PREVIEWS.count > 0
               ? {
                   timeoutMs,
+                  prompt,
                   partialImages: PARTIAL_PREVIEWS.count,
                   // Intermediate frames still show the old boards; only a
                   // thumbnail leaves the server (see PARTIAL_PREVIEWS)
@@ -190,7 +193,7 @@ export async function POST(request: NextRequest) {
                     });
                   },
                 }
-              : { timeoutMs },
+              : { timeoutMs, prompt },
         });
 
         const webp = await sharp(result.image)

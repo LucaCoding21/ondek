@@ -21,6 +21,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { generateDeckRender } from "../src/lib/visualizer/generate";
+import { buildGenerationPrompt } from "../src/lib/visualizer/prompt";
 import { STOCK_LAYOUTS, LIMITS } from "../src/config/visualizer";
 import { VINYLS } from "../src/config/vinyls";
 import { logGeneration } from "../src/lib/visualizer/usage";
@@ -117,6 +118,7 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
           deckPhotoMime: "image/webp",
           vinylSwatch: swatch,
           vinylSwatchMime: "image/jpeg",
+          options: { prompt: buildGenerationPrompt(vinyl.scaleHint) },
         });
         await writeFile(outFile, await sharp(result.image).webp({ quality: 90 }).toBuffer());
         await logGeneration({

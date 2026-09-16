@@ -24,6 +24,9 @@ export type Vinyl = {
   /** What the generation pipeline sends to the image model: the full
    *  6-foot roll-width strip where one exists, else the swatch */
   referencePath: string;
+  /** Design-specific scale sentence for the prompt, where the pattern has
+   *  a unit worth sizing (planks, chevrons) */
+  scaleHint?: string;
   regions: Region[];
   /** Average colour of the swatch — placeholder wash while it loads */
   tone: string;
@@ -41,6 +44,7 @@ function toVinyl(design: Design): Vinyl {
     name: design.name,
     swatchPath: design.swatch,
     referencePath: design.reference ?? design.swatch,
+    scaleHint: design.scaleHint,
     regions: ["CA", "US"],
     tone: design.tone,
     blurb: design.blurb,

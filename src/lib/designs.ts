@@ -12,6 +12,10 @@ export type Design = {
    *  pattern's true repeat. The square `swatch` is a crop of this and is
    *  only for the UI. */
   reference?: string;
+  /** Measured real-world sizes of the pattern, spliced into the generation
+   *  prompt. Only patterns with a visible unit (planks, chevrons) need one;
+   *  speckles have nothing to size. */
+  scaleHint?: string;
   /** Deck scene photo — swap in when product shots are ready */
   scene?: string;
   /** Real membrane pattern tile, where one has been shot */
@@ -187,6 +191,7 @@ export const DESIGNS: Design[] = [
     blurb: "Weathered timber look, greyed off by sun and salt.",
     swatch: SWATCH("driftwood"),
     reference: REFERENCE("driftwood"),
+    scaleHint: "In this design the planks are about 5 to 6 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
     scene: SCENE("1716904519810-349244919824"),
     tile: SWATCH("driftwood"),
     tileTone: "#a29a8e",
@@ -203,6 +208,7 @@ export const DESIGNS: Design[] = [
     blurb: "Deep, rich hardwood tones in a classic plank layout.",
     swatch: SWATCH("ipe"),
     reference: REFERENCE("ipe"),
+    scaleHint: "In this design the planks are about 5.5 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
     tile: SWATCH("ipe"),
     tileTone: "#733b28",
     tone: "#733b28",
@@ -214,6 +220,7 @@ export const DESIGNS: Design[] = [
     blurb: "Chevron planks in a cool, weathered grey-brown.",
     swatch: SWATCH("boardwalk"),
     reference: REFERENCE("boardwalk"),
+    scaleHint: "In this design the chevron boards are about 3.5 inches (9 cm) wide and a straight spine board runs every 18 inches (45 cm), so a 12 foot wide deck shows about 8 spines with chevrons between them.",
     tile: SWATCH("boardwalk"),
     tileTone: "#7d7063",
     tone: "#7d7063",
@@ -225,6 +232,7 @@ export const DESIGNS: Design[] = [
     blurb: "Warm chevron woodgrain with a hand-laid character.",
     swatch: SWATCH("hansberry"),
     reference: REFERENCE("hansberry"),
+    scaleHint: "In this design the chevron boards are about 3.5 inches (9 cm) wide and a straight spine board runs every 18 inches (45 cm), so a 12 foot wide deck shows about 8 spines with chevrons between them.",
     tile: SWATCH("hansberry"),
     tileTone: "#8d7361",
     tone: "#8d7361",
@@ -236,6 +244,7 @@ export const DESIGNS: Design[] = [
     blurb: "Straight-laid walnut planks in a soft, smoky brown.",
     swatch: SWATCH("walnut"),
     reference: REFERENCE("walnut"),
+    scaleHint: "In this design the planks are about 5.5 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
     tile: SWATCH("walnut"),
     tileTone: "#785f43",
     tone: "#785f43",
