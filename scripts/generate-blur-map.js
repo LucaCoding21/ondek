@@ -6,7 +6,8 @@ const path = require('path');
 
 const root = path.join(__dirname, '..', 'public');
 const exts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
-const skipDirs = ['/images/ultra-exploded', '/images/deck-assembly', '/images/partners'];
+// designs/reference holds the model's pattern strips; nothing renders them
+const skipDirs = ['/images/ultra-exploded', '/images/deck-assembly', '/images/partners', '/images/designs/reference'];
 const files = [];
 (function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

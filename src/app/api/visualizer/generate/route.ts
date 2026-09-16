@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
   }
 
   const swatch = await readFile(
-    path.join(process.cwd(), "public", vinyl.swatchPath),
+    path.join(process.cwd(), "public", vinyl.referencePath),
   );
 
   const started = Date.now();

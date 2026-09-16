@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { CTA_LINKS } from "@/lib/nav";
+import HeroSpotlight, { HeroSpotlightPill } from "./HeroSpotlight";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -129,12 +130,14 @@ export default function Hero() {
           vertically centered from 1025px up. Top padding clears the fixed
           nav; bottom padding reserves room for the badge strip. */}
       <div className="hero-copy relative z-10 flex h-full flex-col justify-end px-4 pb-44 pt-20 text-left tablet:px-20 desktop:justify-center desktop:px-32 desktop:pb-32">
+        <HeroSpotlightPill />
+
         {/* Each headline line rises out of its own overflow mask. The em
             paddings give descenders room at this tight leading. */}
-        <div className="overflow-hidden pb-[0.25em] font-heading text-[clamp(3rem,7.5vw,7rem)] font-medium leading-[0.92] tracking-[-0.025em] text-offwhite">
+        <div className="shrink-0 overflow-hidden pb-[0.25em] font-heading text-[clamp(3rem,7.5vw,7rem)] font-medium leading-[0.92] tracking-[-0.025em] text-offwhite">
           <h1 className="hero-rise-1">Waterproof decking,</h1>
         </div>
-        <div className="mb-6 overflow-hidden font-heading text-[clamp(3rem,7.5vw,7rem)] font-medium leading-[0.92] tracking-[-0.025em] text-offwhite tablet:mb-8">
+        <div className="mb-6 shrink-0 overflow-hidden font-heading text-[clamp(3rem,7.5vw,7rem)] font-medium leading-[0.92] tracking-[-0.025em] text-offwhite tablet:mb-8">
           <h1 className="hero-rise-2 pb-[0.18em]">built to last</h1>
         </div>
 
@@ -169,6 +172,10 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      {/* Visualizer spotlight: glass card bottom-right, desktop only. Below
+          that the copy block carries the pill version above the headline. */}
+      <HeroSpotlight />
 
       {/* Badge strip — pinned to the hero's bottom edge, spread across the
           width on mobile/tablet, tucked bottom-right on desktop. The 1px

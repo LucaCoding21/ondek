@@ -22,6 +22,7 @@ export const STOCK_COMBOS: string[] = [
   "backyard__speckled-stone-silver",
   "backyard__speckled-stone-tan",
   "backyard__urban-mist",
+  "backyard__walnut",
   "glassrail__boardwalk",
   "glassrail__driftwood",
   "glassrail__granite-brown",
@@ -35,6 +36,7 @@ export const STOCK_COMBOS: string[] = [
   "glassrail__speckled-stone-silver",
   "glassrail__speckled-stone-tan",
   "glassrail__urban-mist",
+  "glassrail__walnut",
   "lakeview__boardwalk",
   "lakeview__driftwood",
   "lakeview__granite-brown",
@@ -47,7 +49,8 @@ export const STOCK_COMBOS: string[] = [
   "lakeview__speckled-stone-grey",
   "lakeview__speckled-stone-silver",
   "lakeview__speckled-stone-tan",
-  "lakeview__urban-mist"
+  "lakeview__urban-mist",
+  "lakeview__walnut"
 ];
 
 export function hasStockCombo(layoutId: string, sku: string): boolean {

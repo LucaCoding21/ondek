@@ -19,9 +19,11 @@ export type Vinyl = {
    *  combo filename segment. Never rename a shipped sku. */
   sku: string;
   name: string;
-  /** Membrane swatch photo, served from /public. Also what the generation
-   *  pipeline sends to the image model as the pattern reference. */
+  /** Square membrane swatch for the UI, served from /public */
   swatchPath: string;
+  /** What the generation pipeline sends to the image model: the full
+   *  6-foot roll-width strip where one exists, else the swatch */
+  referencePath: string;
   regions: Region[];
   /** Average colour of the swatch — placeholder wash while it loads */
   tone: string;
@@ -38,6 +40,7 @@ function toVinyl(design: Design): Vinyl {
     sku: design.slug,
     name: design.name,
     swatchPath: design.swatch,
+    referencePath: design.reference ?? design.swatch,
     regions: ["CA", "US"],
     tone: design.tone,
     blurb: design.blurb,

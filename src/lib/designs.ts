@@ -6,6 +6,12 @@ export type Design = {
   name: string;
   slug: string;
   swatch: string;
+  /** Full-width membrane strip sent to the image model as the pattern
+   *  reference. One roll width: the long edge is 6 feet of real membrane
+   *  (per the owners), which is how the model learns plank scale and the
+   *  pattern's true repeat. The square `swatch` is a crop of this and is
+   *  only for the UI. */
+  reference?: string;
   /** Deck scene photo — swap in when product shots are ready */
   scene?: string;
   /** Real membrane pattern tile, where one has been shot */
@@ -48,6 +54,7 @@ export function familiesInUse(designs: Design[]): DesignFamily[] {
 const SCENE = (id: string) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=80`;
 const SWATCH = (slug: string) => `/images/designs/swatches/${slug}.jpg`;
+const REFERENCE = (slug: string) => `/images/designs/reference/${slug}.jpg`;
 
 /** Real pattern tile, shot from the membrane. Only where one exists. */
 const TILE = (slug: string) => `/images/designs/${slug}.jpg`;
@@ -59,6 +66,7 @@ export const DESIGNS: Design[] = [
     slug: "speckled-stone-grey",
     blurb: "Cool mid-grey with a fine stone speckle through it.",
     swatch: SWATCH("speckled-stone-grey"),
+    reference: REFERENCE("speckled-stone-grey"),
     scene: "/images/grey-deck-modern-farmhouse.jpg",
     tile: TILE("speckled-stone-grey"),
     tileTone: "#a1a09d",
@@ -71,6 +79,7 @@ export const DESIGNS: Design[] = [
     slug: "speckled-stone-silver",
     blurb: "Light silver that keeps decks bright and cool underfoot.",
     swatch: SWATCH("speckled-stone-silver"),
+    reference: REFERENCE("speckled-stone-silver"),
     scene: "/images/silver-deck-backyard.jpg",
     tile: TILE("speckled-stone-silver"),
     tileTone: "#c6c6c6",
@@ -82,6 +91,7 @@ export const DESIGNS: Design[] = [
     slug: "speckled-stone-brown",
     blurb: "Deep earth brown, speckled to hide the everyday.",
     swatch: SWATCH("speckled-stone-brown"),
+    reference: REFERENCE("speckled-stone-brown"),
     scene: SCENE("1613544723371-23b514a78c85"),
     tile: TILE("speckled-stone-brown"),
     tileTone: "#b7a697",
@@ -93,6 +103,7 @@ export const DESIGNS: Design[] = [
     slug: "speckled-stone-tan",
     blurb: "Warm, sandy neutral that pairs beautifully with wood tones.",
     swatch: SWATCH("speckled-stone-tan"),
+    reference: REFERENCE("speckled-stone-tan"),
     scene: SCENE("1574120583586-de8847ae992c"),
     tile: TILE("speckled-stone-tan"),
     tileTone: "#ddd2c3",
@@ -104,6 +115,7 @@ export const DESIGNS: Design[] = [
     slug: "granite-grey",
     blurb: "Dense granite pattern in a true neutral grey.",
     swatch: SWATCH("granite-grey"),
+    reference: REFERENCE("granite-grey"),
     scene: SCENE("1656646549607-8fda5837a4ca"),
     tile: TILE("granite-grey"),
     tileTone: "#b7b2ae",
@@ -115,6 +127,7 @@ export const DESIGNS: Design[] = [
     slug: "granite-silver",
     blurb: "The palest of the granites. Bright without going stark.",
     swatch: SWATCH("granite-silver"),
+    reference: REFERENCE("granite-silver"),
     scene: SCENE("1716904519810-349244919824"),
     tile: TILE("granite-silver"),
     tileTone: "#c4c2c3",
@@ -126,6 +139,7 @@ export const DESIGNS: Design[] = [
     slug: "granite-brown",
     blurb: "Rich, grounded brown for decks that sit under trees.",
     swatch: SWATCH("granite-brown"),
+    reference: REFERENCE("granite-brown"),
     scene: "/images/grey-deck-modern-farmhouse.jpg",
     tile: TILE("granite-brown"),
     tileTone: "#a79b8e",
@@ -137,6 +151,7 @@ export const DESIGNS: Design[] = [
     slug: "granite-tan",
     blurb: "Golden tan granite. The warmest colour in the range.",
     swatch: SWATCH("granite-tan"),
+    reference: REFERENCE("granite-tan"),
     scene: "/images/tan-plank-deck-glass-railing.jpg",
     tile: TILE("granite-tan"),
     tileTone: "#d7d0ca",
@@ -159,6 +174,7 @@ export const DESIGNS: Design[] = [
     slug: "urban-mist",
     blurb: "Soft concrete grey. Clean, modern, goes with everything.",
     swatch: SWATCH("urban-mist"),
+    reference: REFERENCE("urban-mist"),
     scene: SCENE("1656646549607-8fda5837a4ca"),
     tile: TILE("urban-mist"),
     tileTone: "#b4ada8",
@@ -170,6 +186,7 @@ export const DESIGNS: Design[] = [
     slug: "driftwood",
     blurb: "Weathered timber look, greyed off by sun and salt.",
     swatch: SWATCH("driftwood"),
+    reference: REFERENCE("driftwood"),
     scene: SCENE("1716904519810-349244919824"),
     tile: SWATCH("driftwood"),
     tileTone: "#a29a8e",
@@ -177,13 +194,15 @@ export const DESIGNS: Design[] = [
     family: "wood",
   },
   // The US-side woodgrains, added when the owners supplied the full
-  // CAN + US pattern set (Sep 2026). Swatches are square crops of those
-  // 1600px pattern strips; tones sampled from the crops.
+  // CAN + US pattern set (Sep 2026; Walnut followed on Sep 16). Swatches
+  // are square crops of the 1600px reference strips; tones sampled from
+  // the crops.
   {
     name: "Ipe",
     slug: "ipe",
     blurb: "Deep, rich hardwood tones in a classic plank layout.",
     swatch: SWATCH("ipe"),
+    reference: REFERENCE("ipe"),
     tile: SWATCH("ipe"),
     tileTone: "#733b28",
     tone: "#733b28",
@@ -194,6 +213,7 @@ export const DESIGNS: Design[] = [
     slug: "boardwalk",
     blurb: "Chevron planks in a cool, weathered grey-brown.",
     swatch: SWATCH("boardwalk"),
+    reference: REFERENCE("boardwalk"),
     tile: SWATCH("boardwalk"),
     tileTone: "#7d7063",
     tone: "#7d7063",
@@ -204,9 +224,21 @@ export const DESIGNS: Design[] = [
     slug: "hansberry",
     blurb: "Warm chevron woodgrain with a hand-laid character.",
     swatch: SWATCH("hansberry"),
+    reference: REFERENCE("hansberry"),
     tile: SWATCH("hansberry"),
     tileTone: "#8d7361",
     tone: "#8d7361",
+    family: "wood",
+  },
+  {
+    name: "Walnut",
+    slug: "walnut",
+    blurb: "Straight-laid walnut planks in a soft, smoky brown.",
+    swatch: SWATCH("walnut"),
+    reference: REFERENCE("walnut"),
+    tile: SWATCH("walnut"),
+    tileTone: "#785f43",
+    tone: "#785f43",
     family: "wood",
   },
 ];

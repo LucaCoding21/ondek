@@ -147,16 +147,21 @@
     animation: hero-fade-up 0.7s ease-out 0.95s both;
     will-change: transform, opacity;
   }
+  .hero-fade-card {
+    animation: hero-fade-up 0.7s ease-out 0.8s both;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-rise-1,
   .hero-rise-2,
   .hero-fade-sub,
   .hero-fade-cta,
-  .hero-fade-up {
+  .hero-fade-up,
+  .hero-fade-card {
     animation: none !important;
   }
 }
+
 
 /* Split canvas for the rubber-band overscroll: the bounce past the top shows
    the site background, the bounce past the bottom shows dark — matching the

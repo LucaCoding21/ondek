@@ -108,7 +108,7 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
         continue;
       }
 
-      const swatch = await readFile(path.join(ROOT, "public", vinyl.swatchPath));
+      const swatch = await readFile(path.join(ROOT, "public", vinyl.referencePath));
       const started = Date.now();
       process.stdout.write(`⏳ ${combo} … `);
       try {
