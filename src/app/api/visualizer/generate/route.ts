@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
       }
       const timeoutMs = Math.min(GENERATION_BUDGET.attemptMs, remainingMs);
       const prompt = buildGenerationPrompt(vinyl.scaleHint);
+      const quality = vinyl.renderQuality;
       try {
         const result = await generateDeckRender({
           deckPhoto: deck.data,
@@ -176,6 +177,7 @@ export async function POST(request: NextRequest) {
               ? {
                   timeoutMs,
                   prompt,
+                  quality,
                   partialImages: PARTIAL_PREVIEWS.count,
                   // Intermediate frames still show the old boards; only a
                   // thumbnail leaves the server (see PARTIAL_PREVIEWS)
@@ -193,7 +195,7 @@ export async function POST(request: NextRequest) {
                     });
                   },
                 }
-              : { timeoutMs, prompt },
+              : { timeoutMs, prompt, quality },
         });
 
         const webp = await sharp(result.image)

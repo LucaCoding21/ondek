@@ -43,8 +43,13 @@ export type DeckRenderInput = {
     /** Abort the provider call after this long. Defaults to
      *  DEFAULT_TIMEOUT_MS; the route passes what's left of its budget. */
     timeoutMs?: number;
+    /** Provider quality tier. Defaults to the medium tier; the woodgrains
+     *  ask for high (see Vinyl.renderQuality for why). */
+    quality?: RenderQuality;
   };
 };
+
+export type RenderQuality = "medium" | "high";
 
 export type DeckRenderResult = {
   image: Buffer;
@@ -79,8 +84,13 @@ const OPENAI_EDITS_URL = "https://api.openai.com/v1/images/edits";
 // gpt-image-2, ~2.5x faster on our job (15-20s vs 35-45s), and truer
 // colour on the woodgrains. Sunburst showed no quality gain for +25% time.
 const MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-2.5-flare";
-// Client's call: medium everywhere — roughly a quarter of the cost of
-// high, and the input photos are read at high fidelity regardless
+// Client's call: medium by default — roughly a quarter of the cost of
+// high, and the input photos are read at high fidelity regardless. The
+// woodgrains override this per render (Vinyl.renderQuality): at medium the
+// model draws chevron and plank boards two to three times too wide on
+// close-up photos no matter what the prompt says (0 of 24 bench renders
+// right across seven prompt/reference/model variants, Sep 2026); at high
+// the same prompt lands the scale in most renders.
 const QUALITY = process.env.OPENAI_IMAGE_QUALITY ?? "medium";
 // Observed Flare renders land in 15–20s; 90s is a generous ceiling. This is
 // the ceiling for callers that don't pass options.timeoutMs (the stock
@@ -98,7 +108,7 @@ async function openAiRender(input: DeckRenderInput): Promise<DeckRenderResult> {
   const form = new FormData();
   form.append("model", MODEL);
   form.append("prompt", input.options?.prompt ?? GENERATION_PROMPT);
-  form.append("quality", QUALITY);
+  form.append("quality", input.options?.quality ?? QUALITY);
   // High input fidelity keeps the untouched parts of the photo (railing,
   // house, furniture) close to pixel-identical — the whole point here.
   // gpt-image-2 always runs high-fidelity input and doesn't take the param.

@@ -11,6 +11,7 @@
  */
 
 import { DESIGNS, type Design } from "@/lib/designs";
+import type { RenderQuality } from "@/lib/visualizer/generate";
 
 export type Region = "CA" | "US";
 
@@ -27,6 +28,12 @@ export type Vinyl = {
   /** Design-specific scale sentence for the prompt, where the pattern has
    *  a unit worth sizing (planks, chevrons) */
   scaleHint?: string;
+  /** Image-model quality tier. Woodgrains render at high: at medium the
+   *  model draws their boards two to three times too wide on close-up
+   *  photos regardless of prompt (bench, Sep 2026); speckles look the
+   *  same at either tier and stay on the cheaper one. Override with
+   *  OPENAI_IMAGE_QUALITY_WOOD=medium to put cost first. */
+  renderQuality: RenderQuality;
   regions: Region[];
   /** Average colour of the swatch — placeholder wash while it loads */
   tone: string;
@@ -38,6 +45,9 @@ export type Vinyl = {
  *  coming-soon stay out of the strip until their tag is dropped. */
 const EXCLUDED_TAGS = new Set(["sold-out", "coming-soon"]);
 
+const WOOD_QUALITY: RenderQuality =
+  process.env.OPENAI_IMAGE_QUALITY_WOOD === "medium" ? "medium" : "high";
+
 function toVinyl(design: Design): Vinyl {
   return {
     sku: design.slug,
@@ -45,6 +55,7 @@ function toVinyl(design: Design): Vinyl {
     swatchPath: design.swatch,
     referencePath: design.reference ?? design.swatch,
     scaleHint: design.scaleHint,
+    renderQuality: design.family === "wood" ? WOOD_QUALITY : "medium",
     regions: ["CA", "US"],
     tone: design.tone,
     blurb: design.blurb,

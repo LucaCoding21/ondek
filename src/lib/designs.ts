@@ -60,6 +60,17 @@ const SCENE = (id: string) =>
 const SWATCH = (slug: string) => `/images/designs/swatches/${slug}.jpg`;
 const REFERENCE = (slug: string) => `/images/designs/reference/${slug}.jpg`;
 
+// Sizes measured off the 1600px reference strips at 22.2 px per inch
+// (joint-darkness minima, Sep 2026). Straight-laid woodgrains: 13 to 14
+// planks across the 6 ft strip, so 5 to 5.5 in each. Chevrons: spine
+// boards about 3 in wide on a 16 to 18 in pitch (four bays per strip),
+// diagonals about 2.5 in wide, six or seven per bay. Both chevron strips
+// have the same geometry; only their colour differs.
+const PLANK_HINT =
+  "Count the planks in Image 2: about 14 straight planks side by side across its 6 foot length, so each plank is about 5 inches (13 cm) wide, and a 12 foot wide deck shows about 28 planks.";
+const CHEVRON_HINT =
+  "Look at Image 2 first: across its 6 foot length it shows exactly four bays, so one bay is about 18 inches (45 cm) wide. A bay is a straight vertical spine board about 3 inches (7 cm) wide, then six or seven narrow diagonal boards about 2.5 inches (6 cm) wide that all lean the same way, then the next vertical spine, then a bay of diagonals leaning the opposite way, and so on. Every bay of diagonals has a spine on both sides; diagonals never meet other diagonals directly and never form a mitred V without a spine between them. On the deck the boards must stay this narrow: a diagonal board is narrower than the gap between two railing pickets, and a 12 foot wide deck shows about 8 spines.";
+
 /** Real pattern tile, shot from the membrane. Only where one exists. */
 const TILE = (slug: string) => `/images/designs/${slug}.jpg`;
 
@@ -191,7 +202,7 @@ export const DESIGNS: Design[] = [
     blurb: "Weathered timber look, greyed off by sun and salt.",
     swatch: SWATCH("driftwood"),
     reference: REFERENCE("driftwood"),
-    scaleHint: "In this design the planks are about 5 to 6 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
+    scaleHint: PLANK_HINT,
     scene: SCENE("1716904519810-349244919824"),
     tile: SWATCH("driftwood"),
     tileTone: "#a29a8e",
@@ -208,7 +219,7 @@ export const DESIGNS: Design[] = [
     blurb: "Deep, rich hardwood tones in a classic plank layout.",
     swatch: SWATCH("ipe"),
     reference: REFERENCE("ipe"),
-    scaleHint: "In this design the planks are about 5.5 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
+    scaleHint: PLANK_HINT,
     tile: SWATCH("ipe"),
     tileTone: "#733b28",
     tone: "#733b28",
@@ -220,7 +231,9 @@ export const DESIGNS: Design[] = [
     blurb: "Chevron planks in a cool, weathered grey-brown.",
     swatch: SWATCH("boardwalk"),
     reference: REFERENCE("boardwalk"),
-    scaleHint: "This design is built from bays, each about 18 inches (45 cm) wide: a straight vertical spine board, then a bay of diagonal boards that ALL lean the same way, then another straight vertical spine, then a bay of diagonal boards leaning the opposite way, and so on across the floor. Every bay of diagonals has a vertical spine on both of its sides; diagonal boards never meet another bay of diagonals directly and never form a mitred V, there is always a spine between them. The diagonal boards are about 3.5 inches (9 cm) wide, so a 12 foot wide deck shows about 8 spines with a single bay of diagonals between each pair. The boards are a uniform weathered grey-brown with crisp joints between them.",
+    scaleHint:
+      CHEVRON_HINT +
+      " The boards are a weathered grey-brown with crisp joints between them.",
     tile: SWATCH("boardwalk"),
     tileTone: "#7d7063",
     tone: "#7d7063",
@@ -232,7 +245,9 @@ export const DESIGNS: Design[] = [
     blurb: "Warm chevron woodgrain with a hand-laid character.",
     swatch: SWATCH("hansberry"),
     reference: REFERENCE("hansberry"),
-    scaleHint: "This design is built from bays, each about 18 inches (45 cm) wide: a straight vertical spine board, then a bay of diagonal boards that ALL lean the same way, then another straight vertical spine, then a bay of diagonal boards leaning the opposite way, and so on across the floor. Every bay of diagonals has a vertical spine on both of its sides; diagonal boards never meet another bay of diagonals directly and never form a mitred V, there is always a spine between them. The diagonal boards are about 5 inches (13 cm) wide, so a 12 foot wide deck shows about 8 spines with a single bay of diagonals between each pair. The boards deliberately differ from one another: some are pale sandy tan, some are deep reddish brown, with bold grain and clear dark joints, and that board to board contrast is the design; it must not be smoothed into one even colour.",
+    scaleHint:
+      CHEVRON_HINT +
+      " The boards are warm brown, some greyer and some redder side by side, with bold grain and clear dark joints; keep that board to board variation.",
     tile: SWATCH("hansberry"),
     tileTone: "#8d7361",
     tone: "#8d7361",
@@ -244,7 +259,7 @@ export const DESIGNS: Design[] = [
     blurb: "Straight-laid walnut planks in a soft, smoky brown.",
     swatch: SWATCH("walnut"),
     reference: REFERENCE("walnut"),
-    scaleHint: "In this design the planks are about 5.5 inches (14 cm) wide, so a 12 foot wide deck shows roughly 26 planks side by side.",
+    scaleHint: PLANK_HINT,
     tile: SWATCH("walnut"),
     tileTone: "#785f43",
     tone: "#785f43",

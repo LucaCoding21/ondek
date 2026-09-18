@@ -30,6 +30,7 @@ const ROOT = path.join(import.meta.dirname, "..");
 const REVIEW_DIR = path.join(ROOT, "visualizer-review");
 const PUBLIC_DIR = path.join(ROOT, "public", "images", "visualizer", "stock");
 const MANIFEST = path.join(ROOT, "src", "config", "stockCombos.ts");
+const RATE_PAUSE_MS = 10_000;
 
 // Outside the Next runtime nothing loads .env.local — do it by hand
 async function loadEnv() {
@@ -118,7 +119,10 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
           deckPhotoMime: "image/webp",
           vinylSwatch: swatch,
           vinylSwatchMime: "image/jpeg",
-          options: { prompt: buildGenerationPrompt(vinyl.scaleHint) },
+          options: {
+            prompt: buildGenerationPrompt(vinyl.scaleHint),
+            quality: vinyl.renderQuality,
+          },
         });
         await writeFile(outFile, await sharp(result.image).webp({ quality: 90 }).toBuffer());
         await logGeneration({
@@ -145,6 +149,9 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
         console.log(`FAILED — ${message}`);
         failed++;
       }
+      // The client's tier allows 5 input images a minute and each render
+      // sends two; a 20s render plus this pause keeps a long run under it
+      await new Promise((resolve) => setTimeout(resolve, RATE_PAUSE_MS));
     }
   }
 
