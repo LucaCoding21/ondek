@@ -24,7 +24,7 @@ import {
   STOCK_LAYOUTS,
   stockComboPath,
 } from "@/config/visualizer";
-import { hasStockCombo } from "@/config/stockCombos";
+import { hasStockCombo, stockComboVersion } from "@/config/stockCombos";
 import {
   getRender,
   hashBytes,
@@ -197,7 +197,7 @@ export default function VisualizerExperience({
     for (const v of vinyls) {
       if (hasStockCombo(layout.id, v.sku)) {
         const img = new Image();
-        img.src = stockComboPath(layout.id, v.sku);
+        img.src = stockComboPath(layout.id, v.sku, stockComboVersion(layout.id, v.sku));
         img.decode().catch(() => {});
       }
     }
@@ -410,7 +410,7 @@ export default function VisualizerExperience({
         if (hasStockCombo(layout.id, v.sku)) {
           items.push({
             id: `stock:${layout.id}:${v.sku}`,
-            src: stockComboPath(layout.id, v.sku),
+            src: stockComboPath(layout.id, v.sku, stockComboVersion(layout.id, v.sku)),
             previewSrc: v.swatchPath,
             label: v.name,
             rendered: true,
@@ -533,7 +533,7 @@ export default function VisualizerExperience({
   // ── Stage + downloads ───────────────────────────────────────────────
 
   const stockCombo = hasStockCombo(layout.id, sku)
-    ? stockComboPath(layout.id, sku)
+    ? stockComboPath(layout.id, sku, stockComboVersion(layout.id, sku))
     : null;
   const stageTarget =
     mode === "stock" ? (stockCombo ?? layout.photoPath) : (renders[sku] ?? photo?.url ?? null);

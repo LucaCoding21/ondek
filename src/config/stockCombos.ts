@@ -8,51 +8,57 @@
  * base layout photo, so shipping with a partial list is safe.
  */
 
-export const STOCK_COMBOS: string[] = [
-  "backyard__boardwalk",
-  "backyard__driftwood",
-  "backyard__granite-brown",
-  "backyard__granite-grey",
-  "backyard__granite-silver",
-  "backyard__granite-tan",
-  "backyard__hansberry",
-  "backyard__ipe",
-  "backyard__speckled-stone-brown",
-  "backyard__speckled-stone-grey",
-  "backyard__speckled-stone-silver",
-  "backyard__speckled-stone-tan",
-  "backyard__urban-mist",
-  "backyard__walnut",
-  "glassrail__boardwalk",
-  "glassrail__driftwood",
-  "glassrail__granite-brown",
-  "glassrail__granite-grey",
-  "glassrail__granite-silver",
-  "glassrail__granite-tan",
-  "glassrail__hansberry",
-  "glassrail__ipe",
-  "glassrail__speckled-stone-brown",
-  "glassrail__speckled-stone-grey",
-  "glassrail__speckled-stone-silver",
-  "glassrail__speckled-stone-tan",
-  "glassrail__urban-mist",
-  "glassrail__walnut",
-  "lakeview__boardwalk",
-  "lakeview__driftwood",
-  "lakeview__granite-brown",
-  "lakeview__granite-grey",
-  "lakeview__granite-silver",
-  "lakeview__granite-tan",
-  "lakeview__hansberry",
-  "lakeview__ipe",
-  "lakeview__speckled-stone-brown",
-  "lakeview__speckled-stone-grey",
-  "lakeview__speckled-stone-silver",
-  "lakeview__speckled-stone-tan",
-  "lakeview__urban-mist",
-  "lakeview__walnut"
-];
+/** combo id -> short content hash of the approved file (cache key) */
+export const STOCK_COMBOS: Record<string, string> = {
+  "backyard__boardwalk": "99d4709f",
+  "backyard__driftwood": "67224b91",
+  "backyard__granite-brown": "35925403",
+  "backyard__granite-grey": "81f8dc39",
+  "backyard__granite-silver": "06ddcdfe",
+  "backyard__granite-tan": "7ca735cf",
+  "backyard__hansberry": "60c2bd2d",
+  "backyard__ipe": "894dc798",
+  "backyard__speckled-stone-brown": "dfd521be",
+  "backyard__speckled-stone-grey": "037003c9",
+  "backyard__speckled-stone-silver": "c7a1abbc",
+  "backyard__speckled-stone-tan": "59fc5194",
+  "backyard__urban-mist": "87d01fe4",
+  "backyard__walnut": "6f6d2203",
+  "glassrail__boardwalk": "bd0bb81e",
+  "glassrail__driftwood": "cf025a2e",
+  "glassrail__granite-brown": "83e8ed15",
+  "glassrail__granite-grey": "971dc38d",
+  "glassrail__granite-silver": "a16ae4ee",
+  "glassrail__granite-tan": "9b59c7d1",
+  "glassrail__hansberry": "dbf5072a",
+  "glassrail__ipe": "fd1940a9",
+  "glassrail__speckled-stone-brown": "46c3ae1d",
+  "glassrail__speckled-stone-grey": "57e46e3b",
+  "glassrail__speckled-stone-silver": "31f2c8c2",
+  "glassrail__speckled-stone-tan": "d1721dc4",
+  "glassrail__urban-mist": "b2dc6d6e",
+  "glassrail__walnut": "58845875",
+  "lakeview__boardwalk": "cc9259db",
+  "lakeview__driftwood": "e62095ad",
+  "lakeview__granite-brown": "41790e18",
+  "lakeview__granite-grey": "85b632b1",
+  "lakeview__granite-silver": "441a3a9b",
+  "lakeview__granite-tan": "9da43966",
+  "lakeview__hansberry": "67bac585",
+  "lakeview__ipe": "88759edc",
+  "lakeview__speckled-stone-brown": "4d1c6c58",
+  "lakeview__speckled-stone-grey": "fd4ea3bb",
+  "lakeview__speckled-stone-silver": "04b6a9ca",
+  "lakeview__speckled-stone-tan": "b0de2616",
+  "lakeview__urban-mist": "2354e021",
+  "lakeview__walnut": "8c68b8f3"
+};
 
 export function hasStockCombo(layoutId: string, sku: string): boolean {
-  return STOCK_COMBOS.includes(`${layoutId}__${sku}`);
+  return `${layoutId}__${sku}` in STOCK_COMBOS;
+}
+
+/** The cache key for a combo, or undefined when it has no approved render */
+export function stockComboVersion(layoutId: string, sku: string): string | undefined {
+  return STOCK_COMBOS[`${layoutId}__${sku}`];
 }

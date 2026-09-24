@@ -8,9 +8,11 @@ import { BLUR_MAP } from "@/lib/blur-map";
  * placeholder already set — falls straight through to next/image.
  */
 export default function SiteImage(props: ImageProps) {
+  // A ?v= cache key on the path does not change the picture, so the
+  // lookup ignores it
   const blur =
     typeof props.src === "string" && !props.placeholder && !props.blurDataURL
-      ? BLUR_MAP[props.src]
+      ? BLUR_MAP[props.src.split("?")[0]]
       : undefined;
 
   if (!blur) return <Image {...props} />;

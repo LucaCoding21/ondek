@@ -10,7 +10,9 @@ export type StockLayout = {
   id: string;
   name: string;
   /** The untouched deck photo, served from /public. Also the input the
-   *  stock-combo generation script sends to the image model. */
+   *  stock-combo generation script sends to the image model. Carries a
+   *  ?v= cache key: bump it whenever the file is replaced, or browsers
+   *  keep the old photo for a year. */
   photoPath: string;
   /** Cross-promo for the Innovative Aluminum railing visible in the shot */
   railing: {
@@ -27,7 +29,7 @@ export const STOCK_LAYOUTS: StockLayout[] = [
   {
     id: "lakeview",
     name: "Oceanview deck",
-    photoPath: "/images/oceanview-balcony-glass-railing.jpg",
+    photoPath: "/images/oceanview-balcony-glass-railing.jpg?v=2",
     railing: {
       name: "Innovative Aluminum glass railing",
       url: "https://www.innovativealuminum.com/",
@@ -57,10 +59,14 @@ export function getStockLayout(id: string): StockLayout | undefined {
   return STOCK_LAYOUTS.find((layout) => layout.id === id);
 }
 
-/** Where approved stock combos live, and how they are named */
+/** Where approved stock combos live, and how they are named. The
+ *  version (a content hash from the manifest) goes in the query string:
+ *  the files are served immutable for a year, so a re-rendered combo
+ *  needs a new URL to reach browsers and the CDN. */
 export const STOCK_COMBO_DIR = "/images/visualizer/stock";
-export function stockComboPath(layoutId: string, sku: string) {
-  return `${STOCK_COMBO_DIR}/${layoutId}__${sku}.webp`;
+export function stockComboPath(layoutId: string, sku: string, version?: string) {
+  const file = `${STOCK_COMBO_DIR}/${layoutId}__${sku}.webp`;
+  return version ? `${file}?v=${version}` : file;
 }
 
 // ── Custom Mode limits ──────────────────────────────────────────────────

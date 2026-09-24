@@ -17,6 +17,7 @@
  */
 
 import { copyFile, mkdir, readdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -92,7 +93,8 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
   for (const layout of layouts) {
     // Same pipeline as Custom Mode: downscale to the working resolution,
     // re-encode (EXIF gone), then hand both images to the model
-    const deckPhoto = await sharp(path.join(ROOT, "public", layout.photoPath))
+    // photoPath may carry a ?v= cache key; the file on disk does not
+    const deckPhoto = await sharp(path.join(ROOT, "public", layout.photoPath.split("?")[0]))
       .rotate()
       .resize(LIMITS.workingEdgePx, LIMITS.workingEdgePx, {
         fit: "inside",
@@ -185,11 +187,19 @@ async function approve(combos: string[], all: boolean) {
     console.log(`✓ ${name} → public${path.sep}images${path.sep}visualizer${path.sep}stock`);
   }
 
-  // The manifest mirrors the public dir — never hand-maintained
-  const approved = (await readdir(PUBLIC_DIR))
+  // The manifest mirrors the public dir — never hand-maintained. Each
+  // combo carries a short content hash: the site puts it in the image URL
+  // so a re-rendered combo is never served from a browser or CDN cache
+  // (the stock files ship with a one-year immutable cache header).
+  const onDisk = (await readdir(PUBLIC_DIR))
     .filter((f) => f.endsWith(".webp"))
     .map((f) => f.replace(/\.webp$/, ""))
     .sort();
+  const approved: Record<string, string> = {};
+  for (const name of onDisk) {
+    const bytes = await readFile(path.join(PUBLIC_DIR, `${name}.webp`));
+    approved[name] = createHash("sha256").update(bytes).digest("hex").slice(0, 8);
+  }
 
   await writeFile(
     MANIFEST,
@@ -203,14 +213,20 @@ async function approve(combos: string[], all: boolean) {
  * base layout photo, so shipping with a partial list is safe.
  */
 
-export const STOCK_COMBOS: string[] = ${JSON.stringify(approved, null, 2)};
+/** combo id -> short content hash of the approved file (cache key) */
+export const STOCK_COMBOS: Record<string, string> = ${JSON.stringify(approved, null, 2)};
 
 export function hasStockCombo(layoutId: string, sku: string): boolean {
-  return STOCK_COMBOS.includes(\`\${layoutId}__\${sku}\`);
+  return \`\${layoutId}__\${sku}\` in STOCK_COMBOS;
+}
+
+/** The cache key for a combo, or undefined when it has no approved render */
+export function stockComboVersion(layoutId: string, sku: string): string | undefined {
+  return STOCK_COMBOS[\`\${layoutId}__\${sku}\`];
 }
 `,
   );
-  console.log(`\nManifest updated: ${approved.length} approved combo(s).`);
+  console.log(`\nManifest updated: ${onDisk.length} approved combo(s).`);
 }
 
 const args = parseArgs(process.argv.slice(2));
