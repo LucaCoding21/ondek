@@ -10,9 +10,9 @@ export type StockLayout = {
   id: string;
   name: string;
   /** The untouched deck photo, served from /public. Also the input the
-   *  stock-combo generation script sends to the image model. Carries a
-   *  ?v= cache key: bump it whenever the file is replaced, or browsers
-   *  keep the old photo for a year. */
+   *  stock-combo generation script sends to the image model. When the
+   *  file is replaced, give it a new name (-v2, -v3): it is served with a
+   *  one-year immutable cache and next/image refuses a ?v= query. */
   photoPath: string;
   /** Cross-promo for the Innovative Aluminum railing visible in the shot */
   railing: {
@@ -29,7 +29,7 @@ export const STOCK_LAYOUTS: StockLayout[] = [
   {
     id: "lakeview",
     name: "Oceanview deck",
-    photoPath: "/images/oceanview-balcony-glass-railing.jpg?v=2",
+    photoPath: "/images/oceanview-balcony-glass-railing-v2.jpg",
     railing: {
       name: "Innovative Aluminum glass railing",
       url: "https://www.innovativealuminum.com/",

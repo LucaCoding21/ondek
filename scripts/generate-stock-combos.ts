@@ -93,8 +93,7 @@ async function generateAll(layoutFilter: string, skuFilter: string, force: boole
   for (const layout of layouts) {
     // Same pipeline as Custom Mode: downscale to the working resolution,
     // re-encode (EXIF gone), then hand both images to the model
-    // photoPath may carry a ?v= cache key; the file on disk does not
-    const deckPhoto = await sharp(path.join(ROOT, "public", layout.photoPath.split("?")[0]))
+    const deckPhoto = await sharp(path.join(ROOT, "public", layout.photoPath))
       .rotate()
       .resize(LIMITS.workingEdgePx, LIMITS.workingEdgePx, {
         fit: "inside",
