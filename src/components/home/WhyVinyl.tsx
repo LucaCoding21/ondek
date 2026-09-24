@@ -153,7 +153,7 @@ export default function WhyVinyl() {
             />
             <Image
               src="/images/designs/speckled-silver-scene.jpg"
-              alt="Speckled Stone Silver waterproof vinyl decking membrane on a backyard deck"
+              alt="Speckled Silver waterproof vinyl decking membrane on a backyard deck"
               width={1680}
               height={945}
               className="w-full h-auto"

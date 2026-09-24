@@ -13,7 +13,7 @@ import DesignLightbox from "@/components/designs-colours/DesignLightbox";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// Shown in pattern-series order: the Speckled Stones fill the top row, the
+// Shown in pattern-series order: the Speckled series fills the top row, the
 // Granites the middle, and the remaining colours the last. Coming-soon
 // colours sit in the grid with everything else, marked under their name.
 const SWATCHES = DESIGNS;
@@ -124,7 +124,7 @@ export default function DesignsIntro() {
           </div>
 
           {/* Every colour shown at once — no hover, nothing hidden. Four even
-              columns line the series up as rows: Speckled Stones, Granites,
+              columns line the series up as rows: Speckled, Granite,
               then the rest. */}
           <div className="flex flex-col">
             {/* Negative bottom margin lets the block settle below the copy's

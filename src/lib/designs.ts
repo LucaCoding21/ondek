@@ -77,7 +77,7 @@ const TILE = (slug: string) => `/images/designs/${slug}.jpg`;
 // The full range, in the order the colour cards should read.
 export const DESIGNS: Design[] = [
   {
-    name: "Speckled Stone Grey",
+    name: "Speckled Grey",
     slug: "speckled-stone-grey",
     blurb: "Cool mid-grey with a fine stone speckle through it.",
     swatch: SWATCH("speckled-stone-grey"),
@@ -90,7 +90,7 @@ export const DESIGNS: Design[] = [
     tag: "best-seller",
   },
   {
-    name: "Speckled Stone Silver",
+    name: "Speckled Silver",
     slug: "speckled-stone-silver",
     blurb: "Light silver that keeps decks bright and cool underfoot.",
     swatch: SWATCH("speckled-stone-silver"),
@@ -102,7 +102,7 @@ export const DESIGNS: Design[] = [
     family: "silver",
   },
   {
-    name: "Speckled Stone Brown",
+    name: "Speckled Brown",
     slug: "speckled-stone-brown",
     blurb: "Deep earth brown, speckled to hide the everyday.",
     swatch: SWATCH("speckled-stone-brown"),
@@ -114,7 +114,7 @@ export const DESIGNS: Design[] = [
     family: "brown",
   },
   {
-    name: "Speckled Stone Tan",
+    name: "Speckled Tan",
     slug: "speckled-stone-tan",
     blurb: "Warm, sandy neutral that pairs beautifully with wood tones.",
     swatch: SWATCH("speckled-stone-tan"),

@@ -42,7 +42,7 @@ export default function DesignsHero() {
           <div className="relative h-full">
             <Image
               src="/images/hero-deck-backyard.jpg"
-              alt="Waterproof vinyl deck surface in Speckled Stone Tan"
+              alt="Waterproof vinyl deck surface in Speckled Tan"
               fill
               preload
               className="object-cover"
